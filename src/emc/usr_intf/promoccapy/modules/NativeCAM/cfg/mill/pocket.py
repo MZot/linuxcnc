@@ -1,0 +1,199 @@
+#!/usr/bin/python
+
+"""
+    pocket.py 
+
+    (C) Mit Zot <2018>
+   
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   
+"""
+
+
+
+
+import getopt
+import math
+import sys
+
+def ramp_down(centerx, centery, rampRadius, rampStep, startz, endz):
+    P = int(((startz - endz)/-rampStep) + 0.5)
+    if P<1:
+      P=1
+    print ('G0Z[#<_z_clear> + #<_rapid_z>]')
+    print ('G0X%.4f Y%.4f'%(centerx-rampRadius, centery))
+    print ('G0Z#<_z_clear>')
+    print ('G1Z%.4f'%(startz))
+    print ('G3X%.4fY%.4fR%.4fP%iZ%.4f'%(centerx+rampRadius, centery, rampRadius, P, endz))
+
+    print ('G3X%.4fY%.4fR%.4fZ%.4f'%(centerx-rampRadius, centery, rampRadius, endz))
+    print ('G3X%.4fY%.4fR%.4fZ%.4f'%(centerx+rampRadius, centery, rampRadius, endz))
+
+
+def circle_spiral(centerx, centery, pocketRadius, rampRadius, startz, endz, tRadius, stepdown, Stepover):
+    #ramp_down(centerx, centery, rampRadius, rampStep, startz, endz)
+    r=rampRadius
+    t=0
+    x = r*(math.cos(t))
+    y = r*(math.sin(t))
+    print ('G1X%.4f Y%.4f'%(x+centerx, y+centery))
+    
+    t=t+math.pi*0.2
+    r=r+(Stepover*0.1)*(r/pocketRadius)  
+    while r < pocketRadius: #spiral
+        x = r*(math.cos(t))
+        y = r*(math.sin(t))
+        print ('G3X%.4fY%.4fR%.4f'%(x+centerx, y+centery,r))
+        t=t+math.pi*0.2
+        r=r+(Stepover*0.1)*(r/pocketRadius) #calculate new radius 10 times per 360deg
+    x = pocketRadius*(math.cos(t)) #last point of spiral
+    y = pocketRadius*(math.sin(t))
+    print ('G3X%.4fY%.4fR%.4f'%(x+centerx, y+centery,pocketRadius))
+
+    t=t+math.pi
+    x = pocketRadius*(math.cos(t)) 
+    y = pocketRadius*(math.sin(t))      
+    print ('G3X%.4fY%.4fR%.4f'%(x+centerx, y+centery, pocketRadius)) #finish half circle
+    
+    t=t+math.pi
+    x = pocketRadius*(math.cos(t)) 
+    y = pocketRadius*(math.sin(t))      
+    print ('G3X%.4fY%.4fR%.4f'%(x+centerx, y+centery, pocketRadius)) #finish second half
+     
+    #x = (pocketRadius-tRadius/2)*(math.cos(t)) #lead-out
+    #y = (pocketRadius-tRadius/2)*(math.sin(t))    
+    #print ('G3X%.4fY%.4fR%.4f;lead-out'%(x+centerx, y+centery, tRadius/4))
+    
+    
+        
+    
+
+################################################################################################################
+
+def help_message():
+    print '''Spiral pocket Generator for NativeCAM
+                
+            (C) Mit Zot 2018
+            '''
+
+    sys.exit(0)
+
+#===============================================================================================================
+
+def main():
+
+    try:
+        options, xarguments = getopt.getopt(sys.argv[1:], 'i:T:X:Y:D:r:s:b:z:Z:S:f:m:')
+    except getopt.error:
+        print 'Pocket.py Error: You tried to use an unknown argument'
+        sys.exit(0)
+
+    if len(sys.argv[1:]) == 0:
+        help_message()
+        sys.exit(0)
+
+    for a in options[:]: #tool diameter
+        if a[0] == '-T':
+            tdia = float(a[1])
+            
+    for a in options[:]: #self_id
+        if a[0] == '-i':
+            id = (a[1])
+            
+    for a in options[:]: #YC
+        if a[0] == '-X': 
+            xc = float(a[1])
+            
+    for a in options[:]: #XC
+        if a[0] == '-Y':
+            yc = float(a[1])
+                        
+    for a in options[:]: #pocket dia
+        if a[0] == '-D':
+            d = float(a[1])
+            
+    for a in options[:]: #ramp down diameter
+        if a[0] == '-r':
+            rd = float(a[1])
+            
+    for a in options[:]: #ramp stepdown z
+        if a[0] == '-z':
+            rz = float(a[1])
+                        
+    for a in options[:]: #surface, Z start
+        if a[0] == '-s':
+            s = float(a[1])
+                                    
+    for a in options[:]: #bottom, Z end
+        if a[0] == '-b':
+            b = float(a[1])
+                                    
+    for a in options[:]: #stepdown z
+        if a[0] == '-Z':
+            z = float(a[1])
+                                                
+    for a in options[:]: #stepover
+        if a[0] == '-S':
+            step = float(a[1])
+            
+    for a in options[:]: #stepover
+        if a[0] == '-f':  #finishing pass
+            fp = float(a[1])
+                        
+    for a in options[:]: #stepover
+        if a[0] == '-m':  #finishing z
+            fz = float(a[1])
+
+    if b>s:
+        print '(DEBUG, pocket.py: incorrect depth values)'
+        sys.exit(0)
+        
+    if rd>d:
+        print '(DEBUG, pocket.py: incorrect ramp down diameter)'
+        sys.exit(0)
+        
+    if tdia>d:
+        print '(DEBUG, pocket.py: tool too big)'
+        sys.exit(0)
+
+    if tdia<0.5:
+        print '(DEBUG, pocket.py: tool diameter too small)'
+        sys.exit(0)
+        
+    print '''
+          ;check if tool diameter changed
+          o<%s_001>if[ %s NE #5410 AND #<_task> ]
+            (DEBUG, pocket.py: Incorrect tool diameter, please regenerate g-code)
+            M30
+          o<%s_001>endif
+          
+          ;
+          M3 M8
+            '''%(id, tdia, id)
+    try:        
+       ramp_down(xc, yc, rd*tdia, rz, s, b)
+       circle_spiral(xc,yc,d/2-tdia/2-fp*tdia/2,rd*tdia,s,b,tdia/2,z,step*tdia/2)
+       if fp>0:
+         ramp_down(xc, yc, d/2-tdia/2, fz, s, b) #finish
+       print ('G0Z[#<_z_clear> + #<_rapid_z>]')
+    except:
+       print '(DEBUG, pocket.py: unknown exception!)'
+       sys.exit(0)
+
+#===============================================================================================
+
+if __name__ == "__main__":
+            main()
+
+#===============================================================================================END

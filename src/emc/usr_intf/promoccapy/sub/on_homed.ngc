@@ -1,0 +1,20 @@
+O<on_homed> sub
+G40
+G49
+
+#<_toolchange_pos_x> = [#5181 * 2]
+#<_toolchange_pos_z> = #5183
+(debug, _toolchage_pos_z set to #<_toolchange_pos_z>)
+(debug, _toolchage_pos_x set to #<_toolchange_pos_x>)
+
+(debug, on_homed exeuting)
+;M66 E0 L0   ;motion.analog-in-00, dobi iz stanja revolverja
+;M61 Q[#5399]
+
+M61 Q[#1]  ;#1 dobi iz GUI, shranjena vrednost orodja ob zadnjem izklopu
+
+G43
+G54
+
+O<on_homed> endsub
+M2

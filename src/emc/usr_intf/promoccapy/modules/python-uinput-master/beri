@@ -1,0 +1,13 @@
+instalacija uinput:
+#simulacija tipkovnice - :
+
+cd ./modules/python-uinput-master
+sudo python setup.py build
+sudo python setup.py install
+sudo modprobe uinput
+sudo nano /etc/modules 
+	-> dodaj "uinput"
+sudo nano /lib/udev/rules.d/50-udev-default.rules
+	-dodaj KERNEL=="uinput", GROUP="cnc"
+
+

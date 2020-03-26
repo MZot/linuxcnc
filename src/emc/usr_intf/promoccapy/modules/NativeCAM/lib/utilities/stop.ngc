@@ -1,0 +1,10 @@
+o<stop> sub
+(author : Mit Zot)
+    o<stop_9998> if [#<_task> ]
+     o<stop_9999> repeat [999]
+        M5
+        M9
+        M0
+     o<stop_9999> endrepeat
+    o<stop_9998> endif
+o<stop> endsub

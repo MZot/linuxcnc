@@ -1,0 +1,256 @@
+[SUBROUTINE]
+icon = truetype.png
+name = _("CXF Engraving")
+type = cxf_engrave
+help = _("<b>Uses single line CXF fonts</b>")
+order = ena h1 x y ref rot h5 line0 lines h4 type font yscale xscale align approx h3 yoff word char h2 arcradius arcangle h6 mirror flip s z surface dpt feed verticalfeed
+
+[PARAM_ENA]
+name = _("Enabled")
+type = bool
+value = 1
+
+[PARAM_H1]
+name = _("Coords, rotation")
+type = sub-header
+
+[PARAM_H2]
+name = _("Text on arc")
+type = sub-header
+
+[PARAM_H3]
+name = _("Spacing")
+type = sub-header
+
+[PARAM_H4]
+name = _("Text formating")
+type = sub-header
+
+[PARAM_H5]
+name = _("Strings")
+type = sub-header
+
+[PARAM_H6]
+name = _("Engraving")
+type = sub-header
+
+
+[PARAM_X]
+name = _("cX")
+type = float
+icon = center.png
+tool_tip = _("Reference corner or center of arc")
+value = 0
+header = h1
+
+[PARAM_Y]
+name = _("cY")
+type = float
+icon = center.png
+tool_tip = _("Reference corner or center of arc")
+value = 0
+header = h1
+
+[PARAM_XSCALE]
+name = _("Text width scale")
+type = float
+icon = width.png
+tool_tip = _("Text width scaling % normal character width")
+value = 1
+header = h4
+
+[PARAM_YSCALE]
+name = _("Text height")
+type = float
+icon = height.png
+tool_tip = _("Height of characters in machine units")
+value = 10
+header = h4
+
+[PARAM_CHAR]
+name = _("Characters")
+type = float
+icon = dx.png
+tool_tip = _("Space between characters % of word space")
+value = 0.25
+header = h3
+
+[PARAM_WORD]
+name = _("Words")
+type = float
+icon = dx.png
+tool_tip = _("Space between words % of max character width")
+value = 1.00
+header = h3
+
+[PARAM_MIRROR]
+name = _("Mirror")
+type = combo
+options = No=0:Yes=1
+icon = no-icon.png
+tool_tip = _("Mirror text")
+value = 0
+header = h6
+
+[PARAM_FLIP]
+name = _("Flip")
+type = combo
+options = No=0:Yes=1
+icon = no-icon.png
+tool_tip = _("Flip text")
+value = 0
+header = h6
+
+
+[PARAM_FONT]
+name = _("Font")
+type = combo
+options = CamBam_Stick_1='1CamBam_Stick_1':CamBam_Stick_2='1CamBam_Stick_2':CamBam_Stick_3='1CamBam_Stick_3':CamBam_Stick_4='1CamBam_Stick_4':CamBam_Stick_5='1CamBam_Stick_5':CamBam_Stick_6='1CamBam_Stick_6':CamBam_Stick_7='1CamBam_Stick_7':CamBam_Stick_8='1CamBam_Stick_8':CourierCad='CourierCad':Cursive='Cursive':Cyrillic II='Cyrillic_II':Gothic Great Britain Triplex='GothGBT':Gothic German Triplex='GothGRT':Gothic Italian Triplex='GothITT':Greek Complex='GreekC':Greek Complex Small='GreekCS':Greek OL='Greek_OL':Greek Plain='GreekP':Greek Simplex='GreekS':Greek S OL='GreekS_OL':ISO8859-11='ISO8859-11':Italian Complex='ItalicC':Italian Complex Small='ItalicCS':Italian Triplex='ItalicT':Kochi Gothic='Kochigothic':Kochi Gothic with ties='KochiGothic_with_ties':Kochi Mincho='KochiMincho':Roman Complex='RomanC':Roman Complex Small='RomanCS':Roman Duplex='RomanD':Roman Plain='RomanP':Roman Simplex 2='RomanS2':Roman Simplex='RomanS':Roman Triplex='RomanT':Sans Normal Duplex='SansND':Script Complex='ScriptC':Script Simplex='ScriptS':Standard='Standard':Symbol Astro='Symbol_Astro':Symbol Cad='SymbolCad':Symbol Misc 1='Symbol_Misc1':Symbol Misc 2='Symbol_Misc2':Unicode='Unicode'
+icon = no-icon.png
+value = 'Standard'
+header = h4
+
+[PARAM_ROT]
+name = _("Rotation")
+type = float
+digits = 2
+icon = angle.png
+tool_tip = _("Angle rotated")
+value = 0
+header = h1
+
+[PARAM_S]
+name = _("Safe Z")
+type = float
+icon = safe-z.png
+tool_tip = _("Safe Z for first move")
+value = 50
+header = h6
+
+[PARAM_Z]
+name = _("Z Clear")
+type = float
+icon = rapid.png
+tool_tip = _("Working Z for G0 moves")
+value = 5
+header = h6
+
+[PARAM_SURFACE]
+name = _("Cut start")
+type = float
+icon = surface.png
+tool_tip = _("Surface")
+value = 0.5
+header = h6
+
+[PARAM_DPT]
+name = _("Cut down to")
+type = float
+icon = depth.png
+tool_tip = _("Cutting Z for engraving")
+value = -0.1
+header = h6
+
+[PARAM_ARCRADIUS]
+name = _("Radius of arc")
+type = float
+icon = radius.png
+tool_tip = _("Radius of circle for text on arc")
+value = 50
+header = h2
+
+[PARAM_ARCANGLE]
+name = _("Arc start angle")
+type = float
+digits = 2
+icon = arc-in-out.png
+tool_tip = _("Start angle for text on arc")
+value = 90
+header = h2
+
+[PARAM_REF]
+name = _("Referenced by")
+type = combo
+options = Left upper corner=0:Upper center=1:Right upper corner=2:Right center=3:Right bottom corner=4:Bottom center=5:Left bottom corner=6:Left center=7:Center of text=8
+value = 8
+tool_tip = _("Define reference point for Xc and Yc")
+header = h1
+
+[PARAM_ALIGN]
+name = _("Align text")
+type = combo
+options = Center=0:Left=1:Right=2
+value = 0
+tool_tip = _("Align text")
+header = h4
+
+[PARAM_TYPE]
+name = _("Type of engraving")
+type = combo
+options = Normal=0:Text CW on arc=1:Text CCW on arc=2
+value = 0
+tool_tip = _("Straight multiline text or text on arc")
+header = h4
+
+[PARAM_APPROX]
+name = _("Character arcs resolution")
+type = float
+value = 20
+icon = r.png
+tool_tip = _("Arc resolution in degrees")
+header = h4
+
+
+[PARAM_LINES]
+name = _("Lines")
+type = engrave
+value = _("'LinuxCNC'\nČčĆćŠšŽž°⌀πμ\n2018")
+icon = row.png
+header = h5
+
+
+[PARAM_YOFF]
+name = _("Lines")
+type = float
+icon = dy.png
+tool_tip = _("Offset between lines % of line height")
+value = 1.5
+header = h3
+
+[PARAM_VERTICALFEED]
+name = _("Vertical feed")
+type = string
+icon = tool-vertical-feed.png
+tool_tip = _("Vertical feed from Cut start Z to depth of cut")
+value = #<_feed_vertical>
+header = h6
+
+[PARAM_FEED]
+name = _("Engraving feed")
+type = string
+icon = feed.png
+tool_tip = _("Engraving feed")
+value = #<_feed_normal>
+header = h6
+
+
+[DEFINITIONS]
+content = 
+        <eval>self.include_once("rotate-xy.ngc")</eval>
+		
+[CALL]
+content = 
+  (begin #sub_name)
+  ;tdiam #tdiam
+  (CXF engraving feature author : Mit Zot)
+  o<#self_id_active> if [#param_ena] (if active)
+    <subprocess>python %SYS_DIR%/cfg/mill/cxf/engrave-feature -n'#self_id_active' -X'[#param_x]' -Y'[#param_y]' -S'[#param_xscale]' -s'[#param_yscale]' -Z'[#param_s]' -V'[#param_verticalfeed]' -z'[#param_z]' -v'[#param_feed]' -D'[#param_dpt]' -b'[#param_surface]' -A'[#param_rot]' -P'  ' -p'  ' -W#param_word -C#param_char -M#param_mirror -F#param_flip -f%SYS_DIR%/cfg/mill/cxf/fonts/#param_font.cxf -R#param_ref -r'[#param_arcradius]' -a'[#param_arcangle]' -t#param_type -e#param_approx -g#param_align -0"""#param_lines"""  -y'#param_yoff'</subprocess>
+  o<#self_id_active> endif
+  (end #sub_name)
+
+[BEFORE]
+content = 
+
+
+[AFTER]
+content = 

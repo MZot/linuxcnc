@@ -1,0 +1,224 @@
+[SUBROUTINE]
+version = 1.14
+icon = rect-pocket.png
+name = _("Facing")
+type = surf_finish
+help = _("<b>Surface Finishing</b>")
+order = act h3 dir mode so entry tc h5 s u_s d touch
+
+[PARAM_ACT]
+name = _("Active")
+icon = enable.png
+type = bool
+value = 1
+
+[PARAM_H1]
+name = _("Select end mill")
+type = sub-header
+hidden = 1
+
+[PARAM_DNUM]
+name = _("Tool number")
+header = h1
+type = tool
+icon = tool.png
+tool_tip = _("Select from tool table")
+value = 0
+hidden = 1
+
+[PARAM_SO]
+name = _("Step over")
+header = h3
+type = int
+minimum_value = 10
+maximum_value = 100
+icon = rect-pocket.png
+tool_tip = _("Maximum")
+value = 60
+suffix = %
+
+[PARAM_H2]
+name = _("Action")
+type = sub-header
+hidden = 1
+
+[PARAM_TLC]
+name = _("Use length comp")
+icon = comp-l.png
+type = combo
+options = _("No=0:Already mounted and touched=3:From tool table=1:Table and probe=2")
+header = h2
+value = 3
+tool_tip = _("Use G43 and probe if setup")
+hidden = 1
+
+[PARAM_SPINDLE_DIR]
+name = _("Start spindle")
+header = h2
+type = combo
+options = _("No=0:Clockwise=3:Counter-clockwise=4")
+icon = spindle-start.png
+tool_tip = _("Select drill rotation")
+value = 3
+hidden = 1
+
+[PARAM_COOLING]
+name = _("Use cooling")
+header = h2
+type = combo
+options = _("None=9:Flood=8:Mist=7")
+icon = snowflake.png
+tool_tip = _("Use flood, mist or none")
+value = 8
+hidden = 1
+
+[PARAM_H4]
+name = _("Feed and speed")
+type = sub-header
+hidden = 1
+
+[PARAM_SPEED]
+name = _("Spindle speed")
+header = h4
+type = int
+minimum_value = 100
+icon = tool-spindle.png
+tool_tip = _("Set spindle speed")
+value = 5000
+hidden = 1
+
+[PARAM_FEED]
+name = _("Feed")
+header = h4
+type = float
+icon = tool-feed.png
+tool_tip = _("Feed at 100% engagement")
+minimum_value = 0.0
+not_allowed = 0
+value = 10
+metric_value = 250
+hidden = 1
+
+[PARAM_H3]
+type = sub-header
+name = _("Tool path")
+
+;[PARAM_H2]
+;type = sub-header
+;name = _("Milling")
+
+[PARAM_DIR]
+name = _("Axis")
+type = combo
+options = _("X axis=0:Y axis=1")
+tool_tip = _("Main axis")
+icon = xy-axes.png
+value = 0
+header = h3
+
+[PARAM_MODE]
+name = _("Mode")
+type = combo
+options = _("Bidirectional=0:Unidirectional=2")
+icon = uni-bi-direction.png
+value = 0
+header = h3
+tool_tip = _("Defines quality of finish")
+
+[PARAM_ENTRY]
+name = _("Entry mode")
+type = combo
+options = _("Arc=0:Straight=1")
+value = 0
+header = h3
+tool_tip = _("Defines quality of finish")
+icon = line-arc-in.png
+
+[PARAM_H5]
+type = sub-header
+name = _("Params")
+
+[PARAM_D]
+name = _("Cut down to")
+type = float
+icon = depth.png
+tool_tip = _("Relative to start")
+value = -0.040
+metric_value = -1.0
+header = h5
+
+[PARAM_STP]
+name = _("Step down")
+header = h5
+type = float
+maximum_value = 0.0
+not_allowed = 0
+icon = tool-depth.png
+tool_tip = _("Step down on each pass")
+value =  -0.020
+metric_value = -0.5
+hidden = 1
+
+[PARAM_LST]
+name = _("Last cut")
+header = h5
+type = float
+maximum_value = 0.0
+icon = tool-depth.png
+tool_tip = _("Last cut depth")
+value =  -0.005
+metric_value = -0.1
+hidden = 1
+
+[PARAM_TOUCH]
+name = _("Touch off Z axis")
+type = bool
+icon = touch-off.png
+tool_tip = _("Set finished surface as new 0")
+value = 1
+header = h5
+
+[PARAM_TC]
+name = _("Safety margin")
+type = int
+value = 50
+minimum_value = 0
+header = h3
+tool_tip = _("Percent of tool diameter past edge")
+icon = sft-margin.png
+suffix = %
+
+[PARAM_S]
+name = _("Cut start")
+type = combo-user
+options = _("User defined=0:Surface=1")
+icon = surface.png
+tool_tip = _("Pre or user defined")
+value = 0
+header = h5
+links = u_s=0:ugc=5
+
+[PARAM_U_S]
+name = _("User start")
+type = float
+value = 0.0
+metric_value = 0.0
+header = h5
+hidden = 1
+
+
+[CALL]
+content =
+	(begin #sub_name)
+	(surface finishing author : Fernand Veilleux)
+	
+	o<#self_id_active> if [#param_act]
+		
+
+
+	
+		o<surf_finish> CALL [#<wp_left>] [#<wp_right>] [#<wp_front>] [#<wp_rear>] [#param_dir] [#param_mode + #param_entry] [#31] [#31 + #param_d] [#param_tc / 100] [#param_lst] [#param_touch]
+
+
+	o<#self_id_active> endif
+	(end #sub_name)

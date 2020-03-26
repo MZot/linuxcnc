@@ -1,0 +1,115 @@
+(author : Fernand Veilleux)
+o<boring> sub
+(CALL [#begin_x] [#end_x] [#begin_z] [#end_z] [#finishing_passes])
+
+	#<begin_z>          = #3
+	#<end_z>            = #4
+	#<finishing_passes> = #5
+	#<taper>            = #6
+    #<chamfer>          = #7
+    #<peck_d>           = #8
+    #<peck_r>           = #9    
+
+	#<begin_x>          = [#1 / 2 * #<_diameter_mode>]
+	#<end_x>            = [#2 / 2 * #<_diameter_mode>]
+	#<roughcut>         = [#<_rough_cut> * #<_diameter_mode>]
+	#<finishcut>        = [#<_finish_cut> * #<_diameter_mode>]
+	
+	/ G0 X#<end_x> Z#<begin_z>
+	/ G1 Z#<end_z>
+	/ o<boring> return
+
+	o10 if [#<finishing_passes> GT 0]
+		#<cut_rough_total> = [#<end_x> - #<begin_x> - #<finishcut>]
+	o10 else
+		#<cut_rough_total> = [#<end_x> - #<begin_x>]
+	o10 endif
+	
+	#<rough_passes> = FUP[#<cut_rough_total> / #<roughcut>]
+	#<each_cut> = [#<cut_rough_total> / #<rough_passes>]
+	
+	#<dz> = [#<begin_z> - #<end_z>]
+	o41 if [#<peck_d> GT 0]     
+	    #<pecks> = FUP[ABS[#<dz>] / #<peck_d>]
+    	#<each_peck> = [#<dz> / #<pecks>]
+    o41 else
+    	 #<pecks> = 1
+	     #<each_peck> = [#<dz>]
+    o41 endif
+     #<peck_dir> = [ABS[#<dz>]/#<dz>]
+     
+	
+	o13 if [#<begin_z> GT #<end_z>]
+		G0 Z[#<begin_z> + #<_z_rapid>]
+	o13 else
+		(DEBUG, Start Z less than End Z)
+		M30
+		G0 Z[#<end_z> + #<_z_rapid>]
+	o13 endif
+	G0 X[#<begin_x> - #<_ix_clear>]
+	
+	M#<_cooling_mode>
+
+	o121 if [#<_tool_usage> LE 1]
+		G70 ;queue buster, before feed change
+		F#<_rough_feed>
+		#<x> = #<begin_x>
+		o12 repeat [#<rough_passes>]
+			G0 Z#<begin_z>
+			#<x> = [#<x> + #<each_cut>]
+			G0 X#<x>
+			;G1 Z#<end_z>
+			#<z> = #<begin_z>
+			o131 repeat [#<pecks>-1]
+	        	#<z> = [#<z> - #<each_peck>]
+	        	G1 Z[#<z>]
+	        	o141 if [#<peck_r> GT 0]
+	        	 G1 Z[#<z> + #<peck_r>*#<peck_dir>]
+	        	o141 else
+	        	 g4 p0.3
+	        	o141 endif			
+	        o131 endrepeat
+	        G1 Z#<end_z>		        
+			G0 X[#<x> - #<_ix_clear>]
+		o12 endrepeat
+	o121 endif
+
+	o20 if [#<finishing_passes> AND #<_tool_usage> NE 1]
+		G70 ;queue buster, before feed change
+		F#<_finish_feed>
+		G0 X[#<end_x> - #<_ix_clear>]
+		o21 repeat [#<finishing_passes>]
+			o65 if [#<chamfer> GT 0.0]
+				G0 Z[#<begin_z>]
+				G0 X[#<end_x> + #<chamfer>*2 ]
+				G1 Z[#<begin_z>]
+				G1 X#<end_x> Z[#<begin_z>-#<chamfer>]
+			o65 else                                    
+				G0 Z#<begin_z>
+				G0 X#<end_x>
+			o65 endif
+
+			G1 Z#<end_z>
+			G0 X[#<end_x> - #<_ix_clear>]
+		o21 endrepeat
+	o20 endif
+	
+	M9 (cooling off)
+
+	o16 if [#<taper> EQ 0]
+		o14 if [#<begin_z> GT #<end_z>]
+			G0 Z[#<begin_z> + #<_z_rapid>]
+		o14 else
+			G0 Z[#<end_z> + #<_z_rapid>]
+		o14 endif
+	
+		G0 X[#<_x_rapid>]
+	o16 else
+		o17 if [#<begin_z> GT #<end_z>]
+			G0 Z[#<begin_z> + #<_z_clear>]
+		o17 else
+			G0 Z[#<end_z> + #<_z_clear>]
+		o17 endif
+	o16 endif
+	
+	o<boring> endsub
