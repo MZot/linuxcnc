@@ -1,0 +1,10 @@
+O<modal> sub
+T2M6
+G97 M3 S1000
+G95 F0.3
+G18 G40 G21 G90 G54 G49 G99 G91.1 G7
+G53 G0 X[56.0000 + 0] 
+G53 G0 Z[11.0000 + 0]
+M8
+O<modal> endsub
+M2

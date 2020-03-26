@@ -1,0 +1,17 @@
+###################################################################
+#        hal_estop.hal
+###################################################################
+
+# estop loopback
+########net estop-loop iocontrol.0.user-enable-out iocontrol.0.emc-enable-in
+
+net estop-out_req iocontrol.0.user-request-enable
+
+net estop-out iocontrol.0.user-enable-out
+#net estop-out turr.estop-in
+#net estop-turr-out turr.estop-out
+#net estop-turr-out plc.estop-in
+#net estop-plc-out plc.estop-out
+
+#net estop-plc-out iocontrol.0.emc-enable-in
+net estop-out iocontrol.0.emc-enable-in  

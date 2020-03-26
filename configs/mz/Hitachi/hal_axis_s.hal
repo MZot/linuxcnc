@@ -1,0 +1,103 @@
+#*******************
+#  SPINDLE S
+#*******************
+
+loadrt lowpass names=spindlelowpass
+addf spindlelowpass servo-thread
+
+# ---PWM Generator signals/setup---
+
+setp   hm2_5i25.0.7i77.0.1.analogout5-scalemax  [SPINDLE_9]OUTPUT_SCALE
+setp   hm2_5i25.0.7i77.0.1.analogout5-minlim    [SPINDLE_9]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i77.0.1.analogout5-maxlim    [SPINDLE_9]OUTPUT_MAX_LIMIT
+
+
+#net spindle-vel-cmd-rpm-abs     => hm2_5i25.0.7i77.0.1.analogout5
+net machine-is-enabled      => hm2_5i25.0.7i77.0.1.spinena		
+
+# ---Encoder feedback signals/setup---
+
+setp    hm2_5i25.0.encoder.04.counter-mode 0
+setp    hm2_5i25.0.encoder.04.filter 1
+setp    hm2_5i25.0.encoder.04.index-invert 0
+setp    hm2_5i25.0.encoder.04.index-mask 0
+setp    hm2_5i25.0.encoder.04.index-mask-invert 0
+setp    hm2_5i25.0.encoder.04.scale  [SPINDLE_9]ENCODER_SCALE
+
+net spindle-revs              <=  hm2_5i25.0.encoder.04.position
+net spindle-vel-fb            <=  hm2_5i25.0.encoder.04.velocity
+net spindle-index-enable     <=>  hm2_5i25.0.encoder.04.index-enable
+
+# ---setup spindle control signals---
+
+net spindle-vel-cmd-rps        <=  motion.spindle-speed-out-rps
+net spindle-vel-cmd-rps motion.spindle-speed-in
+net spindle-vel-cmd-rps-abs    <=  motion.spindle-speed-out-rps-abs
+net spindle-vel-cmd            <=  motion.spindle-speed-out
+net spindle-vel-cmd-rpm-abs    <=  motion.spindle-speed-out-abs
+net spindle-on                 <=  motion.spindle-on
+net spindle-cw                 <=  motion.spindle-forward
+net spindle-ccw                <=  motion.spindle-reverse
+net spindle-brake              <=  motion.spindle-brake
+net spindle-revs               =>  motion.spindle-revs
+net spindle-at-speed           =>  motion.spindle-at-speed
+#net spindle-vel-fb             =>  motion.spindle-speed-in
+net spindle-index-enable      <=>  motion.spindle-index-enable
+
+# ---Setup spindle at speed signals---
+
+net spindle-at-speed <= hm2_5i25.0.7i77.0.0.input-01-not
+
+
+
+
+#****************SPINDLE GEARBOX****************************
+
+#set parameters
+setp  sp_gearbox.0.sp-override 200
+setp  sp_gearbox.0.sp-scale-1st-gear 0.00638
+setp  sp_gearbox.0.sp-scale-2nd-gear 0.0019667
+setp  sp_gearbox.0.sp-1st-gear-min-velo 12
+setp  sp_gearbox.0.sp-1st-gear-max-velo 150
+setp  sp_gearbox.0.sp-2nd-gear-min-velo 140
+setp  sp_gearbox.0.sp-gear-change-velo 20
+setp  sp_gearbox.0.sp-standstill-velo-treshold 5
+setp  debounce.0.delay 1000
+setp  TON.0.T 1500
+
+#connect pins
+#net spindle-override sp_gearbox.0.sp-override <= hidcomp.0.ADC42.fvalue
+setp sp_gearbox.0.sp-override 100
+net sp_1st_gear_sw debounce.0.0.in
+net sp_2nd_gear_sw debounce.0.1.in
+net debounce-1st-gear-sw sp_gearbox.0.gb-1st-gear-switch <= debounce.0.0.out 
+net debounce-2nd-gear-sw sp_gearbox.0.gb-2nd-gear-switch <= debounce.0.1.out
+net sp_1st_gear_valve <= sp_gearbox.0.gb-1st-gear-valve
+net sp_2nd_gear_valve <= sp_gearbox.0.gb-2nd-gear-valve
+net spindle-vel-cmd => sp_gearbox.0.sp-velo-cmd
+net spindle-vel-fb => sp_gearbox.0.sp-velo-in
+net sp_velo_0 and.spindle-at-zero.in0 <= sp_gearbox.0.sp-stopped
+net spindle-at-zero => and.spindle-at-zero.in1          #N==0 iz glavnega pogona
+net sp-stop-ton    and.spindle-at-zero.out => TON.0.IN		#N==0 AND velo==0
+net sp-is-stop-ton sp_gearbox.0.sp-is-stopped <= TON.0.OUT
+net machine-is-enabled => sp_gearbox.0.EMG-STP
+#net spindle-at-speed <= sp_gearbox.0.sp-at-speed
+
+
+
+
+#----------------- analog out limited jerk and acceleration (unipolar spindle) ---------------------------
+setp limit-spindle-acc.min -10
+setp limit-spindle-acc.max  10
+setp limit-spindle-acc.maxv 10	#limita za pospešek ob spremembi komande za špindel
+
+
+
+net acc_lim_sp_in  limit-spindle-acc.in <=  sp_gearbox.0.sp-velo-out		#limitira prvi odvod bipolarne komande za špindel
+net acc_lim_sp_out limit-spindle-acc.out => unipolar_sp.0.sp-velo-cmd
+net uni_sp_out unipolar_sp.0.sp-velo-cmd-abs => spindlelowpass.in
+net sss  spindlelowpass.out hm2_5i25.0.7i77.0.1.analogout5
+setp spindlelowpass.gain 0.002
+net uni_sp_cw <= unipolar_sp.0.sp-CW
+net uni_sp_ccw <= unipolar_sp.0.sp-CCW
+

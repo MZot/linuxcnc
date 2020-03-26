@@ -1,0 +1,264 @@
+component turret_sauter;
+/*
+Copyright: 2019
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+// ---PINS---
+pin in  bit machine_is_on  "connect to halui.machine-is-on";
+pin in  bit      estop_in  "estop loop in";
+pin out bit     estop_out  "estop loop out";
+
+pin in  bit spindle_is_on  "motion.spindle-on";
+pin out bit feed_inhibit   "motion.feed-inhibit";
+
+pin in bit     tool_change  "connect to iocontrol.0.tool-change";
+pin out bit   tool_changed  "connect to iocontrol.0.tool-changed";
+
+pin in s32 tool_prep_number "connect to iocontrol.0.tool-prep-number";
+pin in s32      tool_number "connect to iocontrol.0.tool-number";
+
+pin out float  current_tool "connect to motion.analog-in for on_abort.ngc";
+
+pin in bit  s_1      "Switch for tool 1";
+pin in bit  s_2      "Switch for tool 2";
+pin in bit  s_3      "Switch for tool 3";
+pin in bit  s_4      "Switch for tool 4";
+pin in bit  s_5      "Switch for tool 5";
+pin in bit  s_6      "Switch for tool 6";
+pin in bit  s_7      "Switch for tool 7";
+pin in bit  s_8      "Switch for tool 8";
+pin in bit  s_clmp   "Switch for turret clamped";
+
+pin out bit    cw "rotate turret cw";
+pin out bit   ccw "lock turret ccw";
+pin out bit brake "turret brake";
+
+// ---PARAMS---
+pin in float  t_timeout = 25.0      "timeout in seconds for tool change operation";
+pin in float  t_clamp_timeout = 2.0 "timeout in seconds for tool clamp/unclamp";
+pin in s32    n_tools = 6           "Number of pockets on turret";
+
+//debug
+pin out s32 state;
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+//returns current tool number from switches state
+static int s_to_t(uint8_t s){
+   switch (s){
+        case 0x01:
+            return 1;
+            break;
+        case 0x02:
+            return 2;
+            break;
+        case 0x04:
+            return 3;
+            break;
+        case 0x08:
+            return 4;
+            break;
+        case 0x10:
+            return 5;
+            break;
+        case 0x20:
+            return 6;
+            break;
+        default:
+            return 0;
+   }
+}
+
+static int requested_tool=0;
+static int curr_tool=0;
+
+static bool msg_fp[8]={0};
+
+//static int state = 0;
+typedef enum {
+  IDLE,
+  UNCLAMP,
+  ROTATE,
+  WAIT_CLAMP,
+  CLAMP,
+  DONE,
+  POWER_OFF,
+  ERROR
+} the_state;
+
+typedef struct {
+        float T;
+        float ET;
+        bool IN;
+        bool OUT;
+} timer;
+
+static timer timeout      = {.T = 25.0, .ET = 0, .OUT = false, .IN = false};
+static timer timeout_clmp = {.T =  2.0, .ET = 0, .OUT = false, .IN = false};
+static timer wait_clamp   = {.T =  0.3, .ET = 0, .OUT = false, .IN = false};
+static timer clamp        = {.T =  0.1, .ET = 0, .OUT = false, .IN = false};
+
+void iec_ton(timer *t, float per){
+   if(t->IN) t->ET += per;
+   else      t->ET = 0.0;
+   if(t->ET >= t->T){
+      t->ET = t->T;
+      t->OUT = true;
+   }
+   else t->OUT = false;
+}
+
+
+bool iec_fp(bool in, bool *m){
+        bool out=in && !*m;
+        *m=in;
+        return out;
+} //iec_fp
+
+bool iec_fn(bool in, bool *m){
+        bool out=!in && *m;
+        *m=in;
+        return out;
+} //iec_fn
+
+static bool estop=0;
+
+FUNCTION(_){
+    if(iec_fp(timeout.OUT, &msg_fp[0]))
+       rtapi_print_msg(RTAPI_MSG_ERR, "Revolver timeout, ESTOP!\n");
+    if(iec_fp(timeout_clmp.OUT, &msg_fp[1]))
+       rtapi_print_msg(RTAPI_MSG_ERR, "Revolver u/clamp timeout, ESTOP!\n");
+    //if(!s_clmp && iec_fp(machine_is_on, &msg_fp[2]))
+    //   rtapi_print_msg(RTAPI_MSG_ERR, "Revolver ni zakljenjen!\n");
+    if(feed_inhibit && iec_fp(spindle_is_on, &msg_fp[3]))
+        rtapi_print_msg(RTAPI_MSG_ERR, "Pozicija revolverja ni ok, zapora gibanja\n");
+
+    curr_tool = s_to_t(s_1<<0 | s_2<<1 | s_3<<2 | s_4<<3 | s_5<<4 | s_6<<5 | s_7<<6 | s_8<<7);
+    current_tool = curr_tool;
+    if(!s_clmp)current_tool=0;
+
+    if(iec_fp(tool_change, &msg_fp[7])) requested_tool = tool_prep_number % 10;
+
+    feed_inhibit = spindle_is_on && (!s_clmp || state!=IDLE || ((tool_number % 10) != curr_tool) );
+
+    iec_ton(&timeout, fperiod);  //call "function blocks"
+    iec_ton(&timeout_clmp, fperiod);
+    iec_ton(&wait_clamp, fperiod);
+    iec_ton(&clamp, fperiod);
+    clamp.IN = s_clmp;
+
+    if(!tool_change) tool_changed=0;
+    if(!machine_is_on)state = POWER_OFF;
+
+    switch (state) {
+      case IDLE:
+            cw=0;
+            ccw=0;
+            brake = s_clmp && machine_is_on;
+            if(tool_change){
+                if((requested_tool <= n_tools) && (requested_tool>0)) state=UNCLAMP;
+                else {
+                    rtapi_print_msg(RTAPI_MSG_ERR, "Napacno orodje!\n");
+                    state=ERROR;
+                }
+            } //fp tool_change
+            break;
+
+      case UNCLAMP:
+            timeout.IN = 1;
+            timeout_clmp.IN = 1;
+            brake = 0;
+            cw=1;
+            ccw=0;
+            if(!s_clmp)state=ROTATE;
+            break;
+
+      case ROTATE:
+            timeout.IN = 1;
+            timeout_clmp.IN = 0;
+            cw=1;
+            ccw=0;
+            wait_clamp.IN=0;
+            if(curr_tool==requested_tool) state=WAIT_CLAMP;
+            break;
+
+      case WAIT_CLAMP:
+            timeout.IN = 1;
+            cw=0;
+            ccw=0;
+            wait_clamp.IN=1;
+            if(wait_clamp.OUT) state=CLAMP;
+            break;
+
+      case CLAMP:
+            timeout.IN = 1;
+            timeout_clmp.IN = 1;
+            wait_clamp.IN=0;
+            cw=0;
+            ccw=1;
+            if(clamp.OUT){
+                state=DONE;
+                timeout.IN = 0;
+                timeout_clmp.IN = 0;
+                tool_changed=1;
+                cw=0;
+                ccw=0;
+            };
+            break;
+
+      case DONE:
+            brake = 1;
+            cw=0;
+            ccw=0;
+            if(!tool_change) state=IDLE;
+            break;
+
+       case POWER_OFF:
+            brake = 0;
+            cw = 0;
+            ccw = 0;
+            wait_clamp.IN = 0;
+            timeout.IN = 0;
+            state = IDLE;
+            break;
+
+       case ERROR:
+            if(!tool_change) state=IDLE;
+            break;
+
+    }; //switch state
+
+    if(timeout.OUT || timeout_clmp.OUT)
+    {
+            cw = 0;
+            ccw = 0;
+            wait_clamp.IN = 0;
+            timeout.IN = 0;
+            timeout_clmp.IN = 0;
+            state = POWER_OFF;
+            estop = 1;
+    }
+
+    estop_out = estop_in && !estop;
+    if(!estop_in)estop = 0;
+
+timeout.T = t_timeout;
+timeout_clmp.T = t_clamp_timeout;
+}//FUNCTION

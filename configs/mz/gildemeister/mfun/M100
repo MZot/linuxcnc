@@ -1,0 +1,10 @@
+#!/bin/bash
+
+TEST_DIR=$(dirname INI_FILE_NAME)
+OUT_FILE=$TEST_DIR/gcode-output
+
+P="$1"
+
+echo P is $P >> $OUT_FILE
+
+exit 0

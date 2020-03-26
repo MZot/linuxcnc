@@ -1,0 +1,37 @@
+########################################
+#
+# PLC NEF480
+#
+# Mit Zot 2018
+########################################
+
+loadrt plc_nef480
+addf plc-nef480.0 servo-thread
+
+setp plc-nef480.0.t-lube-time     20   #s
+setp plc-nef480.0.t-lube-interval 900 #s
+net mazanje plc-nef480.0.lube
+
+net m-is-on halui.machine.is-on plc-nef480.0.machine-on 
+net sw-n1 plc-nef480.0.sw-n1 
+net sw-n2 plc-nef480.0.sw-n2
+net buttonM5 plc-nef480.0.sw-m5 
+net sp-is-on plc-nef480.0.sp-on
+
+net micromaster-bb plc-nef480.0.mm440-bb 
+net N-0 plc-nef480.0.mm440-n0
+net Nist-Nsoll plc-nef480.0.mm440-at-speed
+net mm_off1 plc-nef480.0.mm440-off1
+
+setp plc-nef480.0.x-motor-oh 1
+setp plc-nef480.0.z-motor-oh 1
+net mzs-ok plc-nef480.0.ms-motor-oh
+
+net buttonReset plc-nef480.0.abort
+
+net zavora-sp plc-nef480.0.y-brake
+net sp-n1     plc-nef480.0.y-n1
+net sp-n2     plc-nef480.0.y-n2
+
+net voda iocontrol.0.coolant-flood 
+

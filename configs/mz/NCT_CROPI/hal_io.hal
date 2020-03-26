@@ -1,0 +1,108 @@
+#************************************
+#7i77_io.hal
+#************************************
+
+
+
+#************************************
+#vhodi
+#************************************
+net   7i77-analogin0 <= hm2_5i25.0.7i77.0.0.analogin0
+net   7i77-analogin1 <= hm2_5i25.0.7i77.0.0.analogin1
+net   7i77-analogin2 <= hm2_5i25.0.7i77.0.0.analogin2
+net   7i77-analogin3 <= hm2_5i25.0.7i77.0.0.analogin3
+#net                 <= hm2_5i25.0.7i77.0.0.input-00
+#net        <= hm2_5i25.0.7i77.0.0.input-01
+#net        <= hm2_5i25.0.7i77.0.0.input-02
+#net        <= hm2_5i25.0.7i77.0.0.input-03
+net  sw_gear2   <= hm2_5i25.0.7i77.0.0.input-04  #sredina
+net  sw_gear3   <= hm2_5i25.0.7i77.0.0.input-05  #nazaj
+net  sw_gear1   <= hm2_5i25.0.7i77.0.0.input-06  #naprej
+#net        <= hm2_5i25.0.7i77.0.0.input-07
+net x-home-sw        <= hm2_5i25.0.7i77.0.0.input-08-not
+net lube_sw      <= hm2_5i25.0.7i77.0.0.input-09
+net z-home-sw       <= hm2_5i25.0.7i77.0.0.input-10-not
+net z-pos-limit        <= hm2_5i25.0.7i77.0.0.input-11-not
+net x-pos-limit       <= hm2_5i25.0.7i77.0.0.input-12-not
+net x-neg-limit        <= hm2_5i25.0.7i77.0.0.input-13-not
+#net        <= hm2_5i25.0.7i77.0.0.input-14
+#net        <= hm2_5i25.0.7i77.0.0.input-15
+
+net sp-servo-at-speed      <= hm2_5i25.0.7i77.0.0.input-16
+#net       <= hm2_5i25.0.7i77.0.0.input-16-not
+#net       <= hm2_5i25.0.7i77.0.0.input-17
+#net       <= hm2_5i25.0.7i77.0.0.input-18
+#net       <= hm2_5i25.0.7i77.0.0.input-19
+#net       <= hm2_5i25.0.7i77.0.0.input-20
+#net       <= hm2_5i25.0.7i77.0.0.input-21
+#net       <= hm2_5i25.0.7i77.0.0.input-22
+#net       <= hm2_5i25.0.7i77.0.0.input-23
+net      turr_s1  <= hm2_5i25.0.7i77.0.0.input-24
+net      turr_s2  <= hm2_5i25.0.7i77.0.0.input-25
+net      turr_s3  <= hm2_5i25.0.7i77.0.0.input-26
+net      turr_s4  <= hm2_5i25.0.7i77.0.0.input-27
+net      turr_s5  <= hm2_5i25.0.7i77.0.0.input-28
+net      turr_s6  <= hm2_5i25.0.7i77.0.0.input-29
+net      turr_sclmp  <= hm2_5i25.0.7i77.0.0.input-30
+#net       <= hm2_5i25.0.7i77.0.0.input-31
+
+
+#************************************
+#izhodi
+#************************************
+#net motion-sp-brake => hm2_5i25.0.7i77.0.0.output-00  #E3 DC BRAKE
+net motion-sp-reverse  => hm2_5i25.0.7i77.0.0.output-01  #E4 CCW
+#net             => hm2_5i25.0.7i77.0.0.output-02
+#net             => hm2_5i25.0.7i77.0.0.output-03
+#net             => hm2_5i25.0.7i77.0.0.output-04
+#net             => hm2_5i25.0.7i77.0.0.output-05
+net  halui_mach_is_on       => hm2_5i25.0.7i77.0.0.output-06
+net  flood_is_on => hm2_5i25.0.7i77.0.0.output-07
+net  turr-ccw    => hm2_5i25.0.7i77.0.0.output-08
+net  turr-cw     => hm2_5i25.0.7i77.0.0.output-09
+net  sp-y1       => hm2_5i25.0.7i77.0.0.output-10 #nazaj 3
+net  sp-y2       => hm2_5i25.0.7i77.0.0.output-11 #naprej 1
+net  sp-y3       => hm2_5i25.0.7i77.0.0.output-12  #1, 3
+net  sp-y4       => hm2_5i25.0.7i77.0.0.output-13  #10 + 13 = 2
+net  lube        => hm2_5i25.0.7i77.0.0.output-14
+net  turr-brake  => hm2_5i25.0.7i77.0.0.output-15
+
+
+
+#net     hm2_5i25.0.7i84.0.2.input-00
+#net     hm2_5i25.0.7i84.0.2.input-01
+#net     hm2_5i25.0.7i84.0.2.input-02
+#net     hm2_5i25.0.7i84.0.2.input-03
+#net     hm2_5i25.0.7i84.0.2.input-04
+#net     hm2_5i25.0.7i84.0.2.input-05
+net  hwheelx   hm2_5i25.0.7i84.0.2.input-06
+net  hwheelz   hm2_5i25.0.7i84.0.2.input-07
+net  jog_z_m   hm2_5i25.0.7i84.0.2.input-08-not
+net  jog_rpd   hm2_5i25.0.7i84.0.2.input-09-not
+net  jog_x_p   hm2_5i25.0.7i84.0.2.input-10-not
+net  jog_z_p   hm2_5i25.0.7i84.0.2.input-11-not
+net  jog_x_m   hm2_5i25.0.7i84.0.2.input-12-not
+net  nc_start   hm2_5i25.0.7i84.0.2.input-13-not
+net  halui_pause   hm2_5i25.0.7i84.0.2.input-14-not
+net  halui_abort   hm2_5i25.0.7i84.0.2.input-15-not
+#net     hm2_5i25.0.7i84.0.2.input-16
+#net     hm2_5i25.0.7i84.0.2.input-17
+#net     hm2_5i25.0.7i84.0.2.input-18
+#net     hm2_5i25.0.7i84.0.2.input-19
+#net     hm2_5i25.0.7i84.0.2.input-20
+#net     hm2_5i25.0.7i84.0.2.input-21
+#net     hm2_5i25.0.7i84.0.2.input-22
+#net     hm2_5i25.0.7i84.0.2.input-23
+net  halui_mach_off   hm2_5i25.0.7i84.0.2.input-24-not
+net  halui_mach_on    hm2_5i25.0.7i84.0.2.input-25-not
+net halui-mdi-01     hm2_5i25.0.7i84.0.2.input-26-not
+net sw_flood       hm2_5i25.0.7i84.0.2.input-27-not
+net halui_sp_rv    hm2_5i25.0.7i84.0.2.input-28-not
+net halui-mdi-00   hm2_5i25.0.7i84.0.2.input-29-not
+net halui_sp_stop  hm2_5i25.0.7i84.0.2.input-30-not
+net halui_sp_fw    hm2_5i25.0.7i84.0.2.input-31-not
+
+net h-wheel-rawcounts hm2_5i25.0.7i84.0.2.enc0.count
+
+net spindle_pot hm2_5i25.0.7i84.0.2.analogin0
+net feed_pot    hm2_5i25.0.7i84.0.2.analogin1

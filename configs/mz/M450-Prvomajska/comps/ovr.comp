@@ -1,0 +1,20 @@
+component ovr "by Mit Zot";
+
+
+pin in float ain;
+
+pin out signed out;
+
+
+
+
+function _;
+license "GPL";
+;;
+
+FUNCTION(_){
+
+ out=((int)(ain*105))/10;
+
+}//FUNCTION
+

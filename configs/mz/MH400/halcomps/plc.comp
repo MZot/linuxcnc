@@ -1,0 +1,164 @@
+component plc "PLC Maho MH400";
+/*
+Copyright: 2019
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+// ---INPUTS---
+pin in bit     machine_is_on;   //halui.machine-is-on
+pin in bit     sw_abort;        //reset pushbutton
+
+                                //jog selector switches
+pin in bit     sw_jog_sel_x;
+pin in bit     sw_jog_sel_z;
+pin in bit     sw_jog_sel_i1;
+pin in bit     sw_jog_sel_i100;
+pin in bit     sw_flood;        //cooling on off button (toggle)
+pin in bit     flood_is_on;     //halui.flood-is-on
+pin in bit     sw_tool_unclamp; //button tool unclamp
+pin in bit     sp_stndstill;    //spindle N<Nmin
+pin in float   feed;            //jogging feed
+pin in float   feed_ovr_val;    //halui.feed-override.value (feedback from halui for jog speed override)
+pin in float   f_ovr_pot;       //feed override pot hm2_5i25.0.7i77.0.0.analogin0 
+pin in float   sp_ovr_pot;      //spindle override pot
+pin in bit     lubeErr;         //lube error, 4A1
+
+pin in bit     sp_inhibit_in; //
+
+
+
+// ---PARAMS---
+pin in float    t_lube_interval;  //
+pin in float    t_lube_time;      //
+
+
+//  ---OUTPUTS---
+pin out bit     lube;           //
+pin out bit     sel_j0;         //halui.joint.0.select
+pin out bit     sel_j1;         //halui.joint.1.select
+pin out bit     sel_j2;         //halui.joint.2.select
+pin out bit     sel_j3;         //halui.joint.3.select
+pin out float   jog_inc;        //halui.jog.selected.increment
+pin out float   jog_speed;      //halui.jog-speed
+pin out signed  f_ovr_cnts;     //halui.rapid-override.counts && halui.feed-override.counts
+pin out signed  s_ovr_cnts;     //halui.spindle-override.counts
+pin out bit     flood_on;       //halui.flood_on
+pin out bit     flood_off;      //halui.flood_off
+pin out bit     tuncl_out;       //tool unclamp
+pin out bit     sp_inhibit_out; //motion.spindle-inhibit
+pin out bit     sp_at_speed;    //motion.spindle-at-speed
+
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+
+
+typedef struct {
+        float T;
+        float ET;
+        bool IN; 
+        bool OUT;
+} timer;
+
+
+static timer lube_interval   = {.T = 1500, .ET = 0, .OUT = false, .IN = false};
+static timer lube_time       = {.T = 2, .ET = 0, .OUT = false, .IN = false};
+static timer lube_err        = {.T = 1, .ET = 0, .OUT = false, .IN = false}; 
+static timer t_tuncl         = {.T = 1, .ET = 0, .OUT = false, .IN = false}; 
+
+
+static bool first=1;
+static bool msg_fp[8]={0};
+static bool abort_fp=0;
+static bool flood_fp=0;
+static bool flood_is_on_internal;
+
+int i;
+
+
+void iec_ton(timer *t, float fper){
+   if(t->IN) t->ET += fper;
+   else      t->ET = 0.0; 
+   if(t->ET >= t->T){
+      t->ET = t->T;
+      t->OUT = true;
+   }
+   else t->OUT = false;
+}
+
+
+
+FUNCTION(_){
+     if(first){
+      first=0;
+      lube_interval.T = t_lube_interval;
+      lube_time.T = t_lube_time;
+     }//first cycle
+
+     lube_time.IN = !lube_interval.OUT && machine_is_on;
+     lube_interval.IN = lube_time.OUT;
+     lube = !lube_time.OUT && machine_is_on;
+
+     
+     sel_j0 =  sw_jog_sel_x && !sw_jog_sel_z;
+     sel_j1 = !sw_jog_sel_x && !sw_jog_sel_z;
+     sel_j2 = !sw_jog_sel_x &&  sw_jog_sel_z;
+
+
+     if(!sw_jog_sel_i1 &&  sw_jog_sel_i100)     jog_inc=0.1;
+     else if(!sw_jog_sel_i1 && !sw_jog_sel_i100)jog_inc=0.01;
+     else                       jog_inc=0.001;
+
+     jog_speed = feed * feed_ovr_val;
+
+     lube_err.IN = lubeErr;
+     if(machine_is_on && lube_err.OUT && !msg_fp[0]){
+       rtapi_print_msg(RTAPI_MSG_ERR, "Napaka mazanja vodil!\n");
+       msg_fp[0]=1;
+     }
+     if (sw_abort && !abort_fp)for(i=0;i<8;i++)msg_fp[i]=0; 
+     abort_fp=sw_abort;
+     
+     if(sw_flood && !flood_fp)
+     {
+        if(flood_is_on_internal) flood_is_on_internal=false;
+        else                     flood_is_on_internal=true;
+     }
+     flood_fp = sw_flood;
+     flood_on = sw_flood && flood_is_on_internal;
+     flood_off = sw_flood && !flood_is_on_internal;
+     
+  
+     f_ovr_cnts = f_ovr_pot * 15.0;
+     s_ovr_cnts = sp_ovr_pot * 10.0 + 25;
+
+     tuncl_out = t_tuncl.OUT && sw_tool_unclamp;
+     t_tuncl.IN = sp_stndstill;
+
+     sp_inhibit_out = sp_inhibit_in || tuncl_out;
+
+     //call "function blocks"
+     iec_ton(&lube_interval, fperiod);  
+     iec_ton(&lube_time, fperiod);
+     iec_ton(&t_tuncl, fperiod);
+     iec_ton(&lube_err, fperiod);
+
+}//FUNCTION     
+
+

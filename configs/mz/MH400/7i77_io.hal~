@@ -1,0 +1,62 @@
+#************************************
+#7i77_io.hal
+#************************************
+
+
+
+#************************************
+#vhodi
+#************************************
+net machineon halui.machine.on <= hm2_5i25.0.7i77.0.0.input-00
+net machineoff halui.machine.off <= hm2_5i25.0.7i77.0.0.input-00-not
+net    buttonNCStart <= hm2_5i25.0.7i77.0.0.input-01
+net     buttonNCStop <= hm2_5i25.0.7i77.0.0.input-02
+net      buttonReset <= hm2_5i25.0.7i77.0.0.input-03
+net    buttonSpStart <= hm2_5i25.0.7i77.0.0.input-04
+net     buttonSpStop <= hm2_5i25.0.7i77.0.0.input-05
+net       buttonTucl <= hm2_5i25.0.7i77.0.0.input-06
+net       buttonCool <= hm2_5i25.0.7i77.0.0.input-07
+net      buttonAxisP <= hm2_5i25.0.7i77.0.0.input-08
+net      buttonAxisM <= hm2_5i25.0.7i77.0.0.input-09
+net       switchSel1 <= hm2_5i25.0.7i77.0.0.input-10
+net      switchSel10 <= hm2_5i25.0.7i77.0.0.input-11
+net     switchSel100 <= hm2_5i25.0.7i77.0.0.input-12
+net       switchSelX <= hm2_5i25.0.7i77.0.0.input-13
+net       switchSelZ <= hm2_5i25.0.7i77.0.0.input-14
+#net                  <= hm2_5i25.0.7i77.0.0.input-15
+net       NOTAUS_EXT <= hm2_5i25.0.7i77.0.0.input-16  #
+net         vorLinks <= hm2_5i25.0.7i77.0.0.input-17
+net        vorRechts <= hm2_5i25.0.7i77.0.0.input-18
+net         vorMitte <= hm2_5i25.0.7i77.0.0.input-19
+net    vorLinksMitte <= hm2_5i25.0.7i77.0.0.input-20
+net        mittLinks <= hm2_5i25.0.7i77.0.0.input-21
+net       mittRechts <= hm2_5i25.0.7i77.0.0.input-22
+net        mittMitte <= hm2_5i25.0.7i77.0.0.input-23
+net   mittLinksMitte <= hm2_5i25.0.7i77.0.0.input-24
+net        eingLinks <= hm2_5i25.0.7i77.0.0.input-25
+net       eingRechts <= hm2_5i25.0.7i77.0.0.input-26
+net        eingMitte <= hm2_5i25.0.7i77.0.0.input-27
+net   eingLinksMitte <= hm2_5i25.0.7i77.0.0.input-28
+net          N_0_1K7 <= hm2_5i25.0.7i77.0.0.input-29
+net       lubErr_4A1 <= hm2_5i25.0.7i77.0.0.input-30
+#net                  <= hm2_5i25.0.7i77.0.0.input-31
+
+#************************************
+#izhodi
+#************************************
+net          19K1 => hm2_5i25.0.7i77.0.0.output-00  #NC BB, notaus ven
+net           5K1 => hm2_5i25.0.7i77.0.0.output-01  #WKZ loesen
+net          11K3 => hm2_5i25.0.7i77.0.0.output-02  #anwahl Mittelstellung
+net          11K4 => hm2_5i25.0.7i77.0.0.output-03  #anwahl Vorgelege
+net          11K5 => hm2_5i25.0.7i77.0.0.output-04  #anwahl Mittelstuffe
+net          11K6 => hm2_5i25.0.7i77.0.0.output-05  #anwahl Eingangstuffe
+net          11K7 => hm2_5i25.0.7i77.0.0.output-06  #ccw
+net          11K8 => hm2_5i25.0.7i77.0.0.output-07  #start
+net          11K9 => hm2_5i25.0.7i77.0.0.output-08  #takt rechts
+net         11K10 => hm2_5i25.0.7i77.0.0.output-09  #takt links
+net           1K8 => hm2_5i25.0.7i77.0.0.output-10  #HS Ein
+net           1K9 => hm2_5i25.0.7i77.0.0.output-11  #HS M3
+net          1K10 => hm2_5i25.0.7i77.0.0.output-12  #HS M4
+net           2K2 => hm2_5i25.0.7i77.0.0.output-13  #KM Pumpe
+#net              => hm2_5i25.0.7i77.0.0.output-14
+#net              => hm2_5i25.0.7i77.0.0.output-15

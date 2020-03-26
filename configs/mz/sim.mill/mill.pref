@@ -1,0 +1,115 @@
+[DEFAULT]
+dro_size = 30
+hide_axis_4 = False
+spindle_start_rpm = 300
+scale_max_vel = 140.2
+scale_jog_vel = 99.6
+scale_spindle_override = 1
+scale_feed_override = 1
+system_name_Tool = Tool
+system_name_G5x = G5x
+system_name_Rot = Rot
+system_name_G92 = G92
+system_name_G54 = G54
+system_name_G55 = G55
+system_name_G56 = G56
+system_name_G57 = G57
+system_name_G58 = G58
+system_name_G59 = G59
+system_name_G59.1 = G59.1
+system_name_G59.2 = G59.2
+system_name_G59.3 = G59.3  NativeCAM Rotation Coordinate System
+screen1 = maximized
+x_pos = 40
+y_pos = 30
+width = 1280.0
+height = 800.0
+grid_size = 1.0
+view = p
+gtk_theme = Follow System Theme
+hide_cursor = False
+show_keyboard_on_offset = False
+show_keyboard_on_tooledit = False
+show_keyboard_on_edit = False
+show_keyboard_on_mdi = False
+logo = False
+spindle_bar_min = 0.0
+spindle_bar_max = 6000.0
+x_pos_popup = 45.0
+y_pos_popup = 55
+width_popup = 250.0
+max_messages = 10
+message_font = sans 10
+use_frames = True
+show_dro_btn = False
+use_auto_units = True
+blockdel = True
+opstop = True
+enable_dro = False
+show_offsets = False
+show_dtg = False
+mouse_btn_mode = 4
+run_from_line = no_run
+unlock_way = no
+unlock_code = 123
+show_preview_on_offset = False
+use_keyboard_shortcuts = False
+abs_color = blue
+rel_color = black
+dtg_color = yellow
+homed_color = green
+unhomed_color = red
+dro_digits = 3
+toggle_readout = True
+macro_name1 = Glava
+macro_name2 = Menjava orodja
+macro_name3 = Vklop vretena
+macro_name4 = G81 vrtanje
+macro_name5 = G82 vrtanje
+macro_name6 = G83 vrtanje
+macro1 = %
+	;Program:
+	;Datum:
+	;
+	G17 G21 G40 G49 G54 G80 G90 G94 F100 M9 M5 G64 P0.01
+	;
+	;
+	;
+	;
+	;
+	;
+	;
+	;
+	M5 M9
+	G0 G53 Z400
+	%
+	;Konec
+macro2 = T1
+	M6    ;menjava orodja
+	G43   ;vklopi kompenzacijo dolzine orodja
+macro3 = M3 S1000
+	M8  ;vklop hlajenja
+macro4 = G0 Z10
+	F100   ;Pomik F
+	;G89   ;retract na Z
+	G99    ;retract na R
+	G81 X0 Y0 Z-20 R1    ;Navadno vrtanje
+macro5 = G0 Z10
+	F100   ;Pomik F
+	;G89   ;retract na Z
+	G99    ;retract na R
+	G82 X0 Y0 Z-20 R1 P1  ;vrtanje, pavza P na dnu
+macro6 = G0 Z10
+	F100   ;Pomik F
+	;G89   ;retract na Z
+	G99    ;retract na R
+	G83 X0 Y0 Z-20 R1 Q4  ;peck drilling
+last_tool = 1
+offset_axis_x = 2.0
+offset_axis_y = 3.0
+offset_axis_z = 0.0
+offset_axis_Unknown = 0
+open_file = /home/cnc/LinuxCNC/nc_files/222.ngc
+ncam_file = /home/cnc/LinuxCNC/nc_files/ncam.xml
+rbtn_use_m6 = False
+

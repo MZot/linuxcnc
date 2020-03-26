@@ -1,0 +1,11 @@
+
+o<m41> sub
+(Remap M41)
+
+;(debug, m41.ngc executing)
+
+M5
+M141
+
+o<m41> endsub
+m2

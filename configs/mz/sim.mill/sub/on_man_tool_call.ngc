@@ -1,0 +1,10 @@
+O<on_man_tool_call> sub
+G40
+
+;M6 T[#1]
+M61 Q[#1]  ;#1 dobi iz GUI, zeljeno orodje
+
+G43
+
+O<on_man_tool_call> endsub
+M2

@@ -1,0 +1,49 @@
+########################################################
+#jog.hal
+#######################################################
+
+net fovr halui.feed-override.counts
+net fovr halui.rapid-override.counts
+setp halui.feed-override.direct-value  1  
+setp halui.rapid-override.direct-value 1
+setp halui.rapid-override.count-enable 1
+setp halui.feed-override.count-enable  1
+setp halui.feed-override.scale         0.01
+setp halui.rapid-override.scale        0.01
+
+net buttonReset lathe-jog.0.abort
+net force-manual lathe-jog.0.set-manual halui.mode.manual
+setp lathe-jog.0.spindle-counts-per-rev 4096
+setp lathe-jog.0.hwheel-increment       0.0025
+setp lathe-jog.0.jog-rapid-speed        2000               
+net buttonZm     lathe-jog.0.jog-zm					#tipke, stikala
+net buttonZp     lathe-jog.0.jog-zp
+net buttonXm     lathe-jog.0.jog-xm
+net buttonXp     lathe-jog.0.jog-xp
+net buttonRapid  lathe-jog.0.jog-rapid
+net hwheel-sel-z lathe-jog.0.hwheel-z 
+net hwheel-sel-x lathe-jog.0.hwheel-x 
+net handwheelcnt lathe-jog.0.hwheel-count  <= hm2_5i25.0.encoder.05.count  #handwheel encoder count
+net s-pos-rawcounts   lathe-jog.0.spindle-count    #spindle encoder count
+net overrideui   lathe-jog.0.override <= halui.feed-override.value
+net gmoccapyfeed lathe-jog.0.feed  
+setp lathe-jog.0.jog-feed 500
+net isg95        lathe-jog.0.is-g95
+net xjogcounts   axis.0.jog-counts  <= lathe-jog.0.jog-x-count 
+net zjogcounts   axis.2.jog-counts  <= lathe-jog.0.jog-z-count
+net xjogcntena   axis.0.jog-enable  <= lathe-jog.0.jog-x-enable
+net zjogcntena   axis.2.jog-enable  <= lathe-jog.0.jog-z-enable  
+net jogscalex    axis.0.jog-scale   <= lathe-jog.0.jog-scale-x
+net jogscalez    axis.2.jog-scale   <= lathe-jog.0.jog-scale-z
+net haluixp      halui.jog.0.plus   <= lathe-jog.0.g94-jog-xp
+net haluixm      halui.jog.0.minus  <= lathe-jog.0.g94-jog-xm
+net haluizp      halui.jog.2.plus   <= lathe-jog.0.g94-jog-zp
+net haluizm      halui.jog.2.minus  <= lathe-jog.0.g94-jog-zm
+net haluijogsp   halui.jog-speed    <= lathe-jog.0.g94-jog-speed  
+setp axis.0.jog-vel-mode 1
+setp axis.2.jog-vel-mode 1
+
+net sp-is-on lathe-jog.0.spindle-on
+
+
+

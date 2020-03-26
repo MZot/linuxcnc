@@ -1,0 +1,11 @@
+#***************************************************************
+#load components for postgui.hal before ui starts
+#***************************************************************
+
+
+loadrt or2 names=or2_1
+
+loadrt lathe_jog
+addf lathe-jog.0 servo-thread
+
+loadusr pokeys

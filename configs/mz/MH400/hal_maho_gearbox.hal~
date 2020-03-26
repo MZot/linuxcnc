@@ -1,0 +1,47 @@
+#      ************************ Menjalnik MAHO ************************
+#
+#
+#
+
+loadrt mh400e_gearbox
+addf mh400e-gearbox servo-thread
+
+#      ************************ input pins ************************
+net        mh400e-gearbox-reducer-left mh400e-gearbox.reducer-left
+net       mh400e-gearbox-reducer-right mh400e-gearbox.reducer-right
+net      mh400e-gearbox-reducer-center mh400e-gearbox.reducer-center
+net mh400e-gearbox-reducer-left-center mh400e-gearbox.reducer-left-center
+net         mh400e-gearbox-middle-left mh400e-gearbox.middle-left
+net        mh400e-gearbox-middle-right mh400e-gearbox.middle-right
+net       mh400e-gearbox-middle-center mh400e-gearbox.middle-center
+net  mh400e-gearbox-middle-left-center mh400e-gearbox.middle-left-center
+net          mh400e-gearbox-input-left mh400e-gearbox.input-left
+net         mh400e-gearbox-input-right mh400e-gearbox.input-right
+net        mh400e-gearbox-input-center mh400e-gearbox.input-center
+net   mh400e-gearbox-input-left-center mh400e-gearbox.input-left-center
+net                               N__0 mh400e-gearbox.spindle-stopped
+
+
+net     mh400e-gearbox-spindle-inhibit mh400e-gearbox.stop-spindle
+net                 motion-sp-speed-in mh400e-gearbox.spindle-speed-out 
+net       motion-spindle−speed−out−abs mh400e-gearbox.spindle-speed-in-abs
+net                   spindle-at-speed mh400e-gearbox.spindle-at-speed
+net                             sp-ena mh400e-gearbox.spindle-is-on 
+
+#        ************************ control pins ************************
+net     mh400e-gearbox-motor-low-speed mh400e-gearbox.motor-lowspeed
+net       mh400e-gearbox-reducer-motor mh400e-gearbox.reducer-motor
+net      mh400e-gearbox-midrange-motor mh400e-gearbox.midrange-motor
+net   mh400e-gearbox-input-stage-motor mh400e-gearbox.input-stage-motor
+net   mh400e-gearbox-reverse-direction mh400e-gearbox.reverse-direction
+net    mh400e-gearbox-start-gear-shift mh400e-gearbox.start-gear-shift
+net           mh400e-gearbox-twitch-cw mh400e-gearbox.twitch-cw
+net          mh400e-gearbox-twitch-ccw mh400e-gearbox.twitch-ccw
+
+#     ************************ E-STOP loop ************************
+#    glej hal_core.hal
+net  estop-in mh400e-gearbox.estop-out
+net estop-out mh400e-gearbox.estop-in
+
+
+

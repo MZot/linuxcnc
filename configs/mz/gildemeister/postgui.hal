@@ -1,0 +1,61 @@
+
+
+addf or2_1 servo-thread  #sim home.hal
+
+loadrt message names=pokeyserrmessage  messages="PoKeys connection error"
+addf pokeyserrmessage servo-thread
+
+net s-vel-fb  =>  gmoccapy.spindle_feedback
+net      Nist-Nsoll      gmoccapy.spindle_at_speed_led
+
+# the unlink pin commands are only used, because they are connected 
+# in core_sim.hal and we use this file to simulate
+unlinkp iocontrol.0.tool-change
+unlinkp iocontrol.0.tool-changed
+
+net tool-change      gmoccapy.toolchange-change   <=  iocontrol.0.tool-change 
+net tool-changed     gmoccapy.toolchange-changed  <=  iocontrol.0.tool-changed
+net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
+
+net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
+net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
+
+setp pokeys.0.devSerial 33929
+setp pokeys.0.cycletime 10000
+
+net buttonReset => gmoccapy.delete-message
+net buttonNCStart => gmoccapy.nc-start
+
+net pokeyserr     or2_1.in0 pokeys.0.err
+net buttonReset   or2_1.in1 pokeys.0.in-13  
+net abort         or2_1.out halui.abort 
+net pokeyserr     pokeyserrmessage.trigger
+
+net buttonReset   halui.estop.reset 
+net buttonReset   gmoccapy.delete-message
+net buttonNCStart pokeys.0.in-15 gmoccapy.nc-start
+net buttonNCStop  pokeys.0.in-14 halui.program.pause
+net buttonOff     pokeys.0.in-12 halui.machine.off 
+net buttonOn      pokeys.0.in-11 halui.machine.on
+net buttonM3      pokeys.0.in-23 halui.spindle.forward
+net buttonM4      pokeys.0.in-21 halui.spindle.reverse
+net buttonM5      halui.spindle.stop
+
+#jogging stuff
+net hwheel-sel-z pokeys.0.in-25
+net hwheel-sel-x pokeys.0.in-24
+net gmoccapyfeed gmoccapy.feed
+net isg95        gmoccapy.g95-active
+
+net sw-n1 pokeys.0.in-26
+
+#feed override
+net fovr pokeys.0.ain-3
+
+
+
+
+
+
+
+

@@ -1,0 +1,283 @@
+/*
+LinuxCNC component for controlling the MAHO MH400E gearbox.
+
+Copyright (C) 2018 Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*/
+
+component mh400e_gearbox "Component to control the MAHO mh400e gearbox to set the requested speed";
+author "Sergey 'Jin' Bostandzhyan";
+license "GPL";
+
+/* to be connected with motion.spindle−speed−out−abs */
+pin in float spindle_speed_in_abs = 0 "Desired spindle speed in rotations per minute, always positive regardless of spindle direction.";
+/* to be connected with motion.spindle−is-on */
+pin in bit spindle_is_on = 0;
+/* to be conneced with motion.spindle−speed−in */
+pin out float spindle_speed_out = 0 "Actual spindle speed feedback in revolutions per second";
+
+pin in bit sp_stop_button = 0; //tipka stop sprozi prestavljanje v ler
+
+/*MZ to be conneced with motion.spindle−speed−in */
+pin in bit spindle_on = 0;
+
+/* gearbox status pins from the MESA 7i84 */
+pin in bit reducer_left             "MESA 7i84 INPUT  0: 28X2-11";
+pin in bit reducer_right            "MESA 7i84 INPUT  1: 28X2-11";
+pin in bit reducer_center           "MESA 7i84 INPUT  2: 28X2-13";
+pin in bit reducer_left_center      "MESA 7i84 INPUT  3: 28X2-14";
+
+pin in bit middle_left              "MESA 7i84 INPUT  4: 28X2-15";
+pin in bit middle_right             "MESA 7i84 INPUT  5: 28X2-16";
+pin in bit middle_center            "MESA 7i84 INPUT  6: 28X2-17";
+pin in bit middle_left_center       "MESA 7i84 INPUT  7: 28X2-18";
+
+pin in bit input_left               "MESA 7i84 INPUT  8: 28X2-19";
+pin in bit input_right              "MESA 7i84 INPUT  9: 28X2-20";
+pin in bit input_center             "MESA 7i84 INPUT 10: 28X2-21";
+pin in bit input_left_center        "MESA 7i84 INPUT 11: 28X2-22";
+
+/* spindle status pin */
+pin in bit spindle_stopped     = 0  "MESA 7i84 INPUT 19: TB2-4";
+
+pin out bit stop_spindle       = 0  "Start or stop spindle";
+pin out bit spindle_at_speed   = 0;
+
+/* control pins */
+pin out bit motor_lowspeed     = 0  "MESA 7i84 OUTPUT 0: 28X1-8";
+pin out bit reducer_motor      = 0  "MESA 7i84 OUTPUT 1: 28X1-9";
+pin out bit midrange_motor     = 0  "MESA 7i84 OUTPUT 2: 28X1-10";
+pin out bit input_stage_motor  = 0  "MESA 7i84 OUTPUT 3: 28X1-11";
+pin out bit reverse_direction  = 0  "MESA 7i84 OUTPUT 4: 28X1-12";
+pin out bit start_gear_shift   = 0  "MESA 7i84 OUTPUT 5: 28X1-13";
+pin out bit twitch_cw          = 0  "MESA 7i84 OUTPUT 6: 28X1-14";
+pin out bit twitch_ccw         = 0  "MESA 7i84 OUTPUT 7: 28X1-15";
+
+pin out bit estop_out          = 0  "This pin will trigger emergency stop in case of an unrecoverably fatal error.";
+pin in bit estop_in                 "This pin notifies us that an emergency stop was triggered outside the component.";
+
+
+function _;
+
+option singleton yes;
+
+;;
+
+#include <rtapi_math.h>
+
+#include "mh400e_common.h"
+#include "mh400e_util.h"
+#include "mh400e_gears.h"
+
+static float g_last_spindle_speed = 0;
+
+static tree_node_t *g_tree_rpm = NULL;
+static tree_node_t *g_tree_mask = NULL;
+
+static bool g_setup_done = false;
+
+static bool g_last_estop = false;
+
+typedef struct {
+        float T;
+        float ET;
+        bool IN; 
+        bool OUT;
+} timer;
+static timer timeout   = {.T = 6., .ET = 0., .OUT = false, .IN = false};
+static timer tneutral   = {.T = 2., .ET = 0., .OUT = false, .IN = false};
+
+void iec_ton(timer *t, float fper){
+   if(t->IN) t->ET += fper;
+   else      t->ET = 0.0; 
+   if(t->ET >= t->T){
+      t->ET = t->T;
+      t->OUT = true;
+   }
+   else t->OUT = false;
+}
+
+
+/* one time setup, called from the main function to initialize whatever we
+ * need */
+FUNCTION(setup)
+{
+    int i;
+
+    /* Initialize state data structures */
+    gearbox_setup(__comp_inst, period);
+    twitch_setup(__comp_inst, period);
+
+    /* we want to have key:value pairs in the binary search tree, where
+     * the value represents the index of the key in our gears array. So
+     * we'll put things together the way we need them for the tree generation
+     */
+    pair_t temp[MH400E_NUM_GEARS];
+    for (i = 0; i < MH400E_NUM_GEARS; i++)
+    {
+        temp[i].key = mh400e_gears[i].key;
+        temp[i].value = i;
+    }
+
+    /* build up binary tree from the gears array to search by rpm, this
+     * array is already sorted */
+    g_tree_rpm = tree_from_sorted_array(temp, MH400E_NUM_GEARS);
+
+    /* build up a key:value list where the bitmask from the m400e_gears
+     * array is the key and the index of the original position in the
+     * above array is the value */
+    for (i = 0; i < MH400E_NUM_GEARS; i++)
+    {
+        temp[i].key = mh400e_gears[i].value;
+        temp[i].value = i;
+    }
+
+    /* sort the newly created array by key (needed for tree build up) */
+    sort_array_by_key(temp, MH400E_NUM_GEARS);
+
+    /* build up binary tree from the gears array to search for bitmask */
+    g_tree_mask = tree_from_sorted_array(temp, MH400E_NUM_GEARS);
+
+    g_last_spindle_speed = spindle_speed_in_abs;
+
+    g_last_estop = estop_in;
+}
+
+/* When e-stop is triggered from the outside everything is already powered
+ * off, but we want to make sure that our pins are also inactive should
+ * the power come back. We don't have to care about timings here, because
+ * everything is already off at this point. */
+FUNCTION(handle_external_e_stop)
+{
+    if(g_gearbox_data.trigger_estop)
+       rtapi_print_msg(RTAPI_MSG_ERR, "mh400e_gearbox: EMERGENCY STOP condition "
+                    "detected!\nERR CODE:0x01\n");
+    if(g_twitch_data.trigger_estop)
+       rtapi_print_msg(RTAPI_MSG_ERR, "mh400e_gearbox: EMERGENCY STOP condition "
+                    "detected!\nERR CODE:0x02\n");
+    if(timeout.OUT)  rtapi_print_msg(RTAPI_MSG_ERR, "mh400e_gearbox FATAL ERROR: Gear change "
+                        "timeout, triggering emergency stop!\nERR CODE:0x04\n");
+    /* reset state machine avoiding delays */
+    gearbox_handle_estop(); /* this function also stops/resets twitching */
+
+    spindle_at_speed = false;
+    stop_spindle = true;
+
+    /* reset estop_out pin since we could haave been the ones who triggered
+     * this e-stop */
+    g_gearbox_data.trigger_estop = false;   //MZ estop_out = false;
+    g_twitch_data.trigger_estop = false;    //MZ +
+}
+
+/* main component function */
+FUNCTION(_)
+{
+    if (!estop_in)  //MZ !
+    {
+        if (g_last_estop != estop_in)
+        {
+            handle_external_e_stop(__comp_inst, period);
+            g_last_estop = estop_in;
+        }
+        return;
+    }
+    g_last_estop = estop_in;
+    estop_out = estop_in && 
+                !g_gearbox_data.trigger_estop && 
+                !g_twitch_data.trigger_estop  &&
+                !timeout.OUT;                             //MZ estop loop
+
+
+    timeout.IN = gearshift_in_progress();  //timeout menjave prestave
+    tneutral.IN = sp_stop_button && !spindle_is_on;  //stop tipka prestavi v ler
+    iec_ton(&tneutral, fperiod);
+    iec_ton(&timeout, fperiod);  
+
+    /* perform one time setup */
+    if (!g_setup_done)
+    {
+        setup(__comp_inst, period);
+        g_setup_done = true;
+    }
+
+    /* read and update global mask variables for each pin group */
+    update_current_pingroup_masks();
+
+    /* Gear shift is in progress */
+    if (!gearshift_in_progress())
+    {
+        if (stop_spindle && !spindle_stopped)
+        {
+            stop_spindle = false;
+        }
+
+        /* determine and update current spindle speed information */
+        pair_t *speed = get_current_gear(g_tree_mask);
+        if (speed != NULL)
+        {
+            spindle_speed_out = (float)speed->key;
+        }
+
+        if(!spindle_is_on && !tneutral.OUT)
+        {
+            /*MZ Nothing to do */
+           spindle_at_speed = false;
+           return;
+        }
+        
+        if (g_last_spindle_speed == spindle_speed_in_abs)
+        {
+            /* Nothing to do */
+            spindle_at_speed = !spindle_stopped;
+            return;
+        }
+
+        /* We need to quantize the requested speed to see if our current
+         * gear already matches it */
+        pair_t *new_gear = select_gear_from_rpm(g_tree_rpm,
+                                                spindle_speed_in_abs);
+        /* Current speed already matches the requested speed, nothing to do */
+        if (new_gear->key == spindle_speed_out)
+        {
+            spindle_at_speed = !spindle_stopped;
+            return;
+        }
+
+        /* We don't attempt to do anything if the spindle is running. */
+        /* TODO: check that spindle_stopped triggers only when the spindle
+         * has come to a full stop and not just a that time it has been
+         * powered off (might still be moving due to inertia) */
+        if (!spindle_stopped)
+        {
+            gearshift_stop_spindle();
+            return;
+        }
+
+        /* We need to change to another gear */
+        g_last_spindle_speed = spindle_speed_in_abs;
+
+        spindle_at_speed = false;
+
+        /* This call will set the start_gear_shift pin! */
+        gearshift_start(new_gear, period);
+
+        /* Do the rest in the next cycle */
+        return;
+    }
+
+    /* Do the gear shifting */
+    gearshift_handle(period);
+}

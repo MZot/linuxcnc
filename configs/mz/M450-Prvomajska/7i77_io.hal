@@ -1,0 +1,64 @@
+#************************************
+#7i77_io.hal
+#************************************
+
+
+
+#************************************
+#vhodi
+#************************************
+net fovrain hm2_5i25.0.7i77.0.0.analogin0
+net sovrain hm2_5i25.0.7i77.0.0.analogin1
+#net  <= hm2_5i25.0.7i77.0.0.input-00
+#net  <= hm2_5i25.0.7i77.0.0.input-00-not
+#net                 <= hm2_5i25.0.7i77.0.0.input-01
+#net                 <= hm2_5i25.0.7i77.0.0.input-02
+#net                 <= hm2_5i25.0.7i77.0.0.input-03
+#net                 <= hm2_5i25.0.7i77.0.0.input-04
+#net                 <= hm2_5i25.0.7i77.0.0.input-05
+#net                 <= hm2_5i25.0.7i77.0.0.input-06
+#net                 <= hm2_5i25.0.7i77.0.0.input-07
+net  machineon halui.machine.on   <= hm2_5i25.0.7i77.0.0.input-08
+net  machineoff halui.machine.off <= hm2_5i25.0.7i77.0.0.input-08-not
+#net                 <= hm2_5i25.0.7i77.0.0.input-10
+#net                 <= hm2_5i25.0.7i77.0.0.input-11
+#net                 <= hm2_5i25.0.7i77.0.0.input-12
+#net                 <= hm2_5i25.0.7i77.0.0.input-13
+#net                 <= hm2_5i25.0.7i77.0.0.input-14
+#net                 <= hm2_5i25.0.7i77.0.0.input-15
+net      spindle-rdy <= hm2_5i25.0.7i77.0.0.input-16
+net       spindle-N0 <= hm2_5i25.0.7i77.0.0.input-17-not
+net spindle-at-speed-in <= hm2_5i25.0.7i77.0.0.input-18
+net     gearbox-1-in <= hm2_5i25.0.7i77.0.0.input-19
+net     gearbox-2-in <= hm2_5i25.0.7i77.0.0.input-20
+#net                 <= hm2_5i25.0.7i77.0.0.input-21
+#net                 <= hm2_5i25.0.7i77.0.0.input-22
+#net                 <= hm2_5i25.0.7i77.0.0.input-23
+#net                 <= hm2_5i25.0.7i77.0.0.input-24
+#net                 <= hm2_5i25.0.7i77.0.0.input-25
+#net                 <= hm2_5i25.0.7i77.0.0.input-26
+#net                 <= hm2_5i25.0.7i77.0.0.input-27
+#net                 <= hm2_5i25.0.7i77.0.0.input-28
+net        x-home-sw <= hm2_5i25.0.7i77.0.0.input-29-not
+net        y-home-sw <= hm2_5i25.0.7i77.0.0.input-30-not
+net        z-home-sw <= hm2_5i25.0.7i77.0.0.input-31-not
+
+#************************************
+#izhodi
+#************************************
+net    estop-loop => hm2_5i25.0.7i77.0.0.output-00
+net machineison halui.machine.is-on => hm2_5i25.0.7i77.0.0.output-01
+net      x-enable => hm2_5i25.0.7i77.0.0.output-02
+net   spindle-fwd => hm2_5i25.0.7i77.0.0.output-03
+net  spindle-rvrs => hm2_5i25.0.7i77.0.0.output-04
+net   spindle-stp => hm2_5i25.0.7i77.0.0.output-05
+net gearbox-1-out => hm2_5i25.0.7i77.0.0.output-06
+net gearbox-2-out => hm2_5i25.0.7i77.0.0.output-07
+#net              => hm2_5i25.0.7i77.0.0.output-08
+#net              => hm2_5i25.0.7i77.0.0.output-09
+#net              => hm2_5i25.0.7i77.0.0.output-10
+#net              => hm2_5i25.0.7i77.0.0.output-11
+#net              => hm2_5i25.0.7i77.0.0.output-12
+#net              => hm2_5i25.0.7i77.0.0.output-13
+net   tool-change => hm2_5i25.0.7i77.0.0.output-14
+net hlajenje halui.flood.is-on => hm2_5i25.0.7i77.0.0.output-15

@@ -1,0 +1,15 @@
+O<on_set_tool_change_pos> sub
+G7
+G40
+G43
+G80 G21 G90 G18
+
+G30.1 
+#<_toolchange_pos_x> = [#5181 * 2]
+#<_toolchange_pos_z> = #5183
+#1000 = #<_toolchange_pos_x>
+#1001 = #<_toolchange_pos_z>
+(debug, _toolchange_pos_z set to #<_toolchange_pos_z>)
+(debug, _toolchange_pos_x set to #<_toolchange_pos_x>)
+O<on_set_tool_change_pos> endsub
+m2

@@ -1,0 +1,7 @@
+
+[RS274NGC]
+REMAP=M40  modalgroup=10 argspec=pq ngc=m40
+REMAP=M41  modalgroup=10 argspec=pq ngc=m41
+REMAP=M42  modalgroup=10 argspec=pq ngc=m42
+REMAP=M43  modalgroup=10 argspec=pq ngc=m43
+REMAP=M44  modalgroup=10 argspec=pq ngc=m44

@@ -1,0 +1,3 @@
+#loadrt komande za postgui hal fajle
+
+#loadrt encoder names=fovr,sovr  #feed, spindle override sw encoders

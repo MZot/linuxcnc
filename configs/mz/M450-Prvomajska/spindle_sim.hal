@@ -1,0 +1,97 @@
+
+
+#######################################################
+# Beginning of threading related stuff
+#######################################################
+
+# spindle speed control
+net spindle-speed-cmd  motion.spindle-speed-out => limit_speed.in
+net spindle-speed-limited limit_speed.out => sim_encoder_0.speed
+
+# simulate spindle mass
+setp limit_speed.maxv 3000.0 # rpm/second
+
+# spindle encoder
+# connect encoder signals to encoder counter
+net spindle-phase-A sim_encoder_0.phase-A => encoder_0.phase-A
+net spindle-phase-B sim_encoder_0.phase-B => encoder_0.phase-B
+net spindle-phase-Z sim_encoder_0.phase-Z => encoder_0.phase-Z
+
+# assume 12 ppr = 48 counts/rev for the spindle
+setp sim_encoder_0.ppr 12
+# iocontrol output is in rpm, but sim-encoder speed is rps
+setp sim_encoder_0.scale 60
+# scale encoder output to read in revolutions
+# (that way thread pitches can be straightforward,
+#  a 20 tpi thread would multiply the encoder output
+#  by 1/20, etc)
+setp encoder_0.position-scale 48
+
+# encoder reset control
+# hook up motion controller's sync output
+net spindle-index-enable motion.spindle-index-enable <=> encoder_0.index-enable
+
+# report our revolution count to the motion controller
+net spindle-pos encoder_0.position => motion.spindle-revs
+
+# for spindle velocity estimate
+#loadrt lowpass names=lowpass_velocity
+#loadrt scale names=scale_to_rpm
+net spindle-rps-raw encoder_0.velocity lowpass_velocity.in
+net spindle-rps-filtered lowpass_velocity.out scale_to_rpm.in motion.spindle-speed-in
+net spindle-rpm-filtered scale_to_rpm.out
+setp scale_to_rpm.gain 60
+setp lowpass_velocity.gain .07
+addf lowpass_velocity servo-thread
+addf scale_to_rpm servo-thread
+
+# for at-speed detection
+#loadrt near names=near_speed
+#addf near_speed servo-thread
+#setp near_speed.scale 1.1
+#setp near_speed.difference 10
+#net spindle-speed-cmd => near_speed.in1
+#net spindle-rpm-filtered => near_speed.in2
+#net spindle-at-speed near_speed.out motion.spindle-at-speed
+
+net spindle-at-speed => motion.spindle-at-speed
+net  spindle-fwd <= motion.spindle-forward
+net spindle-rvrs <= motion.spindle-reverse
+net  spindle-stp <= motion.spindle-brake
+net sp-ena motion.spindle-on
+
+addf encoder.capture-position servo-thread
+addf sim-encoder.update-speed servo-thread
+
+addf sim-encoder.make-pulses    base-thread
+addf encoder.update-counters    base-thread
+
+
+####################################################
+#Spindle gearbox
+####################################################
+net sp-ena hm2_5i25.0.7i77.0.1.spinena
+
+
+
+addf sp-gearbox.0 servo-thread
+net    estop-loop sp-gearbox.0.EMG-STP
+net  gearbox-1-in sp-gearbox.0.switch-1
+net  gearbox-2-in sp-gearbox.0.switch-2
+net gearbox-1-out sp-gearbox.0.gear-1
+net gearbox-2-out sp-gearbox.0.gear-2
+net        sp-ena sp-gearbox.0.spindle-on
+net gb-sp-cmd-rps sp-gearbox.0.speed-cmd motion.spindle-speed-cmd-rps
+net gb-sp-out-rps sp-gearbox.0.speed-in  motion.spindle-speed-out-rps
+net    gb-sp-soll sp-gearbox.0.speed-out hm2_5i25.0.7i77.0.1.analogout5
+net    gb-sp-soll sp-gearbox.0.speed-fb                #loop feedback
+
+net    spindle-N0 sp-gearbox.0.N0
+net   spindle-rdy sp-gearbox.0.servo-rdy
+net   buttonReset sp-gearbox.0.abort
+net spindle-at-speed-in sp-gearbox.0.at-speed-in
+net    spindle-at-speed sp-gearbox.0.at-speed
+setp sp-gearbox.0.max-speed-1 [SPINDLE]GEAR_1_MAX
+setp sp-gearbox.0.min-speed-2 [SPINDLE]GEAR_2_MIN
+setp sp-gearbox.0.scale-1 [SPINDLE]GEAR_1_SCALE
+setp sp-gearbox.0.scale-2 [SPINDLE]GEAR_2_SCALE

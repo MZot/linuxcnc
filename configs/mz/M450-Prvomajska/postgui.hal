@@ -1,0 +1,121 @@
+###################################################################
+#        moccapy_postgui.hal file from Norbert Schechner          #
+###################################################################
+
+
+
+net spindle-speed-limited  =>  abs_spindle_feedback.in
+net gb-sp-out-rps  =>  gmoccapy.spindle_feedback
+net spindle-at-speed      gmoccapy.spindle_at_speed_led
+
+# the unlink pin commands are only used, because they are connected 
+# in core_sim.hal and we use this file to simulate
+unlinkp iocontrol.0.tool-change
+unlinkp iocontrol.0.tool-changed
+
+net tool-change      gmoccapy.toolchange-change   <=  iocontrol.0.tool-change 
+net tool-changed     gmoccapy.toolchange-changed  <=  iocontrol.0.tool-changed
+net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
+
+net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
+net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
+
+net  buttonNCStart hm2_5i25.0.gpio.017.in_not
+net   buttonNCStop hm2_5i25.0.gpio.018.in_not
+net    buttonReset hm2_5i25.0.gpio.019.in_not
+net  buttonSpStart hm2_5i25.0.gpio.020.in_not
+net   buttonSpStop hm2_5i25.0.gpio.021.in_not
+net       buttonYp hm2_5i25.0.gpio.022.in_not 
+net       buttonXp hm2_5i25.0.gpio.023.in_not
+net       buttonZp hm2_5i25.0.gpio.024.in_not
+net       buttonXm hm2_5i25.0.gpio.025.in_not
+net       buttonYm hm2_5i25.0.gpio.026.in_not
+net       buttonZm hm2_5i25.0.gpio.027.in_not
+net    buttonRapid hm2_5i25.0.gpio.028.in_not
+
+net   buttonReset halui.abort  
+net   buttonReset halui.estop.reset 
+net  buttonSpStop halui.spindle.stop
+net buttonSpStart halui.spindle.start
+net  buttonNCStop halui.program.pause
+
+net   buttonReset gmoccapy.delete-message
+net   buttonReset gmoccapy.nc-abort
+net buttonNCStart gmoccapy.nc-start
+
+#net     buttonOff halui.machine.off 
+#net      buttonOn halui.machine.on
+
+#jogging stuff
+loadrt mult2 names=jogmul
+loadrt mux2 names=jogmux
+addf jogmul servo-thread
+addf jogmux servo-thread
+
+setp jogmux.in0 100  #jog feed
+setp jogmux.in1 1500  #rapid jog feed
+net buttonRapid jogmux.sel
+
+net jogmultin0 jogmul.in0 jogmux.out
+net jogmultin1 jogmul.in1 halui.feed-override.value
+net jogmultout jogmul.out halui.jog-speed
+      
+net buttonXp halui.jog.0.plus
+net buttonYp halui.jog.1.plus
+net buttonZp halui.jog.2.plus
+net buttonXm halui.jog.0.minus
+net buttonYm halui.jog.1.minus
+net buttonZm halui.jog.2.minus
+
+setp axis.0.jog-vel-mode 1
+setp axis.2.jog-vel-mode 1
+
+#feed override
+#loadrt overrides names=override
+#addf override servo-thread
+#net fovra hm2_5i25.0.gpio.029.in_not fovr.phase-B
+#net fovrb hm2_5i25.0.gpio.030.in_not fovr.phase-A
+
+#net overridecnts override.f-ovr-cnt <= fovr.rawcounts
+#et foverridecnts halui.rapid-override.counts <= override.feed-override
+#net foverridecnts halui.feed-override.counts
+
+setp flowpass.gain 0.005
+net fovrain flowpass.in
+net lpfovrain flowpass.out
+
+net lpfovrain fovr.ain
+net foverridecnts fovr.out
+net foverridecnts halui.feed-override.counts
+net foverridecnts halui.rapid-override.counts
+
+setp halui.feed-override.direct-value  1  #  0 ce imas enkoder, 1 ce imas potenciometer
+setp halui.rapid-override.direct-value 1
+setp halui.rapid-override.count-enable 1
+setp halui.feed-override.count-enable  1
+setp halui.feed-override.scale         0.01
+setp halui.rapid-override.scale        0.01
+
+#spindle override
+#net sovra hm2_5i25.0.gpio.031.in_not sovr.phase-B
+#net sovrb hm2_5i25.0.gpio.032.in_not sovr.phase-A
+#net ssovrcnt halui.spindle-override.counts <= override.spindle-override
+	
+setp slowpass.gain 0.001
+net sovrain slowpass.in
+net lpsovrain slowpass.out
+
+net lpsovrain sovr.ain
+net soverridecnts sovr.out
+net soverridecnts halui.spindle-override.counts
+setp halui.spindle-override.count-enable  1
+setp halui.spindle-override.direct-value  1
+setp halui.spindle-override.scale         0.01
+
+
+
+
+setp gmoccapy.sp-gear-2 1
+
+
+

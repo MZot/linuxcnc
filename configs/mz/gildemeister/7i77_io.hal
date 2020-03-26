@@ -1,0 +1,67 @@
+#************************************
+#7i77_io.hal
+#************************************
+
+
+
+#************************************
+#vhodi
+#************************************
+net        estop-in => iocontrol.0.emc-enable-in
+net        estop-in <= hm2_5i25.0.7i77.0.0.input-00
+net     x-neg-limit <= hm2_5i25.0.7i77.0.0.input-01-not
+net     x-pos-limit <= hm2_5i25.0.7i77.0.0.input-02-not
+net     z-neg-limit <= hm2_5i25.0.7i77.0.0.input-03-not
+net     z-pos-limit <= hm2_5i25.0.7i77.0.0.input-04-not
+net          mzs-ok <= hm2_5i25.0.7i77.0.0.input-05
+net    tlak-mazanja <= hm2_5i25.0.7i77.0.0.input-06
+#net                 <= hm2_5i25.0.7i77.0.0.input-07
+net         buttonXp <= hm2_5i25.0.7i77.0.0.input-08
+net         buttonXm <= hm2_5i25.0.7i77.0.0.input-09
+net         buttonZp <= hm2_5i25.0.7i77.0.0.input-10
+net         buttonZm <= hm2_5i25.0.7i77.0.0.input-11
+net      buttonRapid <= hm2_5i25.0.7i77.0.0.input-12
+net         buttonM5 <= hm2_5i25.0.7i77.0.0.input-13
+#net                 <= hm2_5i25.0.7i77.0.0.input-14
+#net                 <= hm2_5i25.0.7i77.0.0.input-15
+#net         buttonXp <= hm2_5i25.0.7i77.0.0.input-16
+#et         buttonXm <= hm2_5i25.0.7i77.0.0.input-17
+#net         buttonZp <= hm2_5i25.0.7i77.0.0.input-18
+#net         buttonZm <= hm2_5i25.0.7i77.0.0.input-19
+#net      buttonRapid <= hm2_5i25.0.7i77.0.0.input-20
+#net         buttonM5 <= hm2_5i25.0.7i77.0.0.input-21-not
+#net                 <= hm2_5i25.0.7i77.0.0.input-22
+#net                 <= hm2_5i25.0.7i77.0.0.input-23
+net  micromaster-bb <= hm2_5i25.0.7i77.0.0.input-24
+net             N-0 <= hm2_5i25.0.7i77.0.0.input-25
+net      Nist-Nsoll <= hm2_5i25.0.7i77.0.0.input-26
+#net                 <= hm2_5i25.0.7i77.0.0.input-27
+#net                 <= hm2_5i25.0.7i77.0.0.input-28
+#net                 <= hm2_5i25.0.7i77.0.0.input-29
+#net                 <= hm2_5i25.0.7i77.0.0.input-30
+#net                 <= hm2_5i25.0.7i77.0.0.input-31
+
+
+#************************************
+#izhodi
+#************************************
+net        estop-out => hm2_5i25.0.7i77.0.0.output-00
+net          m-is-on => hm2_5i25.0.7i77.0.0.output-01
+net        zavora-sp => hm2_5i25.0.7i77.0.0.output-02
+net            sp-n1 => hm2_5i25.0.7i77.0.0.output-03
+net            sp-n2 => hm2_5i25.0.7i77.0.0.output-04
+net             voda => hm2_5i25.0.7i77.0.0.output-05
+net          mazanje => hm2_5i25.0.7i77.0.0.output-06
+#net              => hm2_5i25.0.7i77.0.0.output-07
+net      sp-is-on => hm2_5i25.0.7i77.0.0.output-08   #off1 micromaster
+net     buttonReset => hm2_5i25.0.7i77.0.0.output-09   #fehler quit mm
+#net              => hm2_5i25.0.7i77.0.0.output-10
+#net              => hm2_5i25.0.7i77.0.0.output-11
+#net              => hm2_5i25.0.7i77.0.0.output-12
+#net              => hm2_5i25.0.7i77.0.0.output-13
+#net              => hm2_5i25.0.7i77.0.0.output-14
+#net              => hm2_5i25.0.7i77.0.0.output-15
+
+
+#################################################################################
+

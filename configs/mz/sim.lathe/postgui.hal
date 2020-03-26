@@ -1,0 +1,51 @@
+###################################################################
+#        moccapy_postgui.hal file from Norbert Schechner          #
+###################################################################
+
+
+
+net spindle-speed-limited  =>  abs_spindle_feedback.in
+net spindle-abs  abs_spindle_feedback.out  =>  gmoccapy.spindle_feedback
+net spindle-at-speed      gmoccapy.spindle_at_speed_led
+
+# the unlink pin commands are only used, because they are connected
+# in core_sim.hal and we use this file to simulate
+unlinkp iocontrol.0.tool-change
+unlinkp iocontrol.0.tool-changed
+
+net tool-change      gmoccapy.toolchange-change   <=  iocontrol.0.tool-change
+net tool-changed     gmoccapy.toolchange-changed  <=  iocontrol.0.tool-changed
+net tool-change       iocontrol.0.tool-change
+net tool-changed       iocontrol.0.tool-changed
+net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
+
+net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
+net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
+
+#setp pokeys.0.devSerial 36110
+
+net buttonReset => gmoccapy.delete-message
+net buttonNCStart => gmoccapy.nc-start
+
+
+
+setp axis.0.jog-vel-mode 1
+setp axis.2.jog-vel-mode 1
+
+
+
+#feed override
+#net  overridecnts halui.feed-override.counts #<= hm2_5i25.0.encoder.05.count
+net handwheelcnt halui.feed-override.counts
+net handwheelcnt halui.rapid-override.counts
+setp halui.feed-override.direct-value  0  #  0 ce imas enkoder, 1 ce imas potenciometer
+setp halui.rapid-override.direct-value 0
+setp halui.rapid-override.count-enable 1
+setp halui.feed-override.count-enable  1
+setp halui.feed-override.scale         0.01
+setp halui.rapid-override.scale        0.01
+
+net spindlestart halui.spindle.start
+net spindlestop halui.spindle.stop
+
+setp gmoccapy.spindle_load_bar 120

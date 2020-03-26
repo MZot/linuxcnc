@@ -1,0 +1,260 @@
+/*
+LinuxCNC component for controlling the MAHO MH400E gearbox.
+
+Copyright (C) 2018 Sergey 'Jin' Bostandzhyan <jin@mediatomb.cc>
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*/
+
+component mh400e_gearbox_sim "Component allowing to partially simulate the MAHO MH400E gearbox";
+author "Sergey 'Jin' Bostandzhyan";
+license "GPL";
+
+pin in float sim_speed_request_in = 0 "Speed set by the user in the sim UI";
+pin out float spindle-speed-out-abs = 0 "Speed passed to the gearbox comp when apply pin is set";
+pin in bit sim_apply_speed = 0      "Linked to UI button to apply the speed from the slider (prevents speed requests while moving the slider";
+pin in bit sim_slow_motion = 1     "Set this pin to significantly slow down the simulated motor speed in order to be able to follow the changes in the sim UI";
+
+pin in bit sim_stop_spindle_gui = 0 "User input to set spindle_stopped pin from the UI";
+pin in bit sim_stop_spindle_comp = 0 "Input to set spindle_stopped pin from the component, has higher priority than the one from the UI";
+pin in bit sim_estop_gui = 0        "User input to trigger emergency stop";
+pin in bit sim_estop_comp = 0       "Emergency stop trigger from the gearbox component";
+pin out bit estop_out = 0           "Forward emergencystop event to the gearbox component";
+/* gearbox status pins from the MESA 7i84 */
+pin out bit reducer_left            "MESA 7i84 INPUT  0: 28X2-11";
+pin out bit reducer_right           "MESA 7i84 INPUT  1: 28X2-11";
+pin out bit reducer_center = true   "MESA 7i84 INPUT  2: 28X2-13";
+pin out bit reducer_left_center     "MESA 7i84 INPUT  3: 28X2-14";
+
+pin out bit middle_left             "MESA 7i84 INPUT  4: 28X2-15";
+pin out bit middle_right            "MESA 7i84 INPUT  5: 28X2-16";
+pin out bit middle_center           "MESA 7i84 INPUT  6: 28X2-17";
+pin out bit middle_left_center      "MESA 7i84 INPUT  7: 28X2-18";
+
+pin out bit input_left              "MESA 7i84 INPUT  8: 28X2-19";
+pin out bit input_right             "MESA 7i84 INPUT  9: 28X2-20";
+pin out bit input_center            "MESA 7i84 INPUT 10: 28X2-21";
+pin out bit input_left_center       "MESA 7i84 INPUT 11: 28X2-22";
+
+/* TODO: comment on proper mapping */
+pin out bit spindle_stopped = false "IPC1-23: Information if spindle is stopped.";
+
+/* control pins, currently not supported by the simulator */
+pin in bit motor_lowspeed           "MESA 7i84 OUTPUT 0: 28X1-8";
+pin in bit reducer_motor            "MESA 7i84 OUTPUT 1: 28X1-9";
+pin in bit midrange_motor           "MESA 7i84 OUTPUT 2: 28X1-10";
+pin in bit input_stage_motor        "MESA 7i84 OUTPUT 3: 28X1-11";
+pin in bit reverse_direction        "MESA 7i84 OUTPUT 4: 28X1-12";
+pin in bit start_gear_shift         "MESA 7i84 OUTPUT 5: 28X1-13";
+pin in bit twitch_cw                "MESA 7i84 OUTPUT 6: 28X1-14";
+pin in bit twitch_ccw               "MESA 7i84 OUTPUT 7: 28X1-15";
+
+function _;
+
+option singleton yes;
+
+;;
+
+#include <rtapi_math.h>
+
+#include "mh400e_common.h"
+#include "mh400e_util.h"
+
+static unsigned g_last_spindle_speed = 0;
+
+static pin_group_t g_backgear;
+static pin_group_t g_midrange;
+static pin_group_t g_input_stage;
+
+static bool g_setup_done = false;
+
+#define SHAFT_POSITIONS 3
+/* red: 1001, blue: 0100, yellow: 0010 */
+static unsigned char g_shaft_positions[SHAFT_POSITIONS] =
+{
+    MH400E_STAGE_POS_RIGHT,
+    MH400E_STAGE_POS_CENTER,
+    MH400E_STAGE_POS_LEFT
+};
+
+/* start in neutral position */
+static int g_input_stage_index = 0;
+static int g_midrange_index = 0;
+static int g_backgear_index = 1;
+
+#define SIMULATED_MOTOR_SPEED_NORMAL        500*1000000
+#define SIMULATED_MOTOR_SPEED_SLOW          1000*1000000
+#define SIMULATED_NORMAL_FACTOR             1L
+#define SIMULATED_SLOW_MOTION_FACTOR        5L
+
+static long g_delay = SIMULATED_MOTOR_SPEED_NORMAL;
+static bool g_slow_motion = true;
+static bool g_last_stop_spindle_gui = false;
+
+/* one time setup, called from the main function to initialize whatever we
+ * need */
+FUNCTION(setup)
+{
+    /* grabbing the pin pointers in EXTRA_SETUP did not work because the
+     * component did not seem to be fully initializedt there */
+    g_backgear = (pin_group_t)
+    {
+        &(reducer_left),
+        &(reducer_right),
+        &(reducer_center),
+        &(reducer_left_center)
+    };
+
+    g_midrange = (pin_group_t)
+    {
+        &middle_left,
+        &middle_right,
+        &middle_center,
+        &middle_left_center
+    };
+
+    g_input_stage = (pin_group_t)
+    {
+        &input_left,
+        &input_right,
+        &input_center,
+        &input_left_center
+    };
+
+    g_last_stop_spindle_gui = sim_stop_spindle_gui;
+}
+
+static void set_pingroup(pin_group_t *group, unsigned char pins)
+{
+    int i;
+    for (i = 0; i < MH400E_PINS_IN_GROUP; i++)
+    {
+        *(group->p[i]) = (pins >> i) & 1;
+    }
+}
+
+/* Set gearbox status pins according to our simulated shaft positions */
+static void update_gear_status_pins()
+{
+    set_pingroup(&g_backgear, g_shaft_positions[g_backgear_index]);
+    set_pingroup(&g_midrange, g_shaft_positions[g_midrange_index]);
+    set_pingroup(&g_input_stage, g_shaft_positions[g_input_stage_index]);
+}
+
+/* Calculate initial delay value based on current settings */
+static long reset_delay(bool slow)
+{
+        if (slow)
+        {
+            return (g_slow_motion == true) ?
+                SIMULATED_MOTOR_SPEED_SLOW * SIMULATED_SLOW_MOTION_FACTOR :
+                SIMULATED_MOTOR_SPEED_SLOW * SIMULATED_NORMAL_FACTOR;
+
+        }
+        else
+        {
+            return (g_slow_motion == true) ?
+                SIMULATED_MOTOR_SPEED_NORMAL * SIMULATED_SLOW_MOTION_FACTOR :
+                SIMULATED_MOTOR_SPEED_NORMAL * SIMULATED_NORMAL_FACTOR;
+        }
+}
+
+/* Simulate motor functionality (pins will change depending on motor position),
+ * including some delays that are requred to move from one pin combination to 
+ * another.
+ * TODO: get some realistic values for the delays by checking on the MAHO */
+static long update_index(int index, long period, bool slow, bool reverse)
+{
+    if (g_delay <= 0)
+    {
+        g_delay = reset_delay(slow);
+    }
+    else
+    {
+        g_delay = g_delay - period;
+        return index;
+    }
+
+    if (reverse)
+    {
+        index--;
+        if (index < 0)
+        {
+            index = 0;
+        }
+    }
+    else
+    {
+        index++;
+        if (index >= SHAFT_POSITIONS)
+        {
+            index = SHAFT_POSITIONS - 1;
+        }
+    }
+
+    return index;
+}
+
+FUNCTION(_)
+{
+    if (!g_setup_done)
+    {
+        setup(__comp_inst, period);
+        g_setup_done = true;
+    }
+
+    if (g_slow_motion != sim_slow_motion)
+    {
+        g_slow_motion = sim_slow_motion;
+        g_delay = reset_delay(motor_lowspeed);
+    }
+
+    if (sim_apply_speed && (spindle_speed_out_abs != sim_speed_request_in))
+    {
+        spindle_speed_out_abs = sim_speed_request_in;
+    }
+
+    /* User initiated change */
+    if (sim_stop_spindle_gui != g_last_stop_spindle_gui)
+    {
+        spindle_stopped = sim_stop_spindle_gui;
+    }
+    else
+    {
+        spindle_stopped = sim_stop_spindle_comp;
+    }
+
+    g_last_stop_spindle_gui = sim_stop_spindle_gui;
+
+    estop_out = sim_estop_gui || sim_estop_comp;
+
+    if (reducer_motor)
+    {
+        g_backgear_index = update_index(g_backgear_index, period,
+                                        motor_lowspeed, reverse_direction);
+    }
+    if (input_stage_motor)
+    {
+        g_input_stage_index = update_index(g_input_stage_index, period,
+                                           motor_lowspeed, reverse_direction);
+    }
+    if (midrange_motor)
+    {
+        g_midrange_index = update_index(g_midrange_index, period,
+                                        motor_lowspeed, reverse_direction);
+    }
+
+    update_gear_status_pins();
+}

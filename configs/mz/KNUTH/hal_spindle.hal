@@ -1,0 +1,84 @@
+#*******************
+#  SPINDLE
+#*******************
+
+# ---Encoder feedback signals/setup---
+
+setp    hm2_5i25.0.encoder.05.counter-mode 0
+setp    hm2_5i25.0.encoder.05.filter 1
+setp    hm2_5i25.0.encoder.05.index-invert 0
+setp    hm2_5i25.0.encoder.05.index-mask 0
+setp    hm2_5i25.0.encoder.05.index-mask-invert 0
+setp    hm2_5i25.0.encoder.05.scale  [SPINDLE]ENCODER_SCALE
+
+net s-pos-fb               <= hm2_5i25.0.encoder.05.position
+net s-pos-fb               => motion.spindle-revs
+net s-vel-fb               <= hm2_5i25.0.encoder.05.velocity
+net s-vel-fb               => motion.spindle-speed-in
+net s-index-enable    motion.spindle-index-enable  <=>  hm2_5i25.0.encoder.05.index-enable
+net s-pos-rawcounts        <=  hm2_5i25.0.encoder.05.rawcounts
+
+# ---PWM Generator signals/setup---
+setp   hm2_5i25.0.7i77.0.1.analogout5-scalemax  [SPINDLE]OUTPUT_SCALE
+setp   hm2_5i25.0.7i77.0.1.analogout5-minlim    [SPINDLE]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i77.0.1.analogout5-maxlim    [SPINDLE]OUTPUT_MAX_LIMIT
+
+#net sp-en           hm2_5i25.0.7i77.0.1.spinena
+net motion-sp-on hm2_5i25.0.7i77.0.1.spinena
+net sp-out          hm2_5i25.0.7i77.0.1.analogout5
+#net motion-sp-on    hm2_5i25.0.7i77.0.1.spinena       #test, brisi
+#net 7i84-analogin0  hm2_5i25.0.7i77.0.1.analogout5  #test, brisi
+
+# ---LinuxCNC motion signals---
+net motion-sp-output     motion.spindle-speed-out
+net motion-sp-cmd-rps    motion.spindle-speed-cmd-rps  #spindle S value without override
+net motion-sp-output-abs motion.spindle-speed-out-abs  #spindle rpm with override
+net motion-sp-on         motion.spindle-on
+net motion-sp-reverse    motion.spindle-reverse
+net motion-sp-forward    motion.spindle-forward
+net motion-sp-brake      motion.spindle-brake
+net spindle-at-speed     motion.spindle-at-speed
+net spindle-inhibit      motion.spindle-inhibit
+
+# ---spindle gearbox component signals/setup---
+#net halui_mach_is_on  spgb.machine-is-on
+#net motion-sp-on      spgb.spindle-on
+#net motion-sp-cmd-rps spgb.speed-cmd
+#net motion-sp-output-abs  spgb.speed-in
+#net s-vel-fb          spgb.speed-fb
+#net sp-N0             spgb.N0
+#net sp-servo-rdy      spgb.servo-rdy
+#net sw_gear1          spgb.switch-1
+#net sw_gear2          spgb.switch-2
+#net sw_gear3          spgb.switch-3
+#net sp-servo-at-speed spgb.at-speed-in
+#net halui_abort       spgb.abort
+#net sp-out            spgb.speed-out
+#net sp-en             spgb.servo-en
+#net sp-y1             spgb.gear-1
+#net sp-y2             spgb.gear-2
+#net sp-y3             spgb.gear-3
+#net sp-y5             spgb.gear-5
+#net sp-y4             spgb.gear-4
+#net spindle-at-speed  spgb.at-speed
+#net spindle-inhibit   spgb.sp-inhibit-out
+#net spin-inh1         spgb.spin-inh1
+#net spin-inh2         spgb.spin-inh2
+#net spin-inh3         spgb.spin-inh3
+#net spin-inh4         spgb.spin-inh4
+#net spindle_pot       spgb.sp-override-pot
+#net halui_spovr_cnts  spgb.sp-override-counts
+#net 7i77-analogin0    spgb.sp-load-in
+#net gui-sp-load       spgb.sp-load-out
+
+#setp spgb.scale-1      0.13
+#setp spgb.scale-3      0.016
+##setp spgb.scale-2      0.05
+#setp spgb.max-speed-1  100
+#setp spgb.max-speed-2  200
+#setp spgb.max-speed-3  300
+#setp spgb.min-speed-2  10
+#setp spgb.min-speed-3  10
+
+#sets sp-servo-rdy 1  #ni signala rdy iz lenzeja
+#sets sp-N0        1

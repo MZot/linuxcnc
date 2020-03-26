@@ -1,0 +1,19 @@
+###################################################################
+#        hal_estop.hal
+###################################################################
+
+# estop loopback
+########net estop-loop iocontrol.0.user-enable-out iocontrol.0.emc-enable-in
+
+net halui_abort      halui.estop.reset
+net estop-out_req iocontrol.0.user-request-enable
+
+net estop-out iocontrol.0.user-enable-out
+net estop-out       turr.estop-in
+net estop-turr-out  turr.estop-out
+net estop-turr-out  plc.estop-in
+net estop-plc-out   plc.estop-out
+net estop-plc-out   spgb.estop-in
+net estop-sp-gb-out spgb.estop-out hm2_5i25.0.7i77.0.0.output-05
+
+net  estop-in iocontrol.0.emc-enable-in   hm2_5i25.0.7i77.0.0.input-03

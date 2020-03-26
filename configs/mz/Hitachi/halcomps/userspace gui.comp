@@ -1,0 +1,179 @@
+component gui "customized gmoccapy interface";
+
+//inputs from gmoccapy
+pin in bit x_sel;
+pin in bit y_sel;
+pin in bit z_sel;
+pin in bit a_sel;
+pin in bit cont_sel;
+pin in bit handrad_sel;
+pin in bit inc1_sel;
+pin in bit inc10_sel;
+pin in bit inc100_sel;
+pin in bit inc1000_sel;
+
+//leds to gmoccapy
+pin out bit led_x;
+pin out bit led_y;
+pin out bit led_z;
+pin out bit led_a;
+pin out bit led_cont;
+pin out bit led_hand;
+pin out bit led_inc1;
+pin out bit led_inc10;
+pin out bit led_inc100;
+pin out bit led_inc1000;
+
+//inputs from hardware keys and pots
+pin in bit key_plus;
+pin in bit key_minus;
+pin in bit key_rapid;
+pin in unsigned sp_override;
+pin in float feed_override;
+
+//inputs from halui
+pin in bit jog_mode;
+
+//outputs to halui
+pin out unsigned sp_override_cnts;
+pin out signed feed_override_cnts;
+pin out bit joint0_selected;
+pin out bit joint1_selected;
+pin out bit joint2_selected;
+pin out bit joint3_selected;
+pin out float jog_inc;
+pin out bit jog_plus;
+pin out bit jog_minus;
+pin out bit jog_inc_plus;
+pin out bit jog_inc_minus;
+pin out float jog_speed;
+pin out bit hand_x_sel;
+pin out bit hand_y_sel;
+pin out bit hand_z_sel;
+pin out bit hand_a_sel;
+
+//parameters
+pin in float jog_velo;
+
+option userspace;
+option singleton;
+
+//function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+#include <unistd.h> //za usleep
+
+
+void user_mainloop(void)
+{
+   while(1)
+   {
+      FOR_ALL_INSTS()
+	{ 
+	usleep(1000000);
+
+	feed_override_cnts = 150 - feed_override;
+
+	
+	if(x_sel){
+		joint0_selected=1;
+		joint1_selected=0;
+		joint2_selected=0;
+		joint3_selected=0;
+		
+	}
+	else if(y_sel){
+		joint0_selected=0;
+		joint1_selected=1;
+		joint2_selected=0;
+		joint3_selected=0;
+	}
+	else if(z_sel){
+		joint0_selected=0;
+		joint1_selected=0;
+		joint2_selected=1;
+		joint3_selected=0;
+	}
+	else if(a_sel){
+		joint0_selected=0;
+		joint1_selected=0;
+		joint2_selected=0;
+		joint3_selected=1;
+	}
+	
+	if(cont_sel){
+		led_cont=1;
+		led_hand=0;
+		led_inc1=0;
+		led_inc10=0;
+		led_inc100=0;
+		led_inc1000=0;
+		jog_inc=0;
+	}
+	
+	if(handrad_sel){
+		led_hand=1;
+		led_cont=0;
+		led_inc1=0;
+		led_inc10=0;
+		led_inc100=1;
+		led_inc1000=0;
+		jog_inc=0.1;
+	}
+	
+	else if(inc1_sel){
+		jog_inc=0.001;
+		led_cont=0;
+		led_inc1=1;
+		led_inc10=0;
+		led_inc100=0;
+		led_inc1000=0;
+	}
+	
+	else if(inc10_sel){
+		jog_inc=0.01;
+		led_cont=0;
+		led_inc1=0;
+		led_inc10=1;
+		led_inc100=0;
+		led_inc1000=0;
+	}
+	
+	else if(inc100_sel){
+		jog_inc=0.1;
+		led_cont=0;
+		led_inc1=0;
+		led_inc10=0;
+		led_inc100=1;
+		led_inc1000=0;
+	}
+	
+	else if(inc1000_sel){
+		jog_inc=1;
+		led_cont=0;
+		led_inc1=0;
+		led_inc10=0;
+		led_inc100=0;
+		led_inc1000=1;
+	}
+	
+	
+	if(key_rapid)jog_speed=jog_velo*2;
+	else jog_speed=jog_velo;
+	
+	jog_plus=key_plus && !key_minus && jog_mode && !led_hand && led_cont && (joint0_selected || joint1_selected || joint2_selected || joint3_selected);
+	jog_minus=key_minus && !key_plus && jog_mode && !led_hand && led_cont && (joint0_selected || joint1_selected || joint2_selected || joint3_selected);
+	jog_inc_plus=key_plus && !key_minus && jog_mode && !led_hand && !led_cont && (joint0_selected || joint1_selected || joint2_selected || joint3_selected);
+	jog_inc_minus=key_minus && !key_plus && jog_mode &&  !led_hand && !led_cont && (joint0_selected || joint1_selected || joint2_selected || joint3_selected);
+	
+	hand_x_sel=jog_mode && led_hand && !led_cont && joint0_selected;
+	hand_y_sel=jog_mode && led_hand && !led_cont && joint1_selected;
+	hand_z_sel=jog_mode && led_hand && !led_cont && joint2_selected;
+	hand_a_sel=jog_mode && led_hand && !led_cont && joint3_selected;
+	
+	
+	}
+	}//while
+ exit(0);
+}//mainloop

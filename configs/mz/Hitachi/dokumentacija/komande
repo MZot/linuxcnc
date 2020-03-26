@@ -1,0 +1,7 @@
+sudo comp --install /home/hitachi/linuxcnc/configs/hitachi/taho.comp
+
+
+sudo dpkg -i [ime .deb fajla]
+
+/usr/share/gmoccapy/gmoccapy.glade
+/usr/bin/gmoccapy
