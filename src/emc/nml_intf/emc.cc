@@ -385,8 +385,8 @@ int emcFormat(NMLTYPE type, void *buffer, CMS * cms)
 	((EMC_TRAJ_PROBE *) buffer)->update(cms);
 	break;
     case EMC_TRAJ_SET_CODE_STATUS_TYPE:
-	((EMC_TRAJ_SET_CODE_STATUS *) buffer)->update(cms);
-	break;
+    ((EMC_TRAJ_SET_CODE_STATUS *) buffer)->update(cms);
+    break;
     case EMC_AUX_INPUT_WAIT_TYPE:
 	((EMC_AUX_INPUT_WAIT *) buffer)->update(cms);
 	break;
@@ -2567,9 +2567,10 @@ void EMC_MOTION_STAT::update(CMS * cms)
     for (int i_axis = 0; i_axis < 8; i_axis++)
 	axis[i_axis].update(cms);
     cms->update(debug);
-
     cms->update(fcode);
+
     spindle.update(cms); //FIXME - is this needed ?
+
 }
 
 /*
@@ -2756,7 +2757,7 @@ void EMC_TASK_PLAN_SET_OPTIONAL_STOP::update(CMS * cms)
     EMC_TASK_CMD_MSG::update(cms);
 
     cms->update(state);
-
+    
 }
 
 /*
@@ -2770,7 +2771,7 @@ void EMC_TASK_PLAN_SET_BLOCK_DELETE::update(CMS * cms)
     EMC_TASK_CMD_MSG::update(cms);
 
     cms->update(state);
-
+    
 }
 
 /*
@@ -2828,10 +2829,8 @@ void EMC_TRAJ_PROBE::update(CMS * cms)
 
 void EMC_TRAJ_SET_CODE_STATUS::update(CMS * cms)
 {
-
     EMC_TRAJ_CMD_MSG::update(cms);
     cms->update(fcode);
-
 }
 
 /*

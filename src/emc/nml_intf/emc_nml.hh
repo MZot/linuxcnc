@@ -820,8 +820,8 @@ class EMC_TRAJ_SET_TERM_COND:public EMC_TRAJ_CMD_MSG {
     void update(CMS * cms);
 
     int cond;
-    double tolerance; // used to set the precision/tolerance of path deviation
-		      // during CONTINUOUS motion mode.
+    double tolerance; // used to set the precision/tolerance of path deviation 
+		      // during CONTINUOUS motion mode. 
 };
 
 class EMC_TRAJ_SET_SPINDLESYNC:public EMC_TRAJ_CMD_MSG {
@@ -832,7 +832,7 @@ class EMC_TRAJ_SET_SPINDLESYNC:public EMC_TRAJ_CMD_MSG {
 
         void update(CMS * cms);
         double feed_per_revolution;
-	bool velocity_mode;
+	bool velocity_mode; 
 };
 
 class EMC_TRAJ_SET_OFFSET:public EMC_TRAJ_CMD_MSG {
@@ -1150,9 +1150,9 @@ class EMC_SPINDLE_STAT:public EMC_SPINDLE_STAT_MSG {
     void update(CMS * cms);
 
     double speed;		// spindle speed in RPMs
+    double css_maximum; 	//<------------------  added for css bug fix
     int direction;		// 0 stopped, 1 forward, -1 reverse
     int brake;			// 0 released, 1 engaged
-    double css_maximum; 	//<------------------  added for css bug fix
     int increasing;		// 1 increasing, -1 decreasing, 0 neither
     int enabled;		// non-zero means enabled
     int orient_state;
@@ -1371,7 +1371,7 @@ class EMC_TASK_PLAN_SET_OPTIONAL_STOP:public EMC_TASK_CMD_MSG {
 
     // For internal NML/CMS use only.
     void update(CMS * cms);
-
+    
     bool state; //state == ON, optional stop is on (e.g. we stop on any stops)
 };
 
@@ -1383,7 +1383,7 @@ class EMC_TASK_PLAN_SET_BLOCK_DELETE:public EMC_TASK_CMD_MSG {
 
     // For internal NML/CMS use only.
     void update(CMS * cms);
-
+    
     bool state; //state == ON, block delete is on, we ignore lines starting with "/"
 };
 
@@ -1395,7 +1395,7 @@ class EMC_TASK_PLAN_OPTIONAL_STOP:public EMC_TASK_CMD_MSG {
 
     // For internal NML/CMS use only.
     void update(CMS * cms);
-
+    
 };
 
 
@@ -1443,7 +1443,7 @@ class EMC_TASK_STAT:public EMC_TASK_STAT_MSG {
     double activeSettings[ACTIVE_SETTINGS];
     CANON_UNITS programUnits;	// CANON_UNITS_INCHES,MM,CM
 
-    int interpreter_errcode;	// return value from rs274ngc function
+    int interpreter_errcode;	// return value from rs274ngc function 
     // (only useful for new interpreter.)
     int task_paused;		// non-zero means task is paused
     double delayLeft;           // delay time left of G4, M66..
@@ -1712,7 +1712,7 @@ class EMC_SPINDLE_ORIENT:public EMC_SPINDLE_CMD_MSG {
     // For internal NML/CMS use only.
     void update(CMS * cms);
     double orientation;   // desired spindle position
-    int    mode;
+    int    mode;   
 };
 
 class EMC_SPINDLE_WAIT_ORIENT_COMPLETE:public EMC_SPINDLE_CMD_MSG {

@@ -9,7 +9,7 @@
 * Author:
 * License: GPL Version 2
 * System: Linux
-*
+*    
 * Copyright (c) 2004 All rights reserved.
 *
 * Last change:
@@ -77,7 +77,7 @@ EMC_TRAJ_STAT_MSG(EMC_TRAJ_STAT_TYPE, sizeof(EMC_TRAJ_STAT))
     probe_tripped = OFF;
     probing = OFF;
     probeval = 0;
-
+    
     ZERO_EMC_POSE(dtg);
     distance_to_go = 0.0;
     kinematics_type = 0;

@@ -103,7 +103,7 @@ void check_stuff(const char *location)
 /* 'process_inputs()' is responsible for reading hardware input
    signals (from the HAL) and doing basic processing on them.  In
    the case of position feedback, that means removing backlash or
-   screw error comp and calculating the following error.  For
+   screw error comp and calculating the following error.  For 
    switches, it means debouncing them and setting flags in the
    emcmotStatus structure.
 */
@@ -149,7 +149,7 @@ static void set_operating_mode(void);
 */
 static void handle_jogwheels(void);
 
-/* 'do_homing_sequence()' looks at emcmotStatus->homingSequenceState
+/* 'do_homing_sequence()' looks at emcmotStatus->homingSequenceState 
    to decide what, if anything, needs to be done related to multi-joint
    homing.
 
@@ -299,21 +299,21 @@ static void process_probe_inputs(void) {
 
     // trigger when the probe clears, instead of the usual case of triggering when it trips
     char probe_whenclears = !!(probe_type & 2);
-
+    
     /* read probe input */
     emcmotStatus->probeVal = !!*(emcmot_hal_data->probe_input);
     if (emcmotStatus->probing) {
         /* check if the probe has been tripped */
         if (emcmotStatus->probeVal ^ probe_whenclears) {
             /* remember the current position */
-            emcmotStatus->probedPos = emcmotStatus->carte_pos_fb;
+            emcmotStatus->probedPos = emcmotStatus->carte_pos_fb; 
             /* stop! */
             emcmotStatus->probing = 0;
             emcmotStatus->probeTripped = 1;
             tpAbort(&emcmotDebug->tp);
         /* check if the probe hasn't tripped, but the move finished */
         } else if (GET_MOTION_INPOS_FLAG() && tpQueueDepth(&emcmotDebug->tp) == 0) {
-            /* we are already stopped, but we need to remember the current
+            /* we are already stopped, but we need to remember the current 
                position here, because it will still be queried */
             emcmotStatus->probedPos = emcmotStatus->carte_pos_fb;
             emcmotStatus->probing = 0;
@@ -1266,12 +1266,12 @@ static void get_pos_cmds(long period)
 	if (fabs(emcmotDebug->teleop_data.desiredAccel.c) > accell_mag) {
 	    accell_mag = fabs(emcmotDebug->teleop_data.desiredAccel.c);
 	}
-
+	
 	/* accell_mag should now hold the max accell */
-
+	
 	if (accell_mag > emcmotStatus->acc) {
 	    /* if accell_mag is too great, all need resizing */
-	    pmCartScalMult(&emcmotDebug->teleop_data.desiredAccel.tran,
+	    pmCartScalMult(&emcmotDebug->teleop_data.desiredAccel.tran, 
 		emcmotStatus->acc / accell_mag,
 		&emcmotDebug->teleop_data.currentAccel.tran);
 	    emcmotDebug->teleop_data.currentAccel.a =
@@ -1310,7 +1310,7 @@ static void get_pos_cmds(long period)
 	}
 
 
-	/* based on curent position, current vel and period,
+	/* based on curent position, current vel and period, 
 	   the next position is computed */
 	emcmotStatus->carte_pos_cmd.tran.x +=
 	    emcmotDebug->teleop_data.currentVel.tran.x *
@@ -1376,7 +1376,7 @@ static void get_pos_cmds(long period)
 	    /* set joint velocity to zero */
 	    joint->vel_cmd = 0.0;
 	}
-
+	
 	break;
     default:
 	break;
@@ -1540,7 +1540,7 @@ static void compute_screw_comp(void)
 	    dpos = joint->pos_cmd - comp->entry->nominal;
 	    if (joint->vel_cmd > 0.0) {
 	        /* moving "up". apply forward screw comp */
-		joint->backlash_corr = comp->entry->fwd_trim +
+		joint->backlash_corr = comp->entry->fwd_trim + 
 					comp->entry->fwd_slope * dpos;
 	    } else if (joint->vel_cmd < 0.0) {
 	        /* moving "down". apply reverse screw comp */
@@ -1553,7 +1553,7 @@ static void compute_screw_comp(void)
 	    /* no compensation data, just use +/- 1/2 of backlash */
 	    /** FIXME: this can actually be removed - if the user space code
 		sends a single compensation entry with any nominal value,
-		and with fwd_trim = +0.5 times the backlash value, and
+		and with fwd_trim = +0.5 times the backlash value, and 
 		rev_trim = -0.5 times backlash, the above screw comp code
 		will give exactly the same result as this code. */
 	    /* determine which way the compensation should be applied */
@@ -1579,7 +1579,7 @@ static void compute_screw_comp(void)
      *   At the end, the speed is ramped dowm using the same acceleration.
      *   The algorithm keeps looking ahead. Depending on the distance to go,
      *   the speed is increased, kept constant or decreased.
-     *
+     *   
      * Limitations:
      *   Since the compensation adds up to the normal movement, total
      *   accelleration and total velocity may exceed maximum settings!
@@ -1600,7 +1600,7 @@ static void compute_screw_comp(void)
 	 * The TP and backlash shouldn't use more than 100%
 	 * (together) but this requires some interaction that
 	 * isn't implemented yet.
-	 */
+	 */ 
         v_max = 0.5 * joint->vel_limit * emcmotStatus->net_feed_scale;
         a_max = 0.5 * joint->acc_limit;
         v = joint->backlash_vel;
@@ -1742,7 +1742,7 @@ static void output_to_hal(void)
     *(emcmot_hal_data->spindle_forward) = (*emcmot_hal_data->spindle_speed_out > 0) ? 1 : 0;
     *(emcmot_hal_data->spindle_reverse) = (*emcmot_hal_data->spindle_speed_out < 0) ? 1 : 0;
     *(emcmot_hal_data->spindle_brake) = (emcmotStatus->spindle.brake != 0) ? 1 : 0;
-
+    
     *(emcmot_hal_data->program_line) = emcmotStatus->id;
     *(emcmot_hal_data->motion_type) = emcmotStatus->motionType;
     *(emcmot_hal_data->distance_to_go) = emcmotStatus->distance_to_go;
