@@ -290,11 +290,11 @@ int emcmotGetRotaryIsUnlocked(int axis) {
 
 /*! \function emcmotDioWrite()
 
-  sets or clears a HAL DIO pin, 
+  sets or clears a HAL DIO pin,
   pins get exported at runtime
-  
+
   index is valid from 0 to num_dio <= EMCMOT_MAX_DIO, defined in emcmotcfg.h
-  
+
 */
 void emcmotDioWrite(int index, char value)
 {
@@ -311,12 +311,12 @@ void emcmotDioWrite(int index, char value)
 
 /*! \function emcmotAioWrite()
 
-  sets or clears a HAL AIO pin, 
+  sets or clears a HAL AIO pin,
   pins get exported at runtime
-  
+
   \todo Implement function, it doesn't do anything right now
   RS274NGC doesn't support it now, only defined/used in emccanon.cc
-  
+
 */
 void emcmotAioWrite(int index, double value)
 {
@@ -355,7 +355,7 @@ void emcmotCommandHandler(void *arg, long period)
     double tmp1;
     emcmot_comp_entry_t *comp_entry;
     char issue_atspeed = 0;
-    
+
 check_stuff ( "before command_handler()" );
 
     /* check for split read */
@@ -374,7 +374,7 @@ check_stuff ( "before command_handler()" );
 
 	/* clear status value by default */
 	emcmotStatus->commandStatus = EMCMOT_COMMAND_OK;
-	
+
 	/* ...and process command */
 
 	/* Many commands uses "command->axis" to indicate which joint they
@@ -425,7 +425,7 @@ check_stuff ( "before command_handler()" );
 		}
 	    }
             SET_MOTION_ERROR_FLAG(0);
-	    /* clear joint errors (regardless of mode */	    
+	    /* clear joint errors (regardless of mode */
 	    for (joint_num = 0; joint_num < num_joints; joint_num++) {
 		/* point to joint struct */
 		joint = &joints[joint_num];
@@ -508,7 +508,7 @@ check_stuff ( "before command_handler()" );
 	    rtapi_print_msg(RTAPI_MSG_DBG, "TELEOP");
 	    emcmotDebug->teleoperating = 1;
 	    if (kinType != KINEMATICS_IDENTITY) {
-		
+
 		if (!checkAllHomed()) {
 		    reportError
 			(_("all joints must be homed before going into teleop mode"));
@@ -896,8 +896,8 @@ check_stuff ( "before command_handler()" );
             }
 	    /* append it to the emcmotDebug->tp */
 	    tpSetId(&emcmotDebug->tp, emcmotCommand->id);
-        int res_addline = tpAddLine(&emcmotDebug->tp, emcmotCommand->pos, emcmotCommand->motion_type, 
-                                emcmotCommand->vel, emcmotCommand->ini_maxvel, 
+        int res_addline = tpAddLine(&emcmotDebug->tp, emcmotCommand->pos, emcmotCommand->motion_type,
+                                emcmotCommand->vel, emcmotCommand->ini_maxvel,
                                 emcmotCommand->acc, emcmotStatus->enables_new, issue_atspeed,
                                 emcmotCommand->turn);
         //KLUDGE ignore zero length line
@@ -986,7 +986,7 @@ check_stuff ( "before command_handler()" );
 	    /* can do it at any time */
 	    rtapi_print_msg(RTAPI_MSG_DBG, "SET_VEL");
 	    emcmotStatus->vel = emcmotCommand->vel;
-	    tpSetVmax(&emcmotDebug->tp, emcmotStatus->vel, 
+	    tpSetVmax(&emcmotDebug->tp, emcmotStatus->vel,
 			    emcmotCommand->ini_maxvel);
 	    break;
 
@@ -1258,7 +1258,7 @@ check_stuff ( "before command_handler()" );
             } else {
                 /* abort any movement (jog, etc) that is in progress */
                 joint->free_tp_enable = 0;
-                
+
                 /* prime the homing state machine */
                 joint->home_state = HOME_START;
             }
@@ -1280,7 +1280,7 @@ check_stuff ( "before command_handler()" );
             /* unhome the specified joint, or all joints if -1 */
             rtapi_print_msg(RTAPI_MSG_DBG, "UNHOME");
             rtapi_print_msg(RTAPI_MSG_DBG, " %d", joint_num);
-            
+
             if ((emcmotStatus->motion_state != EMCMOT_MOTION_FREE) && (emcmotStatus->motion_state != EMCMOT_MOTION_DISABLED)) {
                 reportError(_("must be in joint mode or disabled to unhome"));
                 return;
@@ -1380,7 +1380,7 @@ check_stuff ( "before command_handler()" );
 
                 if (probeval != probe_whenclears) {
                     // the probe is already in the state we're seeking.
-                    if(probe_whenclears) 
+                    if(probe_whenclears)
                         reportError(_("Probe is already clear when starting G38.4 or G38.5 move"));
                     else
                         reportError(_("Probe is already tripped when starting G38.2 or G38.3 move"));
@@ -1516,7 +1516,7 @@ check_stuff ( "before command_handler()" );
 	case EMCMOT_SPINDLE_ON:
 	    rtapi_print_msg(RTAPI_MSG_DBG, "SPINDLE_ON");
 
-	    if (*(emcmot_hal_data->spindle_orient)) 
+	    if (*(emcmot_hal_data->spindle_orient))
 		rtapi_print_msg(RTAPI_MSG_DBG, "SPINDLE_ORIENT cancelled by SPINDLE_ON");
 	    if (*(emcmot_hal_data->spindle_locked))
 		rtapi_print_msg(RTAPI_MSG_DBG, "spindle-locked cleared by SPINDLE_ON");
@@ -1579,7 +1579,7 @@ check_stuff ( "before command_handler()" );
 	    *(emcmot_hal_data->spindle_orient) = 1;
 
 	    // mirror in spindle status
-	    emcmotStatus->spindle.orient_fault = 0; // this pin read during spindle-orient == 1 
+	    emcmotStatus->spindle.orient_fault = 0; // this pin read during spindle-orient == 1
 	    emcmotStatus->spindle.locked = 0;
 	    break;
 
@@ -1648,9 +1648,15 @@ check_stuff ( "before command_handler()" );
 	    joint->comp.entries++;
 	    break;
 
-        case EMCMOT_SET_OFFSET:
+    case EMCMOT_SET_OFFSET:
             emcmotStatus->tool_offset = emcmotCommand->tool_offset;
             break;
+
+    case EMCMOT_CODE_STATUS:    //dodano feed
+     	    //rtapi_print( "SET_Fcode status: %f\n", emcmotCommand->fcode);
+     	    //rtapi_print_msg(RTAPI_MSG_DBG, " %f", emcmotCommand->fcode);
+             emcmotStatus->fcode = emcmotCommand-> fcode;
+             break;
 
 	default:
 	    rtapi_print_msg(RTAPI_MSG_DBG, "UNKNOWN");

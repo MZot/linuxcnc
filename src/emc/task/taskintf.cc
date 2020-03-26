@@ -7,7 +7,7 @@
 * Author:
 * License: GPL Version 2
 * System: Linux
-*    
+*
 * Copyright (c) 2004 All rights reserved.
 *
 ********************************************************************/
@@ -33,7 +33,7 @@
 
 value_inihal_data old_inihal_data;
 
-/* define this to catch isnan errors, for rtlinux FPU register 
+/* define this to catch isnan errors, for rtlinux FPU register
    problem testing */
 #define ISNAN_TRAP
 
@@ -81,7 +81,7 @@ static double localEmcMaxAcceleration = DBL_MAX;
 
 /*
   In emcmot, we need to set the cycle time for traj, and the interpolation
-  rate, in any order, but both need to be done. 
+  rate, in any order, but both need to be done.
  */
 /* FIXME: all of this stuff is really JOINTS not AXES!!! */
 
@@ -176,7 +176,7 @@ int emcAxisSetMaxPositionLimit(int axis, double limit)
     return usrmotWriteEmcmotCommand(&emcmotCommand);
 }
 
-int emcAxisSetMotorOffset(int axis, double offset) 
+int emcAxisSetMotorOffset(int axis, double offset)
 {
 #ifdef ISNAN_TRAP
     if (std::isnan(offset)) {
@@ -191,7 +191,7 @@ int emcAxisSetMotorOffset(int axis, double offset)
     emcmotCommand.command = EMCMOT_SET_MOTOR_OFFSET;
     emcmotCommand.axis = axis;
     emcmotCommand.motor_offset = offset;
-    
+
     return usrmotWriteEmcmotCommand(&emcmotCommand);
 }
 
@@ -968,7 +968,7 @@ int emcTrajSetOffset(EmcPose tool_offset)
     return usrmotWriteEmcmotCommand(&emcmotCommand);
 }
 
-int emcTrajSetSpindleSync(double fpr, bool wait_for_index) 
+int emcTrajSetSpindleSync(double fpr, bool wait_for_index)
 {
     emcmotCommand.command = EMCMOT_SET_SPINDLESYNC;
     emcmotCommand.spindlesync = fpr;
@@ -1098,6 +1098,17 @@ int emcTrajRigidTap(EmcPose pos, double vel, double ini_maxvel, double acc)
     return usrmotWriteEmcmotCommand(&emcmotCommand);
 }
 
+int emcTrajSetCodeStatus(double fcode)
+{
+    if (fcode < 0.0) {
+	fcode = 0.0;
+    }
+
+    emcmotCommand.command = EMCMOT_CODE_STATUS;
+    emcmotCommand.fcode = fcode;
+
+    return usrmotWriteEmcmotCommand(&emcmotCommand);
+}
 
 static int last_id = 0;
 static int last_id_printed = 0;
@@ -1192,12 +1203,12 @@ int emcTrajUpdate(EMC_TRAJ_STAT * stat)
     stat->probeval = emcmotStatus.probeVal;
     stat->probing = emcmotStatus.probing;
     stat->probe_tripped = emcmotStatus.probeTripped;
-    
+
     if (emcmotStatus.motionFlag & EMCMOT_MOTION_COORD_BIT)
         enables = emcmotStatus.enables_queued;
     else
         enables = emcmotStatus.enables_new;
-    
+
     stat->feed_override_enabled = enables & FS_ENABLED;
     stat->spindle_override_enabled = enables & SS_ENABLED;
     stat->adaptive_feed_enabled = enables & AF_ENABLED;
@@ -1343,7 +1354,7 @@ int emcMotionSetDebug(int debug)
 }
 
 /*! \function emcMotionSetAout()
-    
+
     This function sends a EMCMOT_SET_AOUT message to the motion controller.
     That one plans a AOUT command when motion starts or right now.
 
@@ -1366,7 +1377,7 @@ int emcMotionSetAout(unsigned char index, double start, double end, unsigned cha
 }
 
 /*! \function emcMotionSetDout()
-    
+
     This function sends a EMCMOT_SET_DOUT message to the motion controller.
     That one plans a DOUT command when motion starts or right now.
 
@@ -1401,7 +1412,7 @@ int emcSpindleSpeed(double speed, double css_factor, double offset)
     return emcSpindleOn(speed, css_factor, offset);
 }
 
-int emcSpindleOrient(double orientation, int mode) 
+int emcSpindleOrient(double orientation, int mode)
 {
     emcmotCommand.command = EMCMOT_SPINDLE_ORIENT;
     emcmotCommand.orientation = orientation;
@@ -1504,7 +1515,7 @@ int emcMotionUpdate(EMC_MOTION_STAT * stat)
     stat->command_type = localMotionCommandType;
     stat->echo_serial_number = localMotionEchoSerialNumber;
     stat->debug = emcmotConfig.debug;
-    
+
     stat->spindle.enabled = emcmotStatus.spindle.speed != 0;
     stat->spindle.speed = emcmotStatus.spindle.speed;
     stat->spindle.brake = emcmotStatus.spindle.brake;
@@ -1520,6 +1531,7 @@ int emcMotionUpdate(EMC_MOTION_STAT * stat)
     for (aio = 0; aio < EMC_MAX_AIO; aio++) {
 	stat->analog_input[aio] = emcmotStatus.analog_input[aio];
 	stat->analog_output[aio] = emcmotStatus.analog_output[aio];
+    stat->fcode = emcmotStatus.fcode;
     }
 
     // set the status flag
@@ -1574,4 +1586,3 @@ int emcSetMaxFeedOverride(double maxFeedScale) {
     emcmotCommand.maxFeedScale = maxFeedScale;
     return usrmotWriteEmcmotCommand(&emcmotCommand);
 }
-

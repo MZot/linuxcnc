@@ -7,7 +7,7 @@
 * Author:
 * License: GPL Version 2
 * System: Linux
-*    
+*
 * Copyright (c) 2004 All rights reserved.
 *
 ********************************************************************/
@@ -211,7 +211,7 @@ int emcOperatorError(int id, const char *fmt, ...)
     }
     // append error string
     va_start(ap, fmt);
-    vsnprintf(&error_msg.error[strlen(error_msg.error)], 
+    vsnprintf(&error_msg.error[strlen(error_msg.error)],
 	      sizeof(error_msg.error) - strlen(error_msg.error), fmt, ap);
     va_end(ap);
 
@@ -596,7 +596,7 @@ interpret_again:
 				    EMC_TASK_INTERP_WAITING;
 				interp_list.clear();
 				emcAbortCleanup(EMC_ABORT_INTERPRETER_ERROR,
-						"interpreter error"); 
+						"interpreter error");
 			    } else if (execRetval == -1
 				    || execRetval == INTERP_EXIT ) {
 				emcStatus->task.interpState =
@@ -644,7 +644,7 @@ interpret_again:
 
 			    if (emcStatus->task.readLine < programStartLine &&
 				emcTaskPlanLevel() == 0) {
-			    
+
 				//update the position with our current position, as the other positions are only skipped through
 				CANON_UPDATE_END_POINT(emcStatus->motion.traj.actualPosition.tran.x,
 						       emcStatus->motion.traj.actualPosition.tran.y,
@@ -707,7 +707,7 @@ static void mdi_execute_hook(void)
 	    emcTaskCommand == 0 &&
 	    emcStatus->task.execState ==
 	    EMC_TASK_EXEC_DONE) {
-	    emcTaskPlanClearWait(); 
+	    emcTaskPlanClearWait();
 	    mdi_execute_wait = 0;
 	    mdi_execute_hook();
 	}
@@ -729,11 +729,11 @@ static void mdi_execute_hook(void)
     // determine when a MDI command actually finishes normally.
     if (interp_list.len() == 0 &&
 	emcTaskCommand == 0 &&
-	emcStatus->task.execState ==  EMC_TASK_EXEC_DONE && 
-	emcStatus->task.interpState != EMC_TASK_INTERP_IDLE && 
+	emcStatus->task.execState ==  EMC_TASK_EXEC_DONE &&
+	emcStatus->task.interpState != EMC_TASK_INTERP_IDLE &&
 	emcStatus->motion.traj.queue == 0 &&
-	emcStatus->io.status == RCS_DONE && 
-	!mdi_execute_wait && 
+	emcStatus->io.status == RCS_DONE &&
+	!mdi_execute_wait &&
 	!mdi_execute_next) {
 
 	// finished. Check for dequeuing of queued MDI command is done in emcTaskPlan().
@@ -859,6 +859,7 @@ static int emcTaskPlan(void)
 	    case EMC_TRAJ_RIGID_TAP_TYPE:
 	    case EMC_TRAJ_SET_TELEOP_ENABLE_TYPE:
 	    case EMC_SET_DEBUG_TYPE:
+        case EMC_TRAJ_SET_CODE_STATUS_TYPE:
 		retval = emcTaskIssueCommand(emcCommand);
 		break;
 
@@ -1085,7 +1086,7 @@ static int emcTaskPlan(void)
 		case EMC_TASK_PLAN_STEP_TYPE:
 		    // handles case where first action is to step the program
 		    taskPlanRunCmd.line = 1;	// run from start
-		    /*! \todo FIXME-- can have GUI set this; send a run instead of a 
+		    /*! \todo FIXME-- can have GUI set this; send a run instead of a
 		       step */
 		    retval = emcTaskIssueCommand(&taskPlanRunCmd);
 		    if(retval != 0) break;
@@ -1187,7 +1188,7 @@ static int emcTaskPlan(void)
 
                // handle interp readahead logic
                 readahead_reading();
-                
+
 		break;		// EMC_TASK_INTERP_READING
 
 	    case EMC_TASK_INTERP_PAUSED:	// ON, AUTO, PAUSED
@@ -1496,6 +1497,7 @@ static int emcTaskCheckPreconditions(NMLmsg * cmd)
     case EMC_TRAJ_CLEAR_PROBE_TRIPPED_FLAG_TYPE:	// and this
     case EMC_AUX_INPUT_WAIT_TYPE:
     case EMC_SPINDLE_WAIT_ORIENT_COMPLETE_TYPE:
+    case EMC_TRAJ_SET_CODE_STATUS_TYPE:
 	return EMC_TASK_EXEC_WAITING_FOR_MOTION_AND_IO;
 	break;
 
@@ -1856,6 +1858,7 @@ static int emcTaskIssueCommand(NMLmsg * cmd)
 	retval = emcTrajSetTermCond(emcTrajSetTermCondMsg->cond, emcTrajSetTermCondMsg->tolerance);
 	break;
 
+
     case EMC_TRAJ_SET_SPINDLESYNC_TYPE:
         emcTrajSetSpindlesyncMsg = (EMC_TRAJ_SET_SPINDLESYNC *) cmd;
         retval = emcTrajSetSpindleSync(emcTrajSetSpindlesyncMsg->feed_per_revolution, emcTrajSetSpindlesyncMsg->velocity_mode);
@@ -1889,10 +1892,10 @@ static int emcTaskIssueCommand(NMLmsg * cmd)
 
     case EMC_TRAJ_PROBE_TYPE:
 	retval = emcTrajProbe(
-	    ((EMC_TRAJ_PROBE *) cmd)->pos, 
+	    ((EMC_TRAJ_PROBE *) cmd)->pos,
 	    ((EMC_TRAJ_PROBE *) cmd)->type,
 	    ((EMC_TRAJ_PROBE *) cmd)->vel,
-            ((EMC_TRAJ_PROBE *) cmd)->ini_maxvel,  
+            ((EMC_TRAJ_PROBE *) cmd)->ini_maxvel,
 	    ((EMC_TRAJ_PROBE *) cmd)->acc,
             ((EMC_TRAJ_PROBE *) cmd)->probe_type);
 	break;
@@ -1904,7 +1907,7 @@ static int emcTaskIssueCommand(NMLmsg * cmd)
 	    emcAuxInputWaitIndex = -1;
 	    taskExecDelayTimeout = 0.0;
 	} else {
-	    emcAuxInputWaitType = emcAuxInputWaitMsg->wait_type; // remember what we are waiting for 
+	    emcAuxInputWaitType = emcAuxInputWaitMsg->wait_type; // remember what we are waiting for
 	    emcAuxInputWaitIndex = emcAuxInputWaitMsg->index; // remember the input to look at
 	    emcStatus->task.input_timeout = 2; // set timeout flag, gets cleared if input changes before timeout happens
 	    // set the timeout clock to expire at 'now' + delay time
@@ -1920,7 +1923,7 @@ static int emcTaskIssueCommand(NMLmsg * cmd)
     case EMC_TRAJ_RIGID_TAP_TYPE:
 	retval = emcTrajRigidTap(((EMC_TRAJ_RIGID_TAP *) cmd)->pos,
 	        ((EMC_TRAJ_RIGID_TAP *) cmd)->vel,
-        	((EMC_TRAJ_RIGID_TAP *) cmd)->ini_maxvel,  
+        	((EMC_TRAJ_RIGID_TAP *) cmd)->ini_maxvel,
 		((EMC_TRAJ_RIGID_TAP *) cmd)->acc);
 	break;
 
@@ -2228,7 +2231,7 @@ static int emcTaskIssueCommand(NMLmsg * cmd)
 		// abort everything
 		emcTaskAbort();
 		emcIoAbort(EMC_ABORT_INTERPRETER_ERROR_MDI);
-		emcSpindleAbort(); 
+		emcSpindleAbort();
 		mdi_execute_abort(); // sets emcStatus->task.interpState to  EMC_TASK_INTERP_IDLE
 		emcAbortCleanup(EMC_ABORT_INTERPRETER_ERROR_MDI, "interpreter error during MDI");
 		retval = -1;
@@ -2336,6 +2339,10 @@ static int emcTaskIssueCommand(NMLmsg * cmd)
 	retval =  emcIoPluginCall( (EMC_IO_PLUGIN_CALL *) cmd);
 	break;
 
+    case EMC_TRAJ_SET_CODE_STATUS_TYPE:
+    retval = emcTrajSetCodeStatus(((EMC_TRAJ_SET_CODE_STATUS *) cmd) ->fcode);
+    break;
+
      default:
 	// unrecognized command
 	if (emc_debug & EMC_DEBUG_TASK_ISSUE) {
@@ -2403,6 +2410,8 @@ static int emcTaskCheckPostconditions(NMLmsg * cmd)
     case EMC_TRAJ_SET_FO_ENABLE_TYPE:
     case EMC_TRAJ_SET_FH_ENABLE_TYPE:
     case EMC_TRAJ_SET_SO_ENABLE_TYPE:
+    case EMC_TRAJ_SET_CODE_STATUS_TYPE: //feed
+            break;
 	return EMC_TASK_EXEC_DONE;
 	break;
 
@@ -2665,7 +2674,7 @@ static int emcTaskExecute(void)
 	    emcStatus->task.execState = EMC_TASK_EXEC_ERROR;
 	    emcStatus->task.delayLeft = 0;
 	    emcTaskEager = 1;
-	    emcOperatorError(0, "wait for orient complete: FAULTED code=%d", 
+	    emcOperatorError(0, "wait for orient complete: FAULTED code=%d",
 			     emcStatus->motion.spindle.orient_fault);
 	}
 	break;
@@ -2683,7 +2692,7 @@ static int emcTaskExecute(void)
 	}
 	// delay can be also be because we wait for an input
 	// if the index is set (not -1)
-	if (emcAuxInputWaitIndex >= 0) { 
+	if (emcAuxInputWaitIndex >= 0) {
 	    switch (emcAuxInputWaitType) {
 		case WAIT_MODE_HIGH:
 		    if (emcStatus->motion.synch_di[emcAuxInputWaitIndex] != 0) {
@@ -2694,12 +2703,12 @@ static int emcTaskExecute(void)
 		    }
 		    break;
 
-    		case WAIT_MODE_RISE: 
+    		case WAIT_MODE_RISE:
 		    if (emcStatus->motion.synch_di[emcAuxInputWaitIndex] == 0) {
 			emcAuxInputWaitType = WAIT_MODE_HIGH;
 		    }
 		    break;
-		    
+
 		case WAIT_MODE_LOW:
 		    if (emcStatus->motion.synch_di[emcAuxInputWaitIndex] == 0) {
 			emcStatus->task.input_timeout = 0; // clear timeout flag
@@ -2721,7 +2730,7 @@ static int emcTaskExecute(void)
 		    emcStatus->task.execState = EMC_TASK_EXEC_DONE;
 		    emcStatus->task.delayLeft = 0;
 		    break;
-		
+
 		default:
 		    emcOperatorError(0, "Unknown Wait Mode");
 	    }
@@ -3397,7 +3406,7 @@ int main(int argc, char *argv[])
 	    }
 	    // motion already should have reported this condition (and set RCS_ERROR?)
 	    // an M19 orient failed to complete within timeout
-	    // if ((emcStatus->motion.status == RCS_ERROR) && 
+	    // if ((emcStatus->motion.status == RCS_ERROR) &&
 	    // 	(emcStatus->motion.spindle.orient_state == EMCMOT_ORIENT_FAULTED) &&
 	    // 	(emcStatus->motion.spindle.orient_fault != 0)) {
 	    // 	emcOperatorError(0, "wait for orient complete timed out");

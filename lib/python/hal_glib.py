@@ -90,6 +90,7 @@ class _GStat(gobject.GObject):
         'reload-display': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
         'line-changed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
         'tool-in-spindle-changed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
+        'f-code-changed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_FLOAT,)),
         }
 
     STATES = { linuxcnc.STATE_ESTOP:       'state-estop'
@@ -126,12 +127,13 @@ class _GStat(gobject.GObject):
         self.old['interp']= self.stat.interp_state
         # Only update file if call_level is 0, which
         # means we are not executing a subroutine/remap
-        # This avoids emitting signals for bogus file names below 
+        # This avoids emitting signals for bogus file names below
         if self.stat.call_level == 0:
             self.old['file']  = self.stat.file
         self.old['line']  = self.stat.motion_line
         self.old['homed'] = self.stat.homed
         self.old['tool-in-spindle'] = self.stat.tool_in_spindle
+        self.old['current_fcode']  = self.stat.current_fcode
 
     def update(self):
         try:
@@ -178,7 +180,7 @@ class _GStat(gobject.GObject):
         if file_new != file_old:
             # if interpreter is reading or waiting, the new file
             # is a remap procedure, with the following test we
-            # partly avoid emitting a signal in that case, which would cause 
+            # partly avoid emitting a signal in that case, which would cause
             # a reload of the preview and sourceview widgets.  A signal could
             # still be emitted if aborting a program shortly after it ran an
             # external file subroutine, but that is fixed by not updating the
@@ -186,7 +188,7 @@ class _GStat(gobject.GObject):
             if self.stat.interp_state == linuxcnc.INTERP_IDLE:
                 self.emit('file-loaded', file_new)
 
-        #ToDo : Find a way to avoid signal when the line changed due to 
+        #ToDo : Find a way to avoid signal when the line changed due to
         #       a remap procedure, because the signal do highlight a wrong
         #       line in the code
         # I think this might be fixed somewhere, because I do not see bogus line changed signals
@@ -202,6 +204,12 @@ class _GStat(gobject.GObject):
         tool_new = self.old['tool-in-spindle']
         if tool_new != tool_old:
             self.emit('tool-in-spindle-changed', tool_new)
+
+        # current F code
+        fcode_old = old.get('current_fcode', None)
+        fcode_new = self.old['current_fcode']
+        if fcode_new != fcode_old:
+            self.emit('f-code-changed', fcode_new)
 
         # if the homed status has changed
         # check number of homed axes against number of available axes
