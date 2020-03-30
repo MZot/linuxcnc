@@ -6,12 +6,12 @@ loadrt trivkins
 # motion controller, get name and thread periods from ini file
 loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
 
-loadrt hostmot2
-loadrt hm2_pci config=" num_encoders=6 num_pwmgens=0 num_3pwmgens=0 num_stepgens=0 sserial_port_0=202xxxxx" #prva cifra so 7i77 IO, druga so 7i77 analog servo intf, tretja 7i84 IO, FW je 2x7i77.bit
-setp     hm2_5i25.0.watchdog.timeout_ns 10000000
+#loadrt hostmot2
+#loadrt hm2_pci config=" num_encoders=6 num_pwmgens=0 num_3pwmgens=0 num_stepgens=0 sserial_port_0=202xxxxx" #prva cifra so 7i77 IO, druga so 7i77 analog servo intf, tretja 7i84 IO, FW je 2x7i77.bit
+#setp     hm2_5i25.0.watchdog.timeout_ns 10000000
 
-addf hm2_5i25.0.read          servo-thread
-addf hm2_5i25.0.write         servo-thread
+#addf hm2_5i25.0.read          servo-thread
+#addf hm2_5i25.0.write         servo-thread
 
 # add motion controller functions to servo thread
 addf motion-command-handler servo-thread
@@ -21,14 +21,14 @@ loadrt pid names=pid.x,pid.z
 addf pid.x.do-pid-calcs       servo-thread
 addf pid.z.do-pid-calcs       servo-thread
 
-loadrt lathe_jog names=jog
-addf jog servo-thread
+#loadrt lathe_jog names=jog
+#addf jog servo-thread
 
-loadrt turret_sauter names=turr
-addf turr   servo-thread
+#loadrt turret_sauter names=turr
+#addf turr   servo-thread
 
-loadrt nct_plc names=plc
-addf plc    servo-thread
+#loadrt nct_plc names=plc
+#addf plc    servo-thread
 
-loadrt sp_gearbox names=spgb
-addf   spgb servo-thread
+#loadrt sp_gearbox names=spgb
+#addf   spgb servo-thread

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#dodaj v "session and startup" -> "app autostart":  xfce4-terminal -e 'bash -c "/home/cnc/LinuxCNC/autostart; bash"'
+
+echo ""Starting LinuxCNC""
+xset s off -dpms  #disabla power saving monitorja
+unclutter -idle 1&  #mousepointer off
+
+read -t 2 var
+
+if [ $? == 0 ]; then
+    echo ""User canceled autostart!""
+else
+    cd /home/cnc/LinuxCNC/linuxcnc/scripts/
+    . ./rip-environment
+    linuxcnc '/home/cnc/LinuxCNC/configs/sim.lathe/lathe.ini'
+fi
+
+read

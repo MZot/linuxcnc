@@ -109,7 +109,7 @@ offset_axis_x = 0.0
 offset_axis_y = 0.0
 offset_axis_z = 10.0
 offset_axis_Unknown = 0
-open_file = /home/cnc/LinuxCNC/nc_files/nino_etalonface.ngc
-ncam_file = None
+open_file = /home/cnc/LinuxCNC/nc_files/lathe_ncam.xml
+ncam_file = /home/cnc/LinuxCNC/nc_files/lathe_ncam.xml
 rbtn_use_m6 = False
 

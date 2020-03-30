@@ -6,13 +6,13 @@ import pygtk
 pygtk.require('2.0')
 from gtk import gdk
 
-fname = '/home/linuxcnc/linuxcnc/configs/MH400/ncam/catalogs/no_skip_dlg.conf'
+fname = '/home/cnc/LinuxCNC/configs/KNUTH/ncam/catalogs/no_skip_dlg.conf'
 if os.path.isfile(fname) :
     exit(0)
 
 msg = 'Stop LinuxCNC program,&#10;toggle the shown button,&#10;then restart'
 msg1 = 'Skip block not active'
-icon_fname = '/home/linuxcnc/linuxcnc/configs/MH400/ncam/graphics/skip_block.png'
+icon_fname = '/home/cnc/LinuxCNC/configs/KNUTH/ncam/graphics/skip_block.png'
 
 dlg = gtk.MessageDialog(parent = None, flags = gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, type = gtk.MESSAGE_WARNING, buttons = gtk.BUTTONS_NONE, message_format = msg1)
 

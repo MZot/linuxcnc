@@ -19,7 +19,7 @@ system_name_G59 = G59
 system_name_G59.1 = G59.1
 system_name_G59.2 = G59.2
 system_name_G59.3 = G59.3
-open_file = /home/cnc/LinuxCNC/nc_files/ncam_turn.xml
+open_file = /home/cnc/LinuxCNC/nc_files/lathe_ncam.xml
 screen1 = window
 x_pos = 40
 y_pos = 30
@@ -76,6 +76,6 @@ macro5 = ;;;;;;;;
 macro6 = ;;;;;;;;
 last_tool = 2
 offset_axis_z = 0.0
-ncam_file = /home/cnc/LinuxCNC/nc_files/ncam_turn.xml
+ncam_file = /home/cnc/LinuxCNC/nc_files/lathe_ncam.xml
 rbtn_use_m6 = True
 
