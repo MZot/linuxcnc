@@ -4916,7 +4916,7 @@ class gmoccapy( object ):
         widget.set_active(False)
 
     def on_button_filechooser_home_clicked( self, widget, data = None ):
-         self.widgets.filechooser_widget.set_current_folder('/home/linuxcnc/linuxcnc/nc_files')
+         self.widgets.filechooser_widget.set_current_folder(os.path.expanduser('~/LinuxCNC/nc_files/'))
 
     def on_btn_edit_open_clicked( self, widget, data = None ):
        try:
