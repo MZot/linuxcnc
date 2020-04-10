@@ -90,7 +90,7 @@ double Interp::find_arc_length(double x1,        //!< X-coordinate of start poin
    the sign of the commanded value in the gcode).  Modulo 360 positions
    of the axis are considered equivalent and we just need to find the
    nearest one. */
-
+/*
 int Interp::unwrap_rotary(double *r, double sign_of, double commanded, double current, char axis) {
     double result;
     int neg = copysign(1.0, sign_of) < 0.0;
@@ -104,6 +104,26 @@ int Interp::unwrap_rotary(double *r, double sign_of, double commanded, double cu
 
     return INTERP_OK;
 }
+*/
+ 
+/*  Isce najbljzjo pot do pozicije
+*/
+int Interp::unwrap_rotary(double *r, double sign_of, double commanded, double current, char axis) {
+    double result, mod;
+    int neg = copysign(1.0, sign_of) < 0.0;
+    CHKS((sign_of < 0.0 || sign_of >= 360.0), (_("Invalid absolute position %5.2f for wrapped rotary axis %c")), sign_of, axis); 
+    
+    double d = floor(current/360.0);
+    result = fabs(commanded) + (d*360.0);
+    mod = fmod(current, 360.0);
+    if((commanded - mod) < -180) result +=360.0;
+    if((commanded - mod) > 180) result -=360.0;
+    *r = result;
+    
+    return INTERP_OK;
+}
+ 
+ 
     
 
 /****************************************************************************/
