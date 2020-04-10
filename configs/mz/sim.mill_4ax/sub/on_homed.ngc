@@ -1,0 +1,14 @@
+O<on_homed> sub
+G40
+G49
+
+;M66 E0 L0   ;motion.analog-in-00, dobi iz stanja revolverja
+;M61 Q[#5399]
+
+M61 Q[#1]  ;#1 dobi iz GUI, shranjena vrednost orodja ob zadnjem izklopu
+
+G43
+G54
+
+O<on_homed> endsub
+M2

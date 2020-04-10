@@ -379,12 +379,14 @@ class gmoccapy( object ):
         # This is needed only because we connect all the horizontal button
         # to hal pins, so the user can conect them to hardware buttons
         self.h_tabs = []
-        tab_main = [( 0, "btn_homing" ), ( 3, "btn_set_value_z1" ), ( 4, "btn_select_tool_by_no1" ), ( 5, "btn_set_feed" ),
+        tab_main = [( 0, "btn_homing" ), ( 3, "btn_set_value_z1" ), ( 5, "btn_select_tool_by_no1" ),
                     ( 7, "btn_tool_touchoff_z1" ), ( 8, "tbtn_fullsize_preview" ), ( 9, "btn_exit" )
         ]
         if not self.lathe_mode:
             tab_main.append( ( 1, "btn_set_value_x1" ) )
             tab_main.append( ( 2, "btn_set_value_y1" ) )
+            if self.axisletter_four:
+                tab_main.append( ( 4, "btn_set_value_a" ) )
         else:
             tab_main.append( ( 6, "btn_tool_touchoff_x1" ) )
             tab_main.append( ( 2, "btn_set_tool_change_pos" ) )
@@ -684,7 +686,7 @@ class gmoccapy( object ):
         widgetlist = ["btn_homing",
                       "hbox_jog_vel", "tbl_jog_btn", "vbtb_jog_incr",
                       "btn_select_tool_by_no",
-                      "btn_set_feed", "btn_tool_touchoff_x1", "btn_tool_touchoff_z1", "btn_touch1",
+                      "btn_tool_touchoff_x1", "btn_tool_touchoff_z1", "btn_touch1",
                       "btn_tool_touchoff_x", "btn_tool_touchoff_z", "btn_set_value_z1", "btn_select_tool_by_no1",
                       "btn_tool1", "btn_load", "btn_run", "btn_stop", "tbtn_pause", "btn_step"
         ]
@@ -872,7 +874,6 @@ class gmoccapy( object ):
     def _init_axis_four( self ):
         self.dro_size = int( self.prefs.getpref( "dro_size", 28, int ) )
         self.widgets.adj_dro_size.set_value( self.dro_size )
-
         if len( self.axis_list ) < 4:
             self.widgets.Combi_DRO_4.hide()
             self.widgets.chk_hide_axis_4.set_active( False )
@@ -896,12 +897,24 @@ class gmoccapy( object ):
         self.axisnumber_four = "xyzabcuvw".index( self.axisletter_four )
         self.widgets.Combi_DRO_4.set_property( "joint_number", self.axisnumber_four )
         self.widgets.Combi_DRO_4.change_axisletter( self.axisletter_four.upper() )
+        self.widgets.Combi_DRO_4.set_property( "wrapped", self.get_ini_info.get_axis_3_wrapped() )
         if self.axisletter_four in "abc":
-            self.widgets.Combi_DRO_4.set_property( "mm_text_template", "%11.2f" )
-            self.widgets.Combi_DRO_4.set_property( "imperial_text_template", "%11.2f" )
+            self.widgets.Combi_DRO_4.set_property( "mm_text_template", "%11.3f" )
+            self.widgets.Combi_DRO_4.set_property( "imperial_text_template", "%11.3f" )
         image = self.widgets["img_home_%s" % self.axisletter_four]
         self.widgets.btn_home_4.set_image( image )
         self.widgets.btn_home_4.set_property( "tooltip-text", _( "Home axis %s" ) % self.axisletter_four.upper() )
+        self.widgets.btn_set_value_a.set_visible(True)
+        self.widgets.btn_space_valuea.set_visible(False)
+        image = gtk.Image()
+        if self.axisletter_four == "a":
+            image.set_from_file(os.path.join(os.path.dirname(__file__), "glade/images/touchoffa_value.png"))
+        if self.axisletter_four == "b":
+            image.set_from_file(os.path.join(os.path.dirname(__file__), "glade/images/touchoffb_value.png"))
+        if self.axisletter_four == "c":
+            image.set_from_file(os.path.join(os.path.dirname(__file__), "glade/images/touchoffc_value.png"))
+        self.widgets.btn_set_value_a.set_image(image)
+      
 
         # We have to change the size of the DRO, to make 4 DRO fit the space we got
         for axis in self.axis_list:
@@ -1793,7 +1806,7 @@ class gmoccapy( object ):
         print "on_homed" #
         self.all_homed = True
         self.widgets.ntb_button.set_current_page( 0 )
-        widgetlist = ["btn_set_value_x1","btn_set_value_y1","btn_set_value_z1", "btn_select_tool_by_no",
+        widgetlist = ["btn_set_value_x1","btn_set_value_a","btn_set_value_y1","btn_set_value_z1", "btn_select_tool_by_no",
                       "btn_tool_touchoff_x1", "btn_tool_touchoff_z1", "btn_select_tool_by_no1", "btn_select_tool_by_no", "rbt_auto"        ]
         self._sensitize_widgets( widgetlist, True )
         self.set_motion_mode(1) #teleop mode
@@ -1959,8 +1972,8 @@ class gmoccapy( object ):
     def on_hal_status_state_off( self, widget ):
         widgetlist = ["btn_homing",
                       "hbox_jog_vel", "tbl_jog_btn", "vbtb_jog_incr",
-                       "btn_select_tool_by_no",
-                      "btn_set_feed", "btn_tool_touchoff_x1", "btn_tool_touchoff_z1", "btn_touch1",
+                      "btn_select_tool_by_no",
+                      "btn_tool_touchoff_x1", "btn_tool_touchoff_z1", "btn_touch1",
                       "btn_tool_touchoff_x", "btn_tool_touchoff_z", "btn_set_value_x1","btn_set_value_y1","btn_set_value_z1", "btn_select_tool_by_no1",
                       "btn_tool1", "btn_run", "btn_stop", "tbtn_pause", "btn_step"
         ]
@@ -1980,8 +1993,8 @@ class gmoccapy( object ):
         widgetlist = ["btn_homing",
                       "hbox_jog_vel", "tbl_jog_btn", "vbtb_jog_incr",
                       "btn_select_tool_by_no",
-                      "btn_set_feed", "btn_tool_touchoff_x1", "btn_tool_touchoff_z1", "btn_touch1",
-                      "btn_tool_touchoff_x", "btn_tool_touchoff_z", "btn_set_value_x1","btn_set_value_y1", "btn_set_value_z1", "btn_select_tool_by_no1",
+                      "btn_tool_touchoff_x1", "btn_tool_touchoff_z1", "btn_touch1",
+                      "btn_tool_touchoff_x", "btn_tool_touchoff_z", "btn_set_value_x1","btn_set_value_a","btn_set_value_y1", "btn_set_value_z1", "btn_select_tool_by_no1",
                       "btn_tool1", "btn_load", "btn_run", "btn_stop", "tbtn_pause", "btn_step"
         ]
         self._sensitize_widgets( widgetlist, True )
@@ -3950,11 +3963,13 @@ class gmoccapy( object ):
     def on_btn_set_value_clicked( self, widget, data = None ):
        if widget.get_active():
         if widget == self.widgets.btn_set_value_x or widget == self.widgets.btn_set_value_x1:
-            axis = "x"
+            axis = "X"
         elif widget == self.widgets.btn_set_value_y or widget == self.widgets.btn_set_value_y1:
-            axis = "y"
+            axis = "Y"
         elif widget == self.widgets.btn_set_value_z or widget == self.widgets.btn_set_value_z1:
-            axis = "z"
+            axis = "Z"
+        elif widget == self.widgets.btn_set_value_a:
+            axis = self.axisletter_four.upper()
         else:
             axis = "Unknown"
             message = _( "Offset %s could not be set, because off unknown axis" ) % axis

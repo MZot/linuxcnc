@@ -84,8 +84,6 @@ class Combi_DRO(gtk.VBox):
                     True, gobject.PARAM_READWRITE | gobject.PARAM_CONSTRUCT),
         'cycle_time' : (gobject.TYPE_INT, 'Cycle Time', 'Time, in milliseconds, that display will sleep between polls',
                     100, 1000, 150, gobject.PARAM_READWRITE | gobject.PARAM_CONSTRUCT),
-        'wrapped' : (gobject.TYPE_BOOLEAN, 'Display in modulo 360', 'modulo 360',
-                    False, gobject.PARAM_READWRITE | gobject.PARAM_CONSTRUCT),
     }
     __gproperties = __gproperties__
 
@@ -398,9 +396,7 @@ class Combi_DRO(gtk.VBox):
         abs_pos = p[self.joint_number]
 
         rel_pos = p[self.joint_number] - self.status.g5x_offset[self.joint_number] - self.status.tool_offset[self.joint_number]
-        if self.wrapped:
-            rel_pos=rel_pos % 360.0
-            
+
         if self.status.rotation_xy != 0:
             t = math.radians(-self.status.rotation_xy)
             x = p[0] - self.status.g5x_offset[0] - self.status.tool_offset[0]

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk+" version="2.16"/>
-  <!-- interface-requires gladevcp 0.0 -->
   <!-- interface-naming-policy project-wide -->
   <object class="GtkAdjustment" id="adf_probe_vel">
     <property name="upper">100</property>
@@ -836,15 +835,6 @@
       </row>
     </data>
   </object>
-  <object class="GtkRadioButton" id="radiobutton1">
-    <property name="label" translatable="yes">radiobutton</property>
-    <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="receives_default">False</property>
-    <property name="use_action_appearance">False</property>
-    <property name="active">True</property>
-    <property name="draw_indicator">True</property>
-  </object>
   <object class="GtkWindow" id="window1">
     <property name="width_request">979</property>
     <property name="height_request">750</property>
@@ -1339,6 +1329,15 @@
                                                         <property name="row_spacing">3</property>
                                                         <property name="homogeneous">True</property>
                                                         <child>
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
                                                           <object class="GtkButton" id="btn_y_plus">
                                                             <property name="label">Y+</property>
                                                             <property name="width_request">50</property>
@@ -1496,6 +1495,12 @@
                                                             <property name="x_options">GTK_SHRINK</property>
                                                             <property name="y_options">GTK_SHRINK</property>
                                                           </packing>
+                                                        </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
+                                                          <placeholder/>
                                                         </child>
                                                         <child>
                                                           <placeholder/>
@@ -1839,6 +1844,18 @@
                                                 <property name="n_rows">3</property>
                                                 <property name="n_columns">4</property>
                                                 <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
                                                   <object class="GtkLabel" id="lbl_tool">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
@@ -1961,18 +1978,6 @@
                                                     <property name="top_attach">1</property>
                                                     <property name="bottom_attach">2</property>
                                                   </packing>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
                                                 </child>
                                               </object>
                                             </child>
@@ -3673,6 +3678,18 @@
                             <property name="can_focus">False</property>
                             <property name="n_columns">16</property>
                             <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
                               <object class="GtkLabel" id="lbl_space">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -3820,6 +3837,12 @@
                             <child>
                               <placeholder/>
                             </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -3937,6 +3960,21 @@
                                                 <property name="can_focus">False</property>
                                                 <property name="n_rows">7</property>
                                                 <property name="n_columns">12</property>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
+                                                <child>
+                                                  <placeholder/>
+                                                </child>
                                                 <child>
                                                   <object class="GtkLabel" id="lbl_comm">
                                                     <property name="visible">True</property>
@@ -4905,21 +4943,6 @@
                                                     <property name="top_attach">5</property>
                                                     <property name="bottom_attach">6</property>
                                                   </packing>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
-                                                </child>
-                                                <child>
-                                                  <placeholder/>
                                                 </child>
                                               </object>
                                               <packing>
@@ -11079,7 +11102,6 @@ Date</property>
                           <object class="GtkToggleButton" id="btn_set_tool_change_pos">
                             <property name="width_request">85</property>
                             <property name="height_request">56</property>
-                            <property name="sensitive">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="use_action_appearance">False</property>
@@ -11133,6 +11155,55 @@ Date</property>
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkHBox" id="hbox34">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkToggleButton" id="btn_set_value_a">
+                            <property name="width_request">85</property>
+                            <property name="height_request">56</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="use_action_appearance">False</property>
+                            <signal name="clicked" handler="on_btn_set_value_clicked" swapped="no"/>
+                            <child>
+                              <object class="GtkImage" id="img_set_value_a">
+                                <property name="width_request">48</property>
+                                <property name="height_request">48</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="pixbuf">images/touchoffa_value.png</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="btn_space_valuea">
+                            <property name="width_request">85</property>
+                            <property name="height_request">56</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkToggleButton" id="btn_select_tool_by_no1">
                         <property name="width_request">85</property>
                         <property name="height_request">56</property>
@@ -11146,29 +11217,6 @@ Date</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="pixbuf">images/tool_by_no.svg</property>
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">4</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkToggleButton" id="btn_set_feed">
-                        <property name="width_request">85</property>
-                        <property name="height_request">56</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_btn_set_feed_clicked" swapped="no"/>
-                        <child>
-                          <object class="GtkImage" id="img_set_feed">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="pixbuf">images/feed.png</property>
                           </object>
                         </child>
                       </object>
@@ -13430,5 +13478,14 @@ LinuxCNC</property>
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkRadioButton" id="radiobutton1">
+    <property name="label" translatable="yes">radiobutton</property>
+    <property name="visible">True</property>
+    <property name="can_focus">True</property>
+    <property name="receives_default">False</property>
+    <property name="use_action_appearance">False</property>
+    <property name="active">True</property>
+    <property name="draw_indicator">True</property>
   </object>
 </interface>

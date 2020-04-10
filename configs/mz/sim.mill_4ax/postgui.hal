@@ -1,0 +1,82 @@
+###################################################################
+#        moccapy_postgui.hal file from Norbert Schechner          #
+###################################################################
+
+
+
+
+loadrt message names=pokeyserrmessage  messages="PoKeys connection error"
+addf pokeyserrmessage servo-thread
+
+net spindle-speed-limited  =>  abs_spindle_feedback.in
+net spindle-abs  abs_spindle_feedback.out  =>  gmoccapy.spindle_feedback
+net spindle-at-speed      gmoccapy.spindle_at_speed_led
+
+# the unlink pin commands are only used, because they are connected 
+# in core_sim.hal and we use this file to simulate
+unlinkp iocontrol.0.tool-change
+unlinkp iocontrol.0.tool-changed
+
+net tool-change      gmoccapy.toolchange-change   <=  iocontrol.0.tool-change 
+net tool-changed     gmoccapy.toolchange-changed  <=  iocontrol.0.tool-changed
+net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
+
+net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
+net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
+
+
+#setp pokeys.0.devSerial 36110
+
+
+
+
+
+#jogging stuff
+#setp lathe-jog.0.spindle-counts-per-rev 48
+#setp lathe-jog.0.hwheel-increment       0.0025
+#setp lathe-jog.0.jog-rapid-speed        500               
+#net buttonZm     lathe-jog.0.jog-zm					#tipke, stikala
+#net buttonZp     lathe-jog.0.jog-zp
+#net buttonXm     lathe-jog.0.jog-xm
+##net buttonXp     lathe-jog.0.jog-xp
+#net buttonRapid  lathe-jog.0.jog-rapid
+#net hwheel-sel-z lathe-jog.0.hwheel-z
+#net hwheel-sel-x lathe-jog.0.hwheel-x
+#net handwheelcnt lathe-jog.0.hwheel-count  <= hm2_5i25.0.encoder.05.count  #handwheel encoder count
+#net spindlecnt   lathe-jog.0.spindle-count <= encoder_0.counts             #spindle encoder count
+#net overrideui   lathe-jog.0.override <= halui.feed-override.value
+#net gmoccapyfeed lathe-jog.0.feed   <= gmoccapy.feed
+#net isg95        lathe-jog.0.is-g95 <= gmoccapy.g95-active
+#net xjogcounts   axis.0.jog-counts  <= lathe-jog.0.jog-x-count 
+#net zjogcounts   axis.2.jog-counts  <= lathe-jog.0.jog-z-count
+##net xjogcntena   axis.0.jog-enable  <= lathe-jog.0.jog-x-enable
+#net zjogcntena   axis.2.jog-enable  <= lathe-jog.0.jog-z-enable  
+#et jogscalex    axis.0.jog-scale   <= lathe-jog.0.jog-scale-x
+#net jogscalez    axis.2.jog-scale   <= lathe-jog.0.jog-scale-z
+#net haluixp      halui.jog.0.plus   <= lathe-jog.0.g94-jog-xp
+#net haluixm      halui.jog.0.minus  <= lathe-jog.0.g94-jog-xm
+#net haluizp      halui.jog.2.plus   <= lathe-jog.0.g94-jog-zp
+#net haluizm      halui.jog.2.minus  <= lathe-jog.0.g94-jog-zm
+#net haluijogsp   halui.jog-speed    <= lathe-jog.0.g94-jog-speed  
+setp axis.0.jog-vel-mode 1
+setp axis.2.jog-vel-mode 1
+
+
+
+#feed override
+#net  overridecnts halui.feed-override.counts #<= hm2_5i25.0.encoder.05.count
+#net handwheelcnt halui.feed-override.counts
+#net handwheelcnt halui.rapid-override.counts
+setp halui.feed-override.direct-value  0  #  0 ce imas enkoder, 1 ce imas potenciometer
+setp halui.rapid-override.direct-value 0
+setp halui.rapid-override.count-enable 1
+setp halui.feed-override.count-enable  1
+setp halui.feed-override.scale         0.01
+setp halui.rapid-override.scale        0.01
+
+setp gmoccapy.sp-gear-2 1
+
+
+
+
+

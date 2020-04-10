@@ -290,6 +290,13 @@ class GetIniInfo:
             return False
         return float(temp)
 
+    def get_axis_3_wrapped(self):
+        temp = self.inifile.find("AXIS_3", "WRAPPED_ROTARY")
+        if not temp or temp == "0":
+            return False
+        return True
+
+
     def get_RS274_start_code(self):
         temp = self.inifile.find("RS274NGC", "RS274NGC_STARTUP_CODE")
         if not temp:
@@ -310,4 +317,3 @@ class GetIniInfo:
                     return None
             messages = zip(message_text, message_type, message_pinname)
             return messages
-
