@@ -115,6 +115,6 @@ rbtn_use_m6 = False
 offset_axis_X = 44.0
 offset_axis_a = 5.0
 offset_axis_Z = 5.0
-offset_axis_A = 44.0
+offset_axis_A = 33.0
 offset_axis_Y = 0
 

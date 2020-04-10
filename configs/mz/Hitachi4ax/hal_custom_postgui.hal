@@ -1,0 +1,163 @@
+# Include your custom_postgui HAL commands here
+# This file will not be overwritten when you run PNCconf again
+
+
+#############################
+#setp gmoccapy.max-vel-counts 1000
+#setp gmoccapy.jog-speed-counts 1000
+setp pokeys.0.devSerial 36110
+
+net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
+net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
+
+# the unlink pin commands are only used, because they are connected 
+# in core_sim.hal and we use this file to simulate
+unlinkp iocontrol.0.tool-change
+unlinkp iocontrol.0.tool-changed
+
+net tool-change      gmoccapy.toolchange-change   <=  iocontrol.0.tool-change 
+net tool-changed     gmoccapy.toolchange-changed  <=  iocontrol.0.tool-changed
+net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
+
+net spindle-vel-cmd-rps   gmoccapy.spindle_feedback
+net spindle-at-speed      gmoccapy.spindle_at_speed_led
+
+
+net sw_reset pokeys.0.in-11
+net sw_start pokeys.0.in-13
+net sw_stop  pokeys.0.in-12
+net vodaoff pokeys.0.in-25 halui.flood.off
+net vodaon  pokeys.0.in-24 halui.flood.on  
+net sw_spindle-manual-cw  pokeys.0.in-16
+net sw_spindle-manual-stop pokeys.0.in-17
+net mon   pokeys.0.in-14 halui.machine.on
+net moff  pokeys.0.in-15 halui.machine.off
+
+net tuncl plc.tuncl pokeys.0.in-26
+net unclamp-tool    plc.ytuncl
+net spindle-at-zero plc.sp-stndstill
+
+# -----tipka reset ----
+net reset => gmoccapy.delete-message
+net reset    gmoccapy.nc-abort
+net reset => halui.abort
+net reset    plc.abort
+
+net start    gmoccapy.nc-start
+net stop     halui.program.pause
+
+net swj1 plc.sw-j1 pokeys.0.in-19
+net swj2 plc.sw-j2 pokeys.0.in-28
+net swj4 plc.sw-j4 pokeys.0.in-18
+
+net swinc1   plc.sw-i1   pokeys.0.in-21
+net swinc100 plc.sw-i100 pokeys.0.in-20
+net inc      plc.inc     
+net selx     plc.j1      halui.joint.0.select
+net sely     plc.j2      halui.joint.1.select
+net selz     plc.j3      halui.joint.2.select
+net sela     plc.j4      halui.joint.3.select
+net jogp     halui.jog.selected.plus    pokeys.0.in-22
+net jogn     halui.jog.selected.minus   pokeys.0.in-23
+net jspeed   plc.jogspeed  halui.jog-speed
+net actfovr  plc.ovr       halui.feed-override.value
+#net ff       plc.feed      gmoccapy.feed
+setp plc.feed 3000
+setp halui.jog-deadband 0
+
+net afovr plc.afovr hm2_5i25.0.7i77.0.0.analogin1
+net asovr plc.asovr hm2_5i25.0.7i77.0.0.analogin0
+
+net fovr plc.fovr
+net sovr plc.sovr
+
+net fovr     halui.rapid-override.counts
+net fovr     halui.feed-override.counts
+net sovr     halui.spindle-override.counts
+setp halui.spindle-override.direct-value 1
+setp halui.feed-override.direct-value 1
+setp halui.rapid-override.direct-value 1
+setp halui.spindle-override.scale 0.02
+setp halui.feed-override.scale 0.02
+setp halui.rapid-override.scale 0.02
+
+
+
+
+#  ---mpg signals---
+setp hm2_5i25.0.encoder.03.counter-mode 1
+net hwmpg hm2_5i25.0.encoder.03.rawcounts
+
+
+#       for axis x MPG
+setp    axis.0.jog-vel-mode 1
+net inc    =>  axis.0.jog-scale
+net   selx      =>  axis.0.jog-enable
+net joint-selected-count =>  axis.0.jog-counts  #pulzi iz kolesa
+
+#       for axis y MPG
+setp    axis.1.jog-vel-mode 1
+net inc    =>  axis.1.jog-scale
+net  sely      =>  axis.1.jog-enable
+net joint-selected-count =>  axis.1.jog-counts
+
+#       for axis z MPG
+setp    axis.2.jog-vel-mode 1
+net inc    =>  axis.2.jog-scale
+net    selz     =>  axis.2.jog-enable
+net joint-selected-count =>  axis.2.jog-counts
+
+#       for axis a MPG
+setp    axis.3.jog-vel-mode 1
+net inc    =>  axis.3.jog-scale
+net    sela     =>  axis.3.jog-enable
+net joint-selected-count =>  axis.3.jog-counts
+
+
+
+loadusr -W whb04b
+
+net whbj1 whb04b.sel_x
+net whbj2 whb04b.sel_y
+net whbj3 whb04b.sel_z
+net whbj4 whb04b.sel_a
+net whbinc whb04b.inc
+net whbmpgcnts whb04b.mpg_cnt
+
+net whbreset whb04b.reset
+net whbstart whb04b.start
+net whbstop whb04b.stop
+net whbspstart whb04b.macro3
+net whbspstop whb04b.macro4
+
+net whbreset plc.whb-reset
+net whbstart plc.whb-nc-start
+net whbstop plc.whb-nc-stop
+net whbspstart plc.whb-spin-start
+net whbspstop plc.whb-spin-stop
+
+net whbj1 plc.whb-j1
+net whbj2 plc.whb-j2
+net whbj3 plc.whb-j3
+net whbj4 plc.whb-j4
+
+
+net sw_reset            plc.sw-reset
+net sw_start            plc.sw-nc-start
+net sw_stop             plc.sw-nc-stop
+net sw_spindle-manual-cw plc.sw-spin-start
+net sw_spindle-manual-stop  plc.sw-spin-stop 
+net whbinc              plc.whb-inc
+net whbmpgcnts          plc.whb-mpg
+net hwmpg               plc.hw-mpg
+net joint-selected-count plc.mpg-cnts
+
+
+net spindle-manual-cw   plc.spin-start
+net spindle-manual-stop plc.spin-stop
+net reset               plc.reset
+net start               plc.start
+net stop                plc.stop
+
+
+

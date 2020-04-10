@@ -26,8 +26,8 @@ net spindle-at-speed      gmoccapy.spindle_at_speed_led
 net sw_reset pokeys.0.in-11
 net sw_start pokeys.0.in-13
 net sw_stop  pokeys.0.in-12
-net vodaoff pokeys.0.in-24 halui.flood.off
-net vodaon  pokeys.0.in-25 halui.flood.on  
+net vodaoff pokeys.0.in-25 halui.flood.off
+net vodaon  pokeys.0.in-24 halui.flood.on  
 net sw_spindle-manual-cw  pokeys.0.in-16
 net sw_spindle-manual-stop pokeys.0.in-17
 net mon   pokeys.0.in-14 halui.machine.on
