@@ -77,6 +77,10 @@ setp halui.rapid-override.scale        0.01
 setp gmoccapy.sp-gear-2 1
 
 
+# -----tipka reset ----
+net reset => gmoccapy.delete-message
+net reset    gmoccapy.nc-abort
+net reset => halui.abort
 
-
-
+net start    gmoccapy.nc-start
+net stop     halui.program.pause

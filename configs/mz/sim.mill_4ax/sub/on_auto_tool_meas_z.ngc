@@ -1,0 +1,6 @@
+o<on_auto_tool_meas_z> sub
+
+(debug, on_auto_tool_meas_z executing)
+
+o<on_auto_tool_meas_z> endsub
+M2
