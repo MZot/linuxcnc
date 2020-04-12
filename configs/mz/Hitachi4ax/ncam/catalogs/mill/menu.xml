@@ -68,13 +68,13 @@
         <menu action='misc' name=_('Miscellaneous')_ icon='misc.png'>
             <menuitem action='stock' name=_('Raw Material')_ tool_tip=_('Show a temporary image of rough material')_ icon="stock.png" src="mill/material.cfg"/>
             <menuitem action='gcode' name=_('Custom G Code')_ tool_tip=_('Write custom gcode')_ icon="gcode.png" src="gcode.cfg"/>
-          
+            <menuitem action='gcode_file'  name=_('Insert a G Code File')_ tool_tip= _('Include a custom gcode file')_ icon="file-gcode.png" src="i_gcode.cfg"/>
             <menuitem action='comment' name=_('Comment')_ tool_tip=_('Add comments')_ icon="comment.png" src="comment.cfg"/>
-            
+
         </menu>
     </menu>
 
-    
+
     <toolbar>
         <toolitem action='chng_end_mill' />
         <toolitem action='circle' />

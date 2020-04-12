@@ -19,6 +19,8 @@ net tool-change      gmoccapy.toolchange-change   <=  iocontrol.0.tool-change
 net tool-changed     gmoccapy.toolchange-changed  <=  iocontrol.0.tool-changed
 net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
 
+net tool-prep-loop iocontrol.0.tool-prepare iocontrol.0.tool-prepared
+
 net spindle-vel-cmd-rps   gmoccapy.spindle_feedback
 net spindle-at-speed      gmoccapy.spindle_at_speed_led
 

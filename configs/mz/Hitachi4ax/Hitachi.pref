@@ -22,7 +22,7 @@ scale_max_vel = 197.9
 scale_jog_vel = 600.0
 scale_spindle_override = 1
 scale_feed_override = 1
-open_file = /home/linuxcnc/linuxcnc/nc_files/ncam.xml
+open_file = /home/cnc/LinuxCNC/linuxcnc/configs/mz/Hitachi4ax/sub/on_homed.ngc
 screen1 = fullscreen
 x_pos = 40
 y_pos = 30
@@ -101,7 +101,7 @@ system_name_G59 = PRIMEZ
 system_name_G59.1 = G59.1
 system_name_G59.2 = G59.2
 system_name_G59.3 = G59.3
-ncam_file = /home/linuxcnc/linuxcnc/nc_files/ncam.xml
+ncam_file = None
 rbtn_use_m6 = False
 toggle_readout = True
 macro_name1 = Glava
@@ -146,5 +146,5 @@ macro6 = G0 Z10
 	;G89   ;retract na Z
 	G99    ;retract na R
 	G83 X0 Y0 Z-20 R1 Q4  ;peck drilling
-last_tool = 10
+last_tool = 5
 

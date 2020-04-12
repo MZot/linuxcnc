@@ -9,6 +9,7 @@ sudo apt-get install libusb-1.0-0-dev
 cd pokeyslib
 sudo make -f Makefile.noqmake install
 sudo chmod 755 /usr/lib/libPoKeys.so
+sudo chmod 755 /usr/include/PoKeysLib.h
 
 cd /etc/udev/rules.d
 sudo nano 90-usb-pokeys.rules
@@ -18,6 +19,9 @@ sudo udevadm control --reload-rules
 
 
 cd pokeys
+
+
+
 sudo halcompile ./pokeys.comp
 gcc -Wall  -Os -g -I. -I/usr/include/libusb-1.0 -I/usr/include -L/usr/lib/ -L/usr/lib/arm-linux-gnueabihf/ -lPoKeys -lusb-1.0 -I/usr/realtime-3.4-9-rtai-686-pae/include -I. -I/usr/realtime-3.4-9-rtai-686-pae/include -I/usr/include/i386-linux-gnu -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-math-errno -funsafe-math-optimizations -fno-rounding-math -fno-signaling-nans -fcx-limited-range -mhard-float -DRTAI=3 -fno-fast-math -mieee-fp -fno-unsafe-math-optimizations -DRTAPI -D_GNU_SOURCE -Drealtime -D__MODULE__ -I/usr/include/linuxcnc -Wframe-larger-than=2560 -URTAPI -U__MODULE__ -DULAPI -Os  -o pokeys ./pokeys.c -Wl,-rpath,/lib -L/lib -llinuxcnchal
 sudo mv ./pokeys /usr/bin/pokeys
@@ -42,6 +46,10 @@ pin out bit alive;
 pin in unsigned cycletime = 40000;
 
 license "GPL";
+
+
+option extra_link_args "-lPoKeys";
+
 ;;
 
 #include "PoKeysLib.h"
