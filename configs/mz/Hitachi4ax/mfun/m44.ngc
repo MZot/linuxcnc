@@ -2,10 +2,7 @@
 o<m44> sub
 (Remap M44)
 
-;(debug, m44.ngc executing)
-
-M5
-M143
+(debug, m44.ngc executing)
 
 o<m44>   endsub
 m2

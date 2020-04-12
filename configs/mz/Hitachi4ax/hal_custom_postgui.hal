@@ -160,6 +160,3 @@ net spindle-manual-stop plc.spin-stop
 net reset               plc.reset
 net start               plc.start
 net stop                plc.stop
-
-
-

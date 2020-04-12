@@ -1,191 +1,138 @@
-component sp_gearbox "automatic spindle gearbox control";
-/*
-Copyright: 2018
-Author:  Mit Zot
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+component sp_gearbox "spindle automatic gearbox control";
 
 //inputs
-pin in bit   spindle_on;   //motion.spindle-on
-pin in float speed_cmd;    //motion.spindle-speed-cmd-rps spindle S value without override
-pin in float speed_in;     //motion.spindle-speed-out-rps spindle rpm with override 
-pin in float speed_fb;     //actual speed from encoder for at speed and N==0 detection
-pin in bit   N0;           //N==0 from servo
-pin in bit   servo_rdy;    //ready signal from servo
-pin in bit   switch_1;     //gearbox active 1st gear fb, debounced internally
-pin in bit   switch_2;     //gearbox active 2nd gear fb, debounced
-pin in bit   M41;          //manual gear selection, 1st gear 
-pin in bit   M42;          //manual gear selection, 2nd gear
-pin in bit   at_speed_in;  //at speed from servo
-pin in bit   EMG_STP;      //_emergency stop_
-pin in bit   abort;        //motion.abort       
+pin in float sp_velo_cmd;   //spindle commanded value
+pin in float sp_velo_in;    //actual velo from encoder
+pin in float sp_override;   //custom spindle override, build-in linuxcnc should be set to 100% all the time. Range in percent %
+pin in bit   gb_1st_gear_switch; //gearbox active 1st gear, should go trough debounce component
+pin in bit   gb_2nd_gear_switch; //2nd active, should go trough debounce
+pin in bit   M40; //automatic change of gear active (custom M functions)
+pin in bit   M41; //manual gear change, 1st gear commanded
+pin in bit   M42; //manual gear change, 2nd gear commanded
+pin in bit   sp_is_stopped;	//sp_stopped from TON.OUT
+pin in bit   EMG_STP;       //emergency stop
 
 //parameters
-pin in float    scale_1;      //scale values
-pin in float    scale_2;      //
-pin in unsigned max_speed_1;  //speed ranges rpm
-pin in unsigned min_speed_2;  // 
+pin in float sp_scale_1st_gear;  
+pin in float sp_scale_2nd_gear;
+pin in unsigned sp_1st_gear_min_velo; 
+pin in unsigned sp_1st_gear_max_velo;
+pin in unsigned sp_2nd_gear_min_velo;   
+pin in float sp_standstill_velo_treshold; 	//spindle is considered stopped
+pin in float sp_gear_change_velo;  		//spindle motor velo during gear change
 
 //outputs
-pin out float speed_out;    //analog value for spindle servo, (speed_in * scale_x)
-pin out bit gear_1;         //gearbox activate 1st gear valve
-pin out bit gear_2;         //gearbox activate 2nd gear valve
-pin out bit at_speed;       //spindle is at speed motion.spindle.at-speed
-pin out bit error;          //timeout
+pin out float sp_velo_out;      //analog value for spindle servo
+pin out bit gb_1st_gear_valve;  //gearbox activate 1st gear
+pin out bit gb_2nd_gear_valve;
+pin out bit sp_at_speed;	//spindle is at speed
+pin out bit sp_standstill;	//spindle velo is less than sp_standstill_velo_treshold
+pin out unsigned state;		//statemachine var
+pin out bit sp_stopped;		//spindle speed==0, connect to TON.IN
 
-pin out unsigned state;     //statemachine counter
 
 function _;
 license "GPL"; // indicates GPL v2 or later
 ;;
 
 
-#define STANDSTILL_SPEED 0.1  //rps
-#define GEARCHANGE_SPEED 0.2  //rps
-
-typedef struct {
-        int T;
-        int ET;
-        bool IN;
-        bool OUT;
-} timer;
-
-static timer stndstill = {.T =  500, .ET = 0, .OUT = false, .IN = false};
-static timer atspeed   = {.T =  500, .ET = 0, .OUT = false, .IN = false};
-static timer timeout   = {.T = 5000, .ET = 0, .OUT = false, .IN = false};
-static timer sw1       = {.T =  200, .ET = 0, .OUT = false, .IN = false}; //1st gear switch debounce
-static timer sw2       = {.T =  200, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
-
-static bool spindle_on_old = 0;
-static bool enable_sp = 0;
-static bool gear1_ok = 0;
-static bool gear2_ok = 0;
-
-void iec_ton(timer *t){
-   if(t->IN) t->ET++;
-   else      t->ET = 0; 
-   if(t->ET >= t->T){
-      t->ET = t->T;
-      t->OUT = true;
-   }
-   else t->OUT = false;
+/////////////////////statemachine start////////////////////////////////
+if(state==0){
+	
+	if(!M40 && M41 && !M42)state=30;                     //1st gear commanded  M41
+	else if(!M40 && !M41 && M42)state=10;    	     //2nd gear commanded  M42
+	else if	( fabs(sp_velo_cmd) > sp_1st_gear_max_velo){  //2nd gear needed M40
+		state=10;
+	}
+	else if ( (fabs(sp_velo_cmd) > sp_1st_gear_min_velo) && (fabs(sp_velo_cmd) < sp_2nd_gear_min_velo)) { //1st gear needed M40
+		state=30;
+	}
+		//˘˘ commanded somewhere in between 1st and 2nd first time after pwr on˘˘ 
+	else if( (fabs(sp_velo_cmd) > sp_2nd_gear_min_velo) && (fabs(sp_velo_cmd) < sp_1st_gear_max_velo)  ){
+		state=50;
+		if(gb_1st_gear_switch && !gb_2nd_gear_switch)gb_1st_gear_valve=1;      //set initial valve state
+		else if(!gb_1st_gear_switch && gb_2nd_gear_switch)gb_2nd_gear_valve=1; //
+		else state=10;  				//gearbox not in any gear, activate 2nd gear
+	}  
+	else {  //spindle not commanded, no need to change gears
+		state=50;
+	}	
 }
 
-FUNCTION(_){
-     /////////////////////statemachine start////////////////////////////////
-     if(state==0){
-              if(!EMG_STP){
-                  speed_out = 0;     
-                  gear_1 = 0;
-                  gear_2 = 0;
-                  spindle_on_old = 0;
-              }
-              else {
-                    if(spindle_on && !spindle_on_old){
-                      if      (abs(speed_cmd) > max_speed_1/60.0) state = 10;  //2nd gear needed M40 automatic  
-                           else if (abs(speed_cmd) < min_speed_2/60.0) state = 30;  //1st gear needed M40 automatic
-                      else if ((sw1.OUT && !sw2.OUT && gear_2) || (!sw1.OUT && sw2.OUT && gear_1)) 
-                             state = 50;  // max_speed_1 > S > min_speed_2, gear ok
-                      else   state = 30;  // gear nok, activate 1st
-                    }
-                    spindle_on_old = spindle_on;
+///////////////////////////////////////////////////////////////////////
+else if(state==10){  //2nd gear needed
+	if(gb_2nd_gear_switch && gb_2nd_gear_valve){  //already in second gear, dont do anything
+	 state=50;
+	}
+	else{
+	 sp_velo_out=0;  //stop spindle
+	 if(sp_standstill) state=20;  //wait for spindle to stop
+	}
+}
 
-                    if     ( M41 && !M42) state = 30;         //1st gear commanded  M41 manual
-                    else if(!M41 &&  M42) state = 10;         //2nd gear commanded  M42 manual
+///////////////////////////////////////////////////////////////////////
+else if(state==20){  //activate second gear
+	gb_1st_gear_valve=0; 
+	gb_2nd_gear_valve=1;
+	sp_velo_out=sp_gear_change_velo * sp_scale_2nd_gear; //rotate spindle motor slowly so gears can engage
+	if(gb_2nd_gear_switch==1 && gb_1st_gear_switch==0){	 //wait for 2nd gear switch
+	 state=50;
+	 sp_velo_out=0;
+	}
+	
+}
 
-                    if (gear1_ok) speed_out = speed_in * scale_1;      
-                    else if(gear2_ok) speed_out = speed_in * scale_2;
-                    else speed_out = 0; 
-              }//emg
-     
-     }///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+else if(state==30){  //1st gear needed
+	if(gb_1st_gear_switch && gb_1st_gear_valve){  //already in 1st gear, dont do anything
+	 state=50;
+	}
+	else{
+	 sp_velo_out=0;  //stop spindle
+	 if(sp_standstill) state=40;  //wait for spindle to stop
+	}
+}
 
-     else if(state==10){  //2nd gear needed
-          if(gear2_ok){  //already in second gear
-           state = 50;
-          }
-          else{
-           speed_out = 0;  //stop spindle
-           enable_sp = 0;
-           if(stndstill.OUT) state = 20;  //wait for spindle to stop
-          }
-     }///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+else if(state==40){  //activate first gear
+	gb_1st_gear_valve=1; 
+	gb_2nd_gear_valve=0;
+	sp_velo_out=sp_gear_change_velo * sp_scale_1st_gear; //rotate spindle motor slowly so gears can engage
+	if(gb_1st_gear_switch==1 && gb_2nd_gear_switch==0){	 //wait for 1st gear switch
+	 state=50;
+	 sp_velo_out=0;
+	}
+	
+}
 
-     else if(state==20){  //activate second gear
-          gear_1 = 0; 
-          gear_2 = 1;
-          speed_out = GEARCHANGE_SPEED * scale_2; //rotate spindle motor slowly until gears engage
-          if(gear2_ok){      //wait for 2nd gear switch
-           state = 50;
-           speed_out = 0;
-          }
-          
-     }///////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////// 
+else if(state==50){  //gear ratio is set, output analog value / custom spindle override, so it doesnt change gears when you turn the pot
+	if(gb_1st_gear_switch)sp_velo_out=sp_velo_cmd * sp_scale_1st_gear * (sp_override/100.0);
+	if(gb_2nd_gear_switch)sp_velo_out=sp_velo_cmd * sp_scale_2nd_gear * (sp_override/100.0);
+	state=0;
+}
 
-     else if(state==30){  //1st gear needed
-          if(gear1_ok){  //already in 1st gear
-           state = 50;
-          }
-          else{
-           speed_out = 0;  //stop spindle
-           enable_sp = 0;
-           if(stndstill.OUT) state = 40;  //wait for spindle to stop
-          }
-     }///////////////////////////////////////////////////////////////////////
+///////////////////////statemachine end////////////////////////////////
 
-     else if(state==40){  //activate first gear
-          gear_1 = 1; 
-          gear_2 = 0;
-          speed_out = GEARCHANGE_SPEED * scale_1; //rotate spindle motor slowly until gears engage
-          if(gear1_ok){      //wait for 1st gear switch
-           state = 50;
-           speed_out  = 0;
-          }
-          
-     }/////////////////////////////////////////////////////////////////////// 
 
-     else if(state==50){  //gear ratio is set, output analog value
-                state = 0;              
-                enable_sp = 1;
-     }
-     
-     ///////////////////////statemachine end////////////////////////////////
 
-     //emg stop
-     if(!EMG_STP || abort){
-          speed_out=0; 
-          state=0;     
-     }
+//spindle at speed
+if(fabs(sp_velo_in) > (fabs(sp_velo_cmd)*0.5)) sp_at_speed=1; //indicates spindle at speed after it has achieved 50%
+	else sp_at_speed=0;
 
-     gear1_ok =  sw1.OUT && !sw2.OUT &&  gear_1 && !gear_2;
-     gear2_ok = !sw1.OUT &&  sw2.OUT && !gear_1 &&  gear_2;  
-     stndstill.IN = ((abs(speed_fb) < STANDSTILL_SPEED)) && N0; 
-     atspeed.IN   = enable_sp && servo_rdy && at_speed_in && (gear1_ok || gear2_ok);
-     at_speed = atspeed.OUT;
-     sw1.IN = switch_1;
-     sw2.IN = switch_2;
-     timeout.IN = (state != 0);
-     error = timeout.OUT;
+//connect to TON.in delay timer
+if(fabs(sp_velo_in) < sp_standstill_velo_treshold)sp_stopped=1;  //sets spindle is standstill after TON delay
+	else sp_stopped=0;
 
-     iec_ton(&stndstill);  //call "function blocks"
-     iec_ton(&atspeed);
-     iec_ton(&timeout);
-     iec_ton(&sw1);
-     iec_ton(&sw2);
+//soindle is stopped from TON.out	  
+sp_standstill=sp_is_stopped;
 
-}//FUNCTION     
+
+//emg stop
+if(!EMG_STP){
+	sp_velo_out=0; 
+	state=0;	
+}
+	
 
 

@@ -41,14 +41,14 @@ if(state==0){
 	
 	if(!M40 && M41 && !M42)state=30;                     //1st gear commanded  M41
 	else if(!M40 && !M41 && M42)state=10;    	     //2nd gear commanded  M42
-	else if	( fabs(sp_velo_cmd) > sp_1st_gear_max_velo){  //2nd gear needed M40
+	else if	( abs(sp_velo_cmd) > sp_1st_gear_max_velo){  //2nd gear needed M40
 		state=10;
 	}
-	else if ( (fabs(sp_velo_cmd) > sp_1st_gear_min_velo) && (fabs(sp_velo_cmd) < sp_2nd_gear_min_velo)) { //1st gear needed M40
+	else if ( (abs(sp_velo_cmd) > sp_1st_gear_min_velo) && (abs(sp_velo_cmd) < sp_2nd_gear_min_velo)) { //1st gear needed M40
 		state=30;
 	}
 		//˘˘ commanded somewhere in between 1st and 2nd first time after pwr on˘˘ 
-	else if( (fabs(sp_velo_cmd) > sp_2nd_gear_min_velo) && (fabs(sp_velo_cmd) < sp_1st_gear_max_velo)  ){
+	else if( (abs(sp_velo_cmd) > sp_2nd_gear_min_velo) && (abs(sp_velo_cmd) < sp_1st_gear_max_velo)  ){
 		state=50;
 		if(gb_1st_gear_switch && !gb_2nd_gear_switch)gb_1st_gear_valve=1;      //set initial valve state
 		else if(!gb_1st_gear_switch && gb_2nd_gear_switch)gb_2nd_gear_valve=1; //
@@ -117,11 +117,11 @@ else if(state==50){  //gear ratio is set, output analog value / custom spindle o
 
 
 //spindle at speed
-if(fabs(sp_velo_in) > (fabs(sp_velo_cmd)*0.5)) sp_at_speed=1; //indicates spindle at speed after it has achieved 50%
+if(abs(sp_velo_in) > (abs(sp_velo_cmd)*0.5)) sp_at_speed=1; //indicates spindle at speed after it has achieved 50%
 	else sp_at_speed=0;
 
 //connect to TON.in delay timer
-if(fabs(sp_velo_in) < sp_standstill_velo_treshold)sp_stopped=1;  //sets spindle is standstill after TON delay
+if(abs(sp_velo_in) < sp_standstill_velo_treshold)sp_stopped=1;  //sets spindle is standstill after TON delay
 	else sp_stopped=0;
 
 //soindle is stopped from TON.out	  

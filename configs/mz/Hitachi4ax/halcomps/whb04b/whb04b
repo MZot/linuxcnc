@@ -107,7 +107,7 @@ try:
             h.macro10 = data[2] == 16
 
             if data[6] > 127:
-             h.mpg_cnt=h.mpg_cnt+(256 - data[6])*-1
+             h.mpg_cnt=h.mpg_cnt-(256 - data[6])
             else:
              h.mpg_cnt=h.mpg_cnt+data[6]
 

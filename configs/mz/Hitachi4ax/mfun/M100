@@ -1,0 +1,5 @@
+#!/bin/bash
+
+halcmd setp gmoccapy.spindle_load_bar 33
+
+exit 0
