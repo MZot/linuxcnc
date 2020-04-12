@@ -1,7 +1,8 @@
-/configs/mz/*/*.tbl
-/configs/mz/*/ncam
-/configs/mz/*/position.txt
-/configs/mz/*/*.var
+/configs/mz/**/*.tbl
+/configs/mz/**/*.pref
+/configs/mz/**/ncam
+/configs/mz/**/position.txt
+/configs/mz/**/*.var
 autosave.halscope
 build-stamp
 *.pyc
