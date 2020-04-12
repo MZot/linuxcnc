@@ -4555,6 +4555,20 @@ class gmoccapy( object ):
             self.command.mode( linuxcnc.MODE_MANUAL )
             self.command.wait_complete()
 
+
+    def auto_tool_measure_x(self):
+        self.command.mode( linuxcnc.MODE_MDI )
+        self.command.wait_complete()
+        self.command.mdi("O<on_auto_tool_meas_x> call")
+        
+    def auto_tool_measure_z(self):
+        self.command.mode( linuxcnc.MODE_MDI )
+        self.command.wait_complete()
+        self.command.mdi("O<on_auto_tool_meas_z> call")        
+        
+    auto_tool_meas_z = False
+    auto_tool_meas_x = False 
+    tool_meas_dialog = None
     def on_btn_tool_touchoff_clicked( self, widget, data = None ):
       if widget.get_active():
        # if not self.widgets.tooledit1.get_selected_tool():
@@ -4589,18 +4603,53 @@ class gmoccapy( object ):
 
         if widget == self.widgets.btn_tool_touchoff_x or widget == self.widgets.btn_tool_touchoff_x1:
             axis = "x"
+            self.auto_tool_meas_x = True
+            self.auto_tool_meas_z = False
         elif widget == self.widgets.btn_tool_touchoff_z or widget == self.widgets.btn_tool_touchoff_z1:
             axis = "z"
+            self.auto_tool_meas_z = True
+            self.auto_tool_meas_x = False           
         else:
             dialogs.warning_dialog( self, _( "Real big error!" ),
                                    _( "You managed to come to a place that is not possible in on_btn_tool_touchoff" ) )
             widget.set_active(False)
             return
-
-        value = dialogs.entry_dialog( self, data = None,
-                                     header = _( "Enter value for axis %s to set:" ) % axis.upper(),
-                                     label = _( "Set parameter of T{0:d} and axis {1} to:" ).format(
-                                         self.stat.tool_in_spindle, axis.upper() ))
+        
+        
+        self.tool_meas_dialog = gtk.Dialog(_( "Enter value for axis %s to set:" ) % axis.upper(),
+                   self.widgets.window1,
+                   gtk.DIALOG_DESTROY_WITH_PARENT,
+                   (gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT,
+                    gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        label = gtk.Label(_( "Set parameter of T{0:d} and axis {1} to:" ).format(self.stat.tool_in_spindle, axis.upper() ))
+        label.modify_font(pango.FontDescription("sans 20"))
+        entry = gtk.Entry()
+        entry.set_editable(True)
+        entry.modify_font(pango.FontDescription("sans 20"))
+        self.tool_meas_dialog.vbox.pack_start(label)
+        self.tool_meas_dialog.vbox.add(entry)
+        
+        entry.connect("activate", lambda w : self.tool_meas_dialog.response(gtk.RESPONSE_ACCEPT))
+        self.tool_meas_dialog.parse_geometry("400x200")
+        self.tool_meas_dialog.set_decorated(True)
+        self.tool_meas_dialog.show_all()
+        response = self.tool_meas_dialog.run()
+        if response == gtk.RESPONSE_ACCEPT and entry.get_text() != '':
+            try:
+                value = float(entry.get_text())
+            except:
+                value = "ERROR"  
+        else:
+            value = "CANCEL"
+        self.tool_meas_dialog.destroy()
+        self.auto_tool_meas_z = False
+        self.auto_tool_meas_x = False   
+        
+            
+        #value = dialogs.entry_dialog( self, data = None,
+        #                             header = _( "Enter value for axis %s to set:" ) % axis.upper(),
+        #                             label = _( "Set parameter of T{0:d} and axis {1} to:" ).format(
+        #                                 self.stat.tool_in_spindle, axis.upper() ))
 
         if value == "ERROR":
             message = _( "Conversion error because of wrong entry for touch off axis %s" ) % axis.upper()
@@ -4615,12 +4664,12 @@ class gmoccapy( object ):
             self.command.wait_complete()
             self.command.mdi( command )
             self.command.wait_complete()
-            if True:  #"G43" in self.active_gcodes:
-               self.command.mdi( "G43" )
-               self.command.wait_complete()
-            self.command.mode( linuxcnc.MODE_MANUAL )
-            self.command.wait_complete()
             self.tooledit_btn_reload_tool.emit( "clicked" )
+      self.command.mode( linuxcnc.MODE_MDI )      
+      self.command.mdi( "G43" )
+      self.command.wait_complete()
+      self.command.mode( linuxcnc.MODE_MANUAL )
+      self.command.wait_complete()
       widget.set_active(False)
 
 
@@ -5295,7 +5344,14 @@ class gmoccapy( object ):
            self.dialog_toolchange.hide()
            self.widgets.hal_mdihistory.entry.grab_focus()
            return
-
+         elif self.auto_tool_meas_x:
+             self.tool_meas_dialog.response(gtk.RESPONSE_REJECT)
+             self.auto_tool_measure_x()
+             return
+         elif self.auto_tool_meas_z:
+             self.tool_meas_dialog.response(gtk.RESPONSE_REJECT)
+             self.auto_tool_measure_z()
+             return             
          elif self.widgets.ntb_jog.get_current_page() == 1:  #self.widgets.hal_mdihistory.tv.has_focus(): #if self.stat.task_mode == linuxcnc.MODE_MDI:
             self.widgets.hal_mdihistory.submit()
             if self.stat.paused:
@@ -5350,6 +5406,13 @@ class gmoccapy( object ):
          self.widgets.tbtn_pause.set_active( False )
          self.widgets.btn_run.set_active( False )
          self.widgets.gcode_view.set_line_number(1)
+         try:
+             self.tool_meas_dialog.response(gtk.RESPONSE_REJECT)
+         except:
+             pass 
+         self.command.wait_complete()
+         self.command.mode( linuxcnc.MODE_MANUAL )
+         self.command.wait_complete()
 
     def on_btn_step_clicked( self, widget, data = None ):
         if widget.get_active():
