@@ -1,0 +1,17 @@
+
+loadusr -W whb04b
+loadusr -W jogmeas
+
+
+net mp jogmeas.macro1 whb04b.macro1
+net mm jogmeas.macro2 whb04b.macro2
+
+net selx jogmeas.sel_x
+net sely jogmeas.sel_y
+net selz jogmeas.sel_z
+
+net mdi_mxm jogmeas.measxm halui.mdi-command-00
+net mdi_mxp jogmeas.measxp halui.mdi-command-01
+net mdi_mym jogmeas.measym halui.mdi-command-02
+net mdi_myp jogmeas.measyp halui.mdi-command-03
+net mdi_mzm jogmeas.measzm halui.mdi-command-04

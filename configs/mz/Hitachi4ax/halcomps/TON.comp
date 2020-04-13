@@ -1,0 +1,20 @@
+component TON "PLC style TON delay timer";
+
+pin in bit IN;       //timer input
+pin in unsigned T;   //time delay in base periods
+pin out bit OUT;     //delayed signal
+pin out unsigned ET; //elapsed time
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+
+if(IN)ET++;
+else ET=0;
+ 
+if(ET>=T){
+	ET=T;
+	OUT=1;
+}
+else OUT=0;

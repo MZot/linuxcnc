@@ -1,0 +1,94 @@
+component pokeys "PoKeys IO driver, by Mit Zot";
+/*
+https://forum.linuxcnc.org/24-hal-components/29816-pokeys
+http://www.mypokeys.com/?p=280
+
+sudo apt-get install libusb-1.0-0
+sudo apt-get install libusb-1.0-0-dev
+
+cd pokeyslib
+sudo make -f Makefile.noqmake install
+sudo chmod 755 /usr/lib/libPoKeys.so
+
+cd /etc/udev/rules.d
+sudo nano 90-usb-pokeys.rules
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1dc3", ATTRS{idProduct}=="1001", GROUP="linuxcnc", MODE="664"
+
+sudo udevadm control --reload-rules
+
+
+cd pokeys
+sudo halcompile ./pokeys.comp
+gcc -Wall  -Os -g -I. -I/usr/include/libusb-1.0 -I/usr/include -L/usr/lib/ -L/usr/lib/arm-linux-gnueabihf/ -lPoKeys -lusb-1.0 -I/usr/realtime-3.4-9-rtai-686-pae/include -I. -I/usr/realtime-3.4-9-rtai-686-pae/include -I/usr/include/i386-linux-gnu -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fno-math-errno -funsafe-math-optimizations -fno-rounding-math -fno-signaling-nans -fcx-limited-range -mhard-float -DRTAI=3 -fno-fast-math -mieee-fp -fno-unsafe-math-optimizations -DRTAPI -D_GNU_SOURCE -Drealtime -D__MODULE__ -I/usr/include/linuxcnc -Wframe-larger-than=2560 -URTAPI -U__MODULE__ -DULAPI -Os  -o pokeys ./pokeys.c -Wl,-rpath,/lib -L/lib -llinuxcnchal
+sudo mv ./pokeys /usr/bin/pokeys
+
+
+loadusr pokeys
+setp pokeys.0.devSerial 36110
+
+*/
+
+
+option userspace yes;
+
+
+pin out bit in-# [41];
+pin out signed ain-# [8];
+pin out signed enc-# [4];
+pin in  bit out-# [7];
+pin out bit err;
+pin in unsigned devSerial;
+pin out bit alive;
+pin in unsigned cycletime = 40000;
+
+license "GPL";
+
+
+option extra_link_args "-lPoKeys";
+
+;;
+
+#include "PoKeysLib.h"
+#include <unistd.h>   /* UNIX standard function definitions */
+
+sPoKeysDevice * dev=NULL;
+int i=0;
+
+void user_mainloop(void) 
+{ 
+    while(0xb){
+       FOR_ALL_INSTS() {
+         int OK = 0; 
+         while(devSerial==0)usleep(500000); 
+	 while(dev == NULL){
+                    dev = PK_ConnectToDeviceWSerial(devSerial, 2000);  //waits for usb device
+                    if(dev == NULL) err=1;
+         }
+
+	 alive=1; 
+         OK  = PK_DigitalIOGet(dev) == PK_OK; //gets IO data and checks return value 
+         //OK &= PK_AnalogIOGet(dev) == PK_OK;
+         //OK &= PK_EncoderValuesGet(dev) == PK_OK
+	 if (OK){  
+		err=0;
+		for(i=1;i<41;i++)in(i)=!dev->Pins[i].DigitalValueGet;             //just transfers values
+		//for(i=0;i<8;i++)ain(i)=(dev->Pins[41 + i].AnalogValue>>4)/(512/200);
+                //for(i=0;i<4;i++)enc(i)=dev->Encoders[i].encoderValue;
+                //for(i=0;i<7;i++)dev->Pins[48 + i].DigitalValueSet = out(i);
+                //PK_DigitalIOSet(dev);
+	 }
+         else{             		  //on connection error
+		PK_DisconnectDevice(dev);
+		dev=NULL;  		  //tries to reconnect
+		err=1;
+		for(i=0;i<41;i++)in(i)=0;
+		for(i=0;i<3;i++)ain(i)=0;
+                rtapi_print_msg(RTAPI_MSG_ERR, "PoKeys comp error\n");
+	 }
+	 alive=0;
+	usleep(cycletime); 
+        }
+    }
+
+    exit(0);
+}

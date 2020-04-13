@@ -1,0 +1,184 @@
+component sp_gearbox "automatic spindle gearbox control";
+//sudo halcompile --install ./sp_gearbox.comp
+
+/*
+Copyright: 2018
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+//inputs
+pin in bit   spindle_on;   //motion.spindle-on
+pin in float speed_cmd;    //motion.spindle-speed-cmd-rps spindle S value without override
+pin in float speed_in;     //motion.spindle-speed-out-rps spindle rpm with override 
+pin in float speed_fb;     //actual speed from encoder for N==0 detection
+pin in bit   switch_1;     //gearbox active 1st gear fb, debounced internally
+pin in bit   switch_2;     //gearbox active 2nd gear fb, debounced
+pin in bit   M41;          //manual gear selection, 1st gear 
+pin in bit   M42;          //manual gear selection, 2nd gear
+pin in bit   EMG_STP;      //_emergency stop_
+pin in bit   servo_rdy;    //
+pin in bit   abort;        //       
+
+//parameters
+pin in float scale_1;         //scale values
+pin in float scale_2;         //
+pin in unsigned max_speed_1;  //speed ranges rpm
+pin in unsigned min_speed_2;  // 
+
+//outputs
+pin out float speed_out;    //analog value for spindle servo, (speed_in * scale_x)
+pin out bit gear_1;         //gearbox activate 1st gear
+pin out bit gear_2;         //gearbox activate 2nd gear
+pin out bit at_speed;	    //spindle is at speed
+pin out unsigned state;	    //statemachine counter
+pin out bit error;          //timeout
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+
+#define STANDSTILL_SPEED 0.1  //rps
+#define GEARCHANGE_SPEED 0.2  //rps
+
+typedef struct {
+        int T;
+        int ET;
+        bool IN;
+        bool OUT;
+} timer;
+
+static timer stndstill = {.T =  300, .ET = 0, .OUT = false, .IN = false};
+static timer atspeed   = {.T =  500, .ET = 0, .OUT = false, .IN = false};
+static timer timeout   = {.T = 3000, .ET = 0, .OUT = false, .IN = false};
+static timer sw1       = {.T =  100, .ET = 0, .OUT = false, .IN = false}; //1st gear switch debounce
+static timer sw2       = {.T =  100, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
+
+static bool spindle_on_old = 0;
+static bool enable_sp = 0;
+
+void iec_ton(timer *t){
+   if(t->IN) t->ET++;
+   else      t->ET = 0; 
+   if(t->ET >= t->T){
+      t->ET = t->T;
+      t->OUT = true;
+   }
+   else t->OUT = false;
+}
+
+FUNCTION(_){
+	/////////////////////statemachine start////////////////////////////////
+	if(state==0){
+                if(!EMG_STP){
+                  speed_out = 0;	
+                  gear_1 = 0;
+                  gear_2 = 0;
+                  spindle_on_old = 0;
+                }
+                else {
+                    if(spindle_on && !spindle_on_old){
+		      if      (abs(speed_cmd) > max_speed_1/60.0) state = 10;  //2nd gear needed M40 automatic
+		      else if (abs(speed_cmd) < min_speed_2/60.0) state = 30;  //1st gear needed M40 automatic
+                      else if ((sw1.OUT && !sw2.OUT && gear_2) || (!sw1.OUT && sw2.OUT && gear_1)) 
+                             state = 50;  // max_speed_1 > S > min_speed_2, gear ok
+                      else   state = 30;  // gear nok, activate 1st
+                    }
+                    spindle_on_old = spindle_on;
+
+		    if     ( M41 && !M42) state = 30;           //1st gear commanded  M41 manual
+		    else if(!M41 &&  M42) state = 10;    	//2nd gear commanded  M42 manual
+		}//emg
+	
+	}///////////////////////////////////////////////////////////////////////
+
+	else if(state==10){  //2nd gear needed
+		if(sw1.OUT && !sw2.OUT && gear_2){  //already in second gear
+		 state = 50;
+		}
+		else{
+		 speed_out = 0;  //stop spindle
+		 if(stndstill.OUT) state = 20;  //wait for spindle to stop
+	         enable_sp = 0;
+		}
+	}///////////////////////////////////////////////////////////////////////
+
+	else if(state==20){  //activate second gear
+		gear_1 = 0; 
+		gear_2 = 1;
+		speed_out = GEARCHANGE_SPEED * scale_2; //rotate spindle motor slowly until gears engage
+		if(sw2.OUT && !sw1.OUT){	 //wait for 2nd gear switch
+		 state = 50;
+		 speed_out = 0;
+		}
+		
+	}///////////////////////////////////////////////////////////////////////
+
+	else if(state==30){  //1st gear needed
+		if(!sw2.OUT && sw1.OUT && gear_1){  //already in 1st gear
+		 state = 50;
+		}
+		else{
+		 speed_out = 0;  //stop spindle
+		 if(stndstill.OUT) state = 40;  //wait for spindle to stop
+	         enable_sp = 0;
+		}
+	}///////////////////////////////////////////////////////////////////////
+
+	else if(state==40){  //activate first gear
+		gear_1 = 1; 
+		gear_2 = 0;
+		speed_out = GEARCHANGE_SPEED * scale_1; //rotate spindle motor slowly until gears engage
+		if(sw1.OUT && !sw2.OUT){	 //wait for 1st gear switch
+		 state = 50;
+		 speed_out  = 0;
+		}
+		
+	}/////////////////////////////////////////////////////////////////////// 
+
+	else if(state==50){  //gear ratio is set, output analog value
+	        if     (sw1.OUT && !sw2.OUT) speed_out = speed_in * scale_1;
+		else if(sw2.OUT && !sw1.OUT) speed_out = speed_in * scale_2;
+                enable_sp = 1;
+                state = 0;
+	}
+	
+	///////////////////////statemachine end////////////////////////////////
+
+	//emg stop
+	if(!EMG_STP || abort){
+		speed_out=0; 
+		state=0;	
+	}
+
+	stndstill.IN = (abs(speed_in) < STANDSTILL_SPEED); 
+        atspeed.IN   = (abs(speed_fb) > (abs(speed_in)*0.8) && abs(speed_fb) < (abs(speed_in)*1.2) ) && enable_sp && servo_rdy;
+        at_speed = atspeed.OUT;
+        sw1.IN = switch_1;
+        sw2.IN = switch_2;
+        timeout.IN = (state != 0);
+        error = timeout.OUT;
+
+        iec_ton(&stndstill);  //call "function blocks"
+        iec_ton(&atspeed);
+        iec_ton(&timeout);
+        iec_ton(&sw1);
+        iec_ton(&sw2);
+
+}//FUNCTION	
+
+

@@ -1,0 +1,42 @@
+component overrides "by Mit Zot";
+
+
+pin in signed f_ovr_cnt;
+pin in signed s_ovr_cnt;
+
+pin out signed feed_override=10;
+pin out signed spindle_override=50;
+
+variable int sp_cnt_old=0;
+variable int f_cnt_old=0;
+variable float i_f=0;
+
+
+function _;
+license "GPL";
+;;
+
+FUNCTION(_){
+
+  int fdiff = (f_ovr_cnt - f_cnt_old) * 3;
+  int sdiff = (s_ovr_cnt - sp_cnt_old);
+
+  feed_override += fdiff;
+  spindle_override += sdiff;
+  if (feed_override < 0) feed_override=0;
+  if (feed_override > 100) feed_override=100;
+
+  if (spindle_override > 200) spindle_override=200;
+  if (spindle_override < 100) spindle_override=100;
+
+  if (fdiff < 0)i_f+=fdiff;
+  if (i_f < 0) i_f+=0.1;
+  if (i_f > 0) i_f=0;
+  
+  if (i_f < -25)feed_override=0;  
+
+  sp_cnt_old=s_ovr_cnt;
+  f_cnt_old=f_ovr_cnt;
+
+}//FUNCTION
+

@@ -1,0 +1,9 @@
+component taho "analog encoder speed output";
+pin in float in;
+pin out float out;
+pin  in float gain;
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+out = in * gain;

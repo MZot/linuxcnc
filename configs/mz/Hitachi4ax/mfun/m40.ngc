@@ -1,0 +1,8 @@
+
+o<m40> sub
+(Remap M40)
+
+(debug, m40.ngc executing)
+M5
+o<m40> endsub
+m2

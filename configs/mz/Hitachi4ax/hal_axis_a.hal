@@ -1,0 +1,89 @@
+#*******************
+#  AXIS a
+#*******************
+
+setp   pid.a.Pgain     [AXIS_3]P
+setp   pid.a.Igain     [AXIS_3]I
+setp   pid.a.Dgain     [AXIS_3]D
+setp   pid.a.bias      [AXIS_3]BIAS
+setp   pid.a.FF0       [AXIS_3]FF0
+setp   pid.a.FF1       [AXIS_3]FF1
+setp   pid.a.FF2       [AXIS_3]FF2
+setp   pid.a.deadband  [AXIS_3]DEADBAND
+setp   pid.a.maxoutput [AXIS_3]MAX_OUTPUT
+
+net a-index-enable  <=>  pid.a.index-enable
+net a-enable       => pid.a.enable
+net a-output       => pid.a.output
+net a-pos-cmd      => pid.a.command
+net a-vel-fb       => pid.a.feedback-deriv
+net a-pos-fb       => pid.a.feedback
+
+# ---PWM Generator signals/setup---
+
+setp   hm2_5i25.0.7i77.0.1.analogout0-scalemax  [AXIS_3]OUTPUT_SCALE
+setp   hm2_5i25.0.7i77.0.1.analogout0-minlim    [AXIS_3]OUTPUT_MIN_LIMIT
+setp   hm2_5i25.0.7i77.0.1.analogout0-maxlim    [AXIS_3]OUTPUT_MAX_LIMIT
+
+net a-output                             => hm2_5i25.0.7i77.0.1.analogout0
+net a-pos-cmd    axis.3.motor-pos-cmd
+net a-enable     axis.3.amp-enable-out
+net a-enable hm2_5i25.0.7i77.0.1.analogena
+
+# ---Encoder feedback signals/setup---
+
+setp    hm2_5i25.0.encoder.05.counter-mode 0
+setp    hm2_5i25.0.encoder.05.filter 1
+setp    hm2_5i25.0.encoder.05.index-invert 0
+setp    hm2_5i25.0.encoder.05.index-mask 0
+setp    hm2_5i25.0.encoder.05.index-mask-invert 0
+setp    hm2_5i25.0.encoder.05.scale  [AXIS_3]ENCODER_SCALE
+
+net a-pos-fb               <=  hm2_5i25.0.encoder.05.position
+net a-vel-fb               <=  hm2_5i25.0.encoder.05.velocity
+net a-pos-fb               =>  axis.3.motor-pos-fb
+net a-index-enable    axis.3.index-enable  <=>  hm2_5i25.0.encoder.05.index-enable
+net a-pos-rawcounts        <=  hm2_5i25.0.encoder.05.rawcounts
+
+# ---setup home / limit switch signals---
+
+net home-a     =>  axis.3.home-sw-in
+
+
+loadrt index_ax names=index_ax
+addf index_ax servo-thread
+
+net machine-is-on index_ax.machine-on 	
+net a-unlock    index_ax.unlock
+net a-is-unlock index_ax.unlocked
+net a-is-lock   index_ax.locked
+net is-maual    halui.mode.is-manual
+net is-maual    index_ax.jog-mode 	
+net sela        index_ax.jog-sel
+net feed-hold   motion.feed-hold
+net feed-hold   index_ax.feed-inh
+net a-servo-en  index_ax.servo-enable
+net a-pos-cmd   index_ax.pos-cmd
+net a-pos-fb    index_ax.pos-fb
+ 		
+
+net a-is-unlock hm2_5i25.0.7i77.0.0.input-07-not
+net a-is-lock   hm2_5i25.0.7i77.0.0.input-06-not
+net a-unlock    hm2_5i25.0.7i77.0.0.output-07 #off1 servo
+net a-unlock    hm2_5i25.0.7i77.0.0.output-15 #ventil
+net a-servo-en  hm2_5i25.0.7i77.0.0.output-05 #frg servo
+net home-a      hm2_5i25.0.7i77.0.0.input-05
+
+
+
+
+
+
+
+
+
+
+
+
+
+

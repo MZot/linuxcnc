@@ -1,0 +1,105 @@
+component index_ax "";
+/*
+Copyright: 2020
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+// ---INPUTS---
+pin in bit     machine_on;   
+pin in bit     jog_sel;
+pin in bit     jog_mode;
+pin in bit     m_code;
+pin in bit     unlocked;
+pin in bit     locked;
+pin in float   pos_cmd;
+pin in float   pos_fb;
+
+//  ---OUTPUTS---
+pin out bit    unlock;          //
+pin out bit    feed_inh;  
+pin out bit    servo_enable;
+
+pin out bit    in_pos;
+pin out bit    moving;
+
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+#define IN_POS_TOL  0.005
+#define MOVE_TOL  0.00001
+static float pos_cmd_old;
+
+typedef struct {
+        float T;
+        float ET;
+        bool IN; 
+        bool OUT;
+} timer;
+
+static timer t_in_pos       = {.T = .5, .ET = 0, .OUT = false, .IN = false};
+static timer t_moving       = {.T = .1, .ET = 0, .OUT = false, .IN = false};
+static timer t_servo        = {.T = .5, .ET = 0, .OUT = false, .IN = false};
+
+void iec_ton(timer *t, float fper){
+   if(t->IN) t->ET += fper;
+   else      t->ET = 0.0; 
+   if(t->ET >= t->T){
+      t->ET = t->T;
+      t->OUT = true;
+   }
+   else t->OUT = false;
+}
+
+void iec_tof(timer *t, float fper){
+   if(t->IN) t->ET = t->T;
+   else      t->ET -= fper;
+
+   if(t->ET < 0.0)t->ET = 0.0;
+   t->OUT = (t->ET > 0.0);
+}
+
+FUNCTION(_){
+
+    if( (t_moving.OUT || m_code) && machine_on )
+        {
+            unlock = 1;
+	}
+    else if( t_in_pos.OUT && !(jog_mode && jog_sel) || !machine_on )
+        {
+            unlock = 0;
+        }        
+
+    feed_inh = (unlock && (!unlocked || locked) ) ||
+               (!unlock && (unlocked || !locked) );
+               
+    t_servo.IN   = (unlock && unlocked && !locked);
+    servo_enable = t_servo.OUT && machine_on; 
+
+    t_in_pos.IN = pos_fb < (pos_cmd+IN_POS_TOL) && pos_fb > (pos_cmd-IN_POS_TOL);
+    t_moving.IN = pos_cmd < (pos_cmd_old-MOVE_TOL) || pos_cmd > (pos_cmd_old+MOVE_TOL);
+    pos_cmd_old = pos_cmd;
+
+    in_pos = t_in_pos.OUT;
+    moving = t_moving.OUT;
+
+    iec_ton(&t_in_pos, fperiod);  
+    iec_tof(&t_moving, fperiod);  
+    iec_tof(&t_servo, fperiod);  
+
+}//FUNCTION     

@@ -1,0 +1,4 @@
+
+
+loadrt plc names=plc
+addf plc servo-thread
