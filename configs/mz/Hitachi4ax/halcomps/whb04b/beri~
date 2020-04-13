@@ -1,4 +1,0 @@
-instalacija pyusb:
-sudo apt-get install python libusb-1.0-0-dev
-git clone https://github.com/walac/pyusb
-cd pyusb && sudo python setup.py install

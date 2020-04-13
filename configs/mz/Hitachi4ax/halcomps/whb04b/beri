@@ -1,9 +1,0 @@
-instalacija pyusb:
-sudo apt-get install python libusb-1.0-0-dev
-git clone https://github.com/walac/pyusb
-cd pyusb && sudo python setup.py install
-
-
-dovoljenje za dostop do usb:
-etc/udev/rules.d/90-xhc.rules
-SUBSYSTEM=="usb", ATTRS{idVendor}=="10ce", ATTRS{idProduct}=="eb93", GROUP="linuxcnc", MODE="664"
