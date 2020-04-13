@@ -1,0 +1,67 @@
+
+SAMBA
+sudo smbpasswd -a cnc
+sudo nano /etc/samba/smb.conf
+/usr/sbin/service smbd restart
+
+HOSTNAME
+sudo nano /etc/hostname
+
+PIP
+sudo apt-get install python-pip
+sudo pip install yapps
+
+BUILD LINUXCNC
+cd linuxcnc-dev/debian
+./configure uspace 
+cd ..
+dpkg-checkbuilddeps	
+cd src
+./autogen.sh
+./configure --with-realtime=uspace
+make clear
+make -j4
+sudo make setuid
+
+GMOCCAPY DEPS
+sudo apt-get install python-gtk2 python-glade2 libgtksourceview2.0-0 python-xlib python-gtkglext1
+sourceview iz repositorija od stretch  https://packages.debian.org/stretch/python-gtksourceview2
+
+
+
+GLADE
+cd glade3-3.8.6
+./configure
+make
+sudo make install
+
+glade-3
+
+sudo cp ~/linuxcnc-dev/lib/python/gladevcp/*.xml /usr/local/share/glade3/catalogs
+sudo cp ~/linuxcnc-dev/lib/python/gladevcp/*.png /usr/local/share/glade3/pixmaps
+
+
+
+
+BUILD MESAFLASH
+mesafash je v mapi ./dep
+cd mesaflash-master
+sudo apt-get install libpci-dev
+make
+
+NALAGANJE FW
+cd mesaflash-master
+sudo ./mesaflash --device 5i25 --write '/home/cnc/LinuxCNC/dep/mesa/5i25/configs/hostmot2/5i25_7i77x2.bit'
+sudo ./mesaflash --device 5i25 --reload
+
+6i25 ima isti FW kot 5i25
+
+
+sudo dd if=xx of=xx bs=1M status=progress
+
+mountanje slike diska:
+With kpartx -l imagefile you get an overview of the partitions in the image file 
+and with kpartx -a imagefile the partitions will accessible via /dev/mapper/loop0pX (X is the number of the partition). 
+You can mount it now with mount /dev/mapper/loop0pX /mnt/ -o loop,ro. 
+After unmounting you can disconnect the mapper devices with kpartx -d imagefile.
+

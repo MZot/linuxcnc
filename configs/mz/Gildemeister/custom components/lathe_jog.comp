@@ -1,0 +1,104 @@
+component lathe_jog "Manual lathe jogging, by Mit Zot";
+
+
+
+pin in signed spindle_count;
+pin in signed hwheel_count;
+pin in bit jog_rapid;
+pin in bit jog_zp;
+pin in bit jog_zm;
+pin in bit jog_xm;
+pin in bit jog_xp;
+pin in bit hwheel_x;
+pin in bit hwheel_z;
+pin in float hwheel_increment;
+pin in float jog_rapid_speed;
+pin in float jog_feed;
+pin in unsigned spindle_counts_per_rev;
+pin in float feed;
+pin in float override;
+pin in bit is_g95;
+pin in bit spindle_on;
+pin in bit abort;
+
+pin out signed jog_z_count;
+pin out signed jog_x_count;
+pin out float jog_scale_x;
+pin out float jog_scale_z;
+pin out bit jog_x_enable;
+pin out bit jog_z_enable;
+pin out bit g94_jog_zp;
+pin out bit g94_jog_zm;
+pin out bit g94_jog_xp;
+pin out bit g94_jog_xm;
+pin out float g94_jog_speed;
+pin out bit set_manual;
+
+
+
+variable int spindle_count_old;
+variable uint spindle_count_diff;
+variable int hwheel_count_old;
+variable uint hwheel_count_diff;
+
+
+function _;
+license "GPL";
+;;
+
+FUNCTION(_){
+        //Popravljena verzija jog v g94 mode z emulacijo handwheela
+ 
+	spindle_count_diff = abs(spindle_count - spindle_count_old);
+	spindle_count_old = spindle_count;
+	hwheel_count_diff = hwheel_count - hwheel_count_old;
+	hwheel_count_old = hwheel_count;
+
+
+        if( jog_rapid || !is_g95 || !spindle_on){  //rapid jog or G94
+          jog_x_enable=1;
+	  jog_z_enable=1;
+
+	  if( jog_rapid )jog_scale_z= (jog_rapid_speed * override) / 60000;
+          else           jog_scale_z= (jog_feed * override) / 60000;
+          
+          jog_scale_x = jog_scale_z / 2;
+
+	  if(jog_zp)jog_z_count += 1;
+	  if(jog_zm)jog_z_count -= 1;
+	  if(jog_xp)jog_x_count += 1;
+	  if(jog_xm)jog_x_count -= 1;
+        }
+        else if (is_g95 && spindle_on) { //G95 feed per rev
+          jog_x_enable=1;
+	  jog_z_enable=1;	
+	  g94_jog_zp=0;
+	  g94_jog_zm=0;
+	  g94_jog_xp=0;
+	  g94_jog_xm=0;
+	  jog_scale_z= (feed * override) / spindle_counts_per_rev;
+          jog_scale_x = jog_scale_z / 2;
+
+	  if(jog_zp)jog_z_count += spindle_count_diff;
+	  if(jog_zm)jog_z_count -= spindle_count_diff;
+	  if(jog_xp)jog_x_count += spindle_count_diff;
+	  if(jog_xm)jog_x_count -= spindle_count_diff;
+        }//else rapid
+
+        if(hwheel_x && (!jog_rapid && !jog_zp && !jog_zm && !jog_xp && !jog_xm)){
+          jog_x_enable=1;	
+	  jog_scale_x=hwheel_increment/2;  //diameter
+        }
+
+        if(hwheel_z && (!jog_rapid && !jog_zp && !jog_zm && !jog_xp && !jog_xm)){
+          jog_z_enable=1;	
+	  jog_scale_z=hwheel_increment;
+        }
+
+	if(hwheel_z & !(jog_zp || jog_zm) )jog_z_count+=hwheel_count_diff;
+	if(hwheel_x & !(jog_xp || jog_xm) )jog_x_count+=hwheel_count_diff;
+
+        set_manual=jog_zp || jog_zm || jog_xp || jog_xm || abort;
+
+}//FUNCTION
+

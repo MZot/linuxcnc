@@ -1,0 +1,151 @@
+component plc_nef480 "PLC for NEF480";
+/*
+Copyright: 2018
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+// ---INPUTS---
+pin in bit   machine_on;      
+pin in bit     sw_n1;
+pin in bit     sw_n2;
+pin in bit     sw_m5;
+pin in bit     sp_on;
+
+pin in bit     mm440_bb;
+pin in bit     mm440_n0;
+pin in bit     mm440_at_speed;
+
+pin in bit     sw_flood_auto;
+pin in bit     sw_flood_man;
+pin in bit     flood_is_on;
+
+pin in bit     x_motor_oh;
+pin in bit     z_motor_oh;
+pin in bit     ms_motor_oh;
+
+pin in bit     abort;
+
+
+// ---PARAMS---
+pin in float    t_lube_interval;  //
+pin in float    t_lube_time;      //
+
+
+//  ---OUTPUTS---
+pin out bit    lube;          //
+
+pin out bit    y_n1;
+pin out bit    y_n2;
+pin out bit    y_brake;
+
+pin out bit    spindle_at_speed;
+pin out bit    mm440_off1;
+
+pin out bit    flood;
+
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+
+
+typedef struct {
+        float T;
+        float ET;
+        bool IN; 
+        bool OUT;
+} timer;
+
+
+static timer lube_interval   = {.T = 1500, .ET = 0, .OUT = false, .IN = false};
+static timer lube_time       = {.T = 2, .ET = 0, .OUT = false, .IN = false}; 
+
+static timer t_m_on          = {.T = 5, .ET = 0, .OUT = false, .IN = false}; 
+static timer t_at_speed      = {.T = 1, .ET = 0, .OUT = false, .IN = false}; 
+
+static bool first=1;
+static bool msg_fp[8]={0};
+static bool abort_fp=0;
+
+int i;
+
+
+void iec_ton(timer *t, float fper){
+   if(t->IN) t->ET += fper;
+   else      t->ET = 0.0; 
+   if(t->ET >= t->T){
+      t->ET = t->T;
+      t->OUT = true;
+   }
+   else t->OUT = false;
+}
+
+
+
+FUNCTION(_){
+     if(first){
+      first=0;
+      lube_interval.T = t_lube_interval;
+      lube_time.T = t_lube_time;
+     }//first cycle
+
+     lube_time.IN = !lube_interval.OUT && machine_on;
+     lube_interval.IN = lube_time.OUT;
+     lube = !lube_time.OUT && machine_on;
+
+     y_n1 = sw_n1 && sp_on;
+     y_n2 = !sw_n1 && sp_on;
+     y_brake = sp_on || (sw_m5 && mm440_n0 && !sp_on);
+
+     flood = (sw_flood_auto && flood_is_on) || sw_flood_man;
+
+     t_at_speed.IN = machine_on && mm440_bb && !mm440_n0 && sp_on && mm440_at_speed;
+     spindle_at_speed = t_at_speed.OUT;
+
+     mm440_off1 = machine_on && mm440_bb;
+
+     t_m_on.IN = machine_on;
+     if(t_m_on.OUT && !mm440_bb && !msg_fp[0]){
+       rtapi_print_msg(RTAPI_MSG_ERR, "SPINDLE DRIVE FAULT!\n");
+       msg_fp[0]=1;
+     }
+
+     if(!x_motor_oh && !msg_fp[1]){
+       rtapi_print_msg(RTAPI_MSG_ERR, "X SERVO MOTOR OVERHEATED!\n");
+       msg_fp[1]=1;
+     }
+     if(!z_motor_oh && !msg_fp[2]){
+       rtapi_print_msg(RTAPI_MSG_ERR, "Z SERVO MOTOR OVERHEATED!\n");
+       msg_fp[2]=1;
+     }
+     if(!ms_motor_oh && !msg_fp[3]){
+       rtapi_print_msg(RTAPI_MSG_ERR, "---     MS SWITCH OVERHEATED!    ---\n\n\n\n");
+       msg_fp[3]=1;
+     }
+
+     if (abort && !abort_fp)for(i=0;i<8;i++)msg_fp[i]=0; 
+     abort_fp=abort;
+     
+
+     iec_ton(&lube_interval, fperiod);  //call "function blocks"
+     iec_ton(&lube_time, fperiod);
+     iec_ton(&t_m_on, fperiod);
+     iec_ton(&t_at_speed, fperiod);
+}//FUNCTION     
+
+
