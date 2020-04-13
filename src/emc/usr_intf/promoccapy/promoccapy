@@ -1559,7 +1559,6 @@ class gmoccapy( object ):
     def _periodic( self ):
         self.stat.poll()
 
-
         self._update_vel()
         self._update_coolant()
         self._update_spindle()
@@ -3581,7 +3580,10 @@ class gmoccapy( object ):
         self.command.mdi("M61Q#5400G43")
         self.command.wait_complete()
         self.command.mdi("G43")
-        self.widgets.lbl_tool_dia.set_text( str(self.stat.tool_table[self.stat.tool_in_spindle].diameter) )
+        self.widgets.lbl_tool_dia.set_text( '-1' )
+        for tool in self.stat.tool_table:
+            if tool.id == self.stat.tool_in_spindle:
+                self.widgets.lbl_tool_dia.set_text( str(tool.diameter) )
         glib.timeout_add(500, self.jog)
         self.show_main()
 
@@ -3791,19 +3793,28 @@ class gmoccapy( object ):
           glib.timeout_add(100, self.meas_p_clicked, widget, 'p1')
 
     def meas_p_clicked(self, widget, p):
-          self.meas[self.meas_sel][p][0]=self.stat.actual_position[0]
-          self.meas[self.meas_sel][p][1]=self.stat.actual_position[1]
-          self.meas[self.meas_sel][p][2]=self.stat.actual_position[2]
-          if p == 'p1':
-                lbl=self.widgets.lbl_1p_val
-          if p == 'p2':
-                lbl=self.widgets.lbl_2p_val
-          if p == 'p3':
-                lbl=self.widgets.lbl_3p_val
-          if p == 'p4':
-                lbl=self.widgets.lbl_4p_val
-          lbl.set_text("X%.3f   Y%.3f   Z%.3f" %(self.meas[self.meas_sel][p][0],self.meas[self.meas_sel][p][1],self.meas[self.meas_sel][p][2]))
-          widget.set_active(False)
+        if self.stat.tool_in_spindle == 9999:
+          if self.stat.probe_tripped:
+            self.meas[self.meas_sel][p][0]=self.stat.probed_position[0]
+            self.meas[self.meas_sel][p][1]=self.stat.probed_position[1]
+            self.meas[self.meas_sel][p][2]=self.stat.probed_position[2]
+          else:
+            message = _( "No probed position in memory!" )
+            dialogs.warning_dialog(self, _("Probe workpiece first!"), message) 
+        else:
+            self.meas[self.meas_sel][p][0]=self.stat.actual_position[0]
+            self.meas[self.meas_sel][p][1]=self.stat.actual_position[1]
+            self.meas[self.meas_sel][p][2]=self.stat.actual_position[2]
+        if p == 'p1':
+            lbl=self.widgets.lbl_1p_val
+        if p == 'p2':
+            lbl=self.widgets.lbl_2p_val
+        if p == 'p3':
+            lbl=self.widgets.lbl_3p_val
+        if p == 'p4':
+            lbl=self.widgets.lbl_4p_val
+        lbl.set_text("X%.3f   Y%.3f   Z%.3f" %(self.meas[self.meas_sel][p][0],self.meas[self.meas_sel][p][1],self.meas[self.meas_sel][p][2]))
+        widget.set_active(False)
 
     def on_tbtn_measure_p2_clicked(self, widget):
          if widget.get_active():
@@ -3975,29 +3986,58 @@ class gmoccapy( object ):
             message = _( "Offset %s could not be set, because off unknown axis" ) % axis
             dialogs.warning_dialog(self, _("Wrong offset setting!"), message )
             self.widgets.hal_mdihistory.entry.grab_focus()
-        if self.lathe_mode and axis == "x":
+            
+        if self.stat.tool_in_spindle == 9999 and axis in "XYZ" and not self.lathe_mode:   
+            if self.stat.probe_tripped: 
+                preset = self.prefs.getpref( "offset_axis_%s" % axis, 0, float )
+                offset = dialogs.entry_dialog( self, data = preset, header = _( "Probed position:X%0.3f Y%0.3f, Z%0.3f" ) %(self.stat.probed_position[0], self.stat.probed_position[1], self.stat.probed_position[2]),
+                                              label = _( "Set axis %s on probed postition to:" ) %(axis))
+                if offset != "CANCEL" and offset != "ERROR":
+                    if axis=='X':
+                        command = "G10 L2 P0 X[#5061 - %f]" % (offset)
+                    if axis=='Y':
+                        command = "G10 L2 P0 Y[#5062 - %f]" % (offset)
+                    if axis=='Z':
+                        command = "G10 L2 P0 Z[#5063 - %f]" % (offset)
+            else:
+                message = _( "No probed position in memory!" )
+                dialogs.warning_dialog(self, _("Probe workpiece first!"), message )
+                return
+
+                    
+                  
+        elif self.lathe_mode and axis == "x":
             if self.diameter_mode:
                 preset = self.prefs.getpref( "diameter offset_axis_%s" % axis, 0, float )
                 offset = dialogs.entry_dialog( self, data = preset, header = _( "Enter value for diameter" ),
                                               label = _( "Set diameter to:" ))
+                if offset != "CANCEL" and offset != "ERROR":
+                    command = "G10 L20 P0 %s%f" % ( axis, offset )
             else:
                 preset = self.prefs.getpref( "radius offset_axis_%s" % axis, 0, float )
                 offset = dialogs.entry_dialog( self, data = preset, header = _( "Enter value for radius" ),
                                               label = _( "Set radius to:" ))
+                if offset != "CANCEL" and offset != "ERROR":
+                    command = "G10 L20 P0 %s%f" % ( axis, offset )
         else:
             preset = self.prefs.getpref( "offset_axis_%s" % axis, 0, float )
             offset = dialogs.entry_dialog( self, data = preset, header = _( "Enter value for axis %s" ) % axis,
                                           label = _( "Set axis %s to:" ) % axis)
+            if offset != "CANCEL" and offset != "ERROR":
+                command = "G10 L20 P0 %s%f" % ( axis, offset )
+              
         if offset == "CANCEL":
-            pass #return
+            widget.set_active(False)
+            return
         elif offset == "ERROR":
+            widget.set_active(False)
             print( _( "Conversion error in btn_set_value" ) )
             dialogs.warning_dialog( self, _( "Conversion error in btn_set_value!" ),
                                    _( "Please enter only numerical values. Values have not been applied" ) )
         else:
             self.command.mode( linuxcnc.MODE_MDI )
             self.command.wait_complete()
-            command = "G10 L20 P0 %s%f" % ( axis, offset )
+        
             self.command.mdi( command )
             self.command.mode( linuxcnc.MODE_MANUAL )
             self.command.wait_complete()

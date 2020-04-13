@@ -20,6 +20,7 @@ unlinkp iocontrol.0.tool-changed
 net tool-change      gmoccapy.toolchange-change   <=  iocontrol.0.tool-change 
 net tool-changed     gmoccapy.toolchange-changed  <=  iocontrol.0.tool-changed
 net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
+net tool-prep-loop iocontrol.0.tool-prepare iocontrol.0.tool-prepared
 
 net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
 net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
@@ -75,6 +76,9 @@ setp halui.feed-override.scale         0.01
 setp halui.rapid-override.scale        0.01
 
 setp gmoccapy.sp-gear-2 1
+
+net probe motion.probe-input whb04b.fn
+
 
 
 

@@ -1,0 +1,90 @@
+#!/usr/bin/python
+"""
+    jogmeas HAL Component
+
+    Copyright 2020 Mit Zot
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+"""
+import sys, usb, time, hal
+
+
+h=hal.component("jogmeas")
+h.newpin("sel_x", hal.HAL_BIT, hal.HAL_IN)
+h.newpin("sel_y", hal.HAL_BIT, hal.HAL_IN)
+h.newpin("sel_z", hal.HAL_BIT, hal.HAL_IN)
+h.newpin("macro1", hal.HAL_BIT, hal.HAL_IN)
+h.newpin("macro2", hal.HAL_BIT, hal.HAL_IN)
+
+h.newpin("measxm", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("measxp", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("measym", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("measyp", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("measzm", hal.HAL_BIT, hal.HAL_OUT)
+
+h.ready()
+
+macro1_old=False
+macro2_old=False
+
+try:
+    while 1:
+        
+        if h.macro1 and not h.macro2:
+            if h.sel_x and not h.sel_y and not h.sel_z:
+               h.measxm = False
+               h.measxp = True
+               h.measyp = False
+               h.measym = False
+               h.measzm = False
+            if h.sel_y and not h.sel_x and not h.sel_z:
+               h.measxm = False
+               h.measxp = False
+               h.measyp = True
+               h.measym = False
+               h.measzm = False
+        if h.macro2 and not h.macro1:
+            if h.sel_x and not h.sel_y and not h.sel_z:
+               h.measxp = False
+               h.measxm = True
+               h.measyp = False
+               h.measym = False
+               h.measzm = False
+            if h.sel_y and not h.sel_x and not h.sel_z:
+               h.measxm = False
+               h.measxp = False
+               h.measyp = False
+               h.measym = True
+               h.measzm = False
+            if h.sel_z and not h.sel_x and not h.sel_y:
+               h.measxm = False
+               h.measxp = False
+               h.measyp = False
+               h.measym = False
+               h.measzm = True
+                
+        if not h.macro1 and not h.macro2:
+               h.measxm = False
+               h.measxp = False
+               h.measyp = False
+               h.measym = False
+               h.measzm = False
+               
+
+
+
+except KeyboardInterrupt:
+    raise SystemExit
