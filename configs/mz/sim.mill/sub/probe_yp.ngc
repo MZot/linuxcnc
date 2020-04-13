@@ -15,7 +15,7 @@ G91 G38.2 Y+10 F100     ;inkrementalno do kosa
 G90 G38.4 Y#<yy> F10    ;stran od kosa
 G90 G1 Y#<yy> F1000     ;nazaj na absolutno pozicijo
 
-#5061 = [#5061 + #<tr>] ;popravi vrnjeno vrednost za polmer kroglice
+#5062 = [#5062 + #<tr>] ;popravi vrnjeno vrednost za polmer kroglice
 
 O<probe_yp> endsub
 M2
