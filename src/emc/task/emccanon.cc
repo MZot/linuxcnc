@@ -2721,7 +2721,7 @@ CANON_POSITION GET_EXTERNAL_PROBE_POSITION()
 	}
     }
 
-    return position;
+    return pos;
 }
 
 int GET_EXTERNAL_PROBE_TRIPPED_VALUE()
