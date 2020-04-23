@@ -26,16 +26,20 @@ pin in bit jog_xp;
 pin in bit hwheel_x;
 pin in bit hwheel_z;
 
+pin in bit inc10;
+pin in bit inc100;
+
 pin in bit is_g95;
 pin in bit spindle_on;
 
 pin in signed spindle_count;
-pin in signed hwheel_count;
+pin in signed hwheel_count_x;
+pin in signed hwheel_count_z;
 
 pin in float feed;
 pin in float override;
 
-pin in float hwheel_increment;
+
 pin in float jog_rapid_feed;
 pin in float jog_feed;
 pin in unsigned spindle_counts_per_rev;
@@ -48,10 +52,14 @@ pin out float jog_scale_x;
 pin out float jog_scale_z;
 pin out bit set_manual;
 
+pin out float hwheel_increment;
+
 variable int32_t spindle_count_old;
 variable uint32_t spindle_count_diff;
-variable int32_t hwheel_count_old;
-variable uint32_t hwheel_count_diff;
+variable int32_t hwheel_count_old_x;
+variable uint32_t hwheel_count_diff_x;
+variable int32_t hwheel_count_old_z;
+variable uint32_t hwheel_count_diff_z;
 
 
 
@@ -64,9 +72,14 @@ license "GPL";
 FUNCTION(_){
 	spindle_count_diff = abs(spindle_count - spindle_count_old);
 	spindle_count_old  = spindle_count;
-	hwheel_count_diff  = hwheel_count - hwheel_count_old;
-	hwheel_count_old   = hwheel_count;
+    hwheel_count_diff_x  = hwheel_count_x - hwheel_count_old_x;
+	hwheel_count_old_x   = hwheel_count_x;
+    hwheel_count_diff_z  = hwheel_count_z - hwheel_count_old_z;
+	hwheel_count_old_z   = hwheel_count_z;
 
+    if(inc100)      hwheel_increment=0.1/4;
+    else if(inc10)  hwheel_increment=0.01/4;
+    else            hwheel_increment=0.001/4;
 
     if( jog_rapid || !is_g95 || !spindle_on){  //rapid jog or G94
 	    if(jog_rapid) jog_scale_z = (jog_rapid_feed * override) / TICKS_MINUTE;
@@ -96,8 +109,8 @@ FUNCTION(_){
 	      jog_scale_z=hwheel_increment;
         }
 
-	 if(hwheel_z & !(jog_zp || jog_zm) )jog_z_count+=hwheel_count_diff;
-	 if(hwheel_x & !(jog_xp || jog_xm) )jog_x_count+=hwheel_count_diff;
+	 if(!(jog_zp || jog_zm) )jog_z_count+=hwheel_count_diff_z;
+	 if(!(jog_xp || jog_xm) )jog_x_count+=hwheel_count_diff_x;
 
-     set_manual=jog_zp || jog_zm || jog_xp || jog_xm || abort;
+     set_manual=jog_zp || jog_zm || jog_xp || jog_xm || abort || jog_rapid;
 }//FUNCTION

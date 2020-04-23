@@ -25,7 +25,8 @@ setp   hm2_5i25.0.7i77.0.1.analogout5-maxlim    [SPINDLE]OUTPUT_MAX_LIMIT
 
 #net sp-en           hm2_5i25.0.7i77.0.1.spinena
 net motion-sp-on hm2_5i25.0.7i77.0.1.spinena
-net sp-out          hm2_5i25.0.7i77.0.1.analogout5
+#net sp-out          hm2_5i25.0.7i77.0.1.analogout5
+net motion-sp-output hm2_5i25.0.7i77.0.1.analogout5
 #net motion-sp-on    hm2_5i25.0.7i77.0.1.spinena       #test, brisi
 #net 7i84-analogin0  hm2_5i25.0.7i77.0.1.analogout5  #test, brisi
 

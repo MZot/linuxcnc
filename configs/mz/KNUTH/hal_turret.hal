@@ -29,5 +29,6 @@ net turr-cw    turr.cw
 net turr-ccw   turr.ccw
 net turr-brake turr.brake
 
-setp turr.t-timeout 15
-setp turr.t-clamp-timeout 0.6
+setp turr.t-timeout       30.0
+setp turr.t-clamp-timeout 5.0
+setp turr.t-clamp-delay   0.3

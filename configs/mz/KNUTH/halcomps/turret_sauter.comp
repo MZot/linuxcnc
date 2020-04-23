@@ -52,7 +52,7 @@ pin out bit brake "turret brake";
 pin in float  t_timeout = 25.0      "timeout in seconds for tool change operation";
 pin in float  t_clamp_timeout = 2.0 "timeout in seconds for tool clamp/unclamp";
 pin in s32    n_tools = 6           "Number of pockets on turret";
-
+pin in float  t_clamp_delay = 0.5   "delay after clamping";
 //debug
 pin out s32 state;
 
@@ -111,9 +111,9 @@ typedef struct {
 } timer;
 
 static timer timeout      = {.T = 25.0, .ET = 0, .OUT = false, .IN = false};
-static timer timeout_clmp = {.T =  2.0, .ET = 0, .OUT = false, .IN = false};
-static timer wait_clamp   = {.T =  0.3, .ET = 0, .OUT = false, .IN = false};
-static timer clamp        = {.T =  0.1, .ET = 0, .OUT = false, .IN = false};
+static timer timeout_clmp = {.T =  10.0, .ET = 0, .OUT = false, .IN = false};
+static timer wait_clamp   = {.T =  0.5, .ET = 0, .OUT = false, .IN = false};
+static timer clamp        = {.T =  0.5, .ET = 0, .OUT = false, .IN = false};
 
 void iec_ton(timer *t, float per){
    if(t->IN) t->ET += per;
@@ -165,7 +165,7 @@ FUNCTION(_){
     clamp.IN = s_clmp;
 
     if(!tool_change) tool_changed=0;
-    if(!machine_is_on)state = POWER_OFF;
+    if(!machine_is_on || estop)state = POWER_OFF;
 
     switch (state) {
       case IDLE:
@@ -215,15 +215,13 @@ FUNCTION(_){
             ccw=1;
             if(clamp.OUT){
                 state=DONE;
-                timeout.IN = 0;
-                timeout_clmp.IN = 0;
-                tool_changed=1;
-                cw=0;
-                ccw=0;
             };
             break;
 
       case DONE:
+            timeout.IN = 0;
+            timeout_clmp.IN = 0;
+            tool_changed=1;
             brake = 1;
             cw=0;
             ccw=0;
@@ -257,8 +255,9 @@ FUNCTION(_){
     }
 
     estop_out = estop_in && !estop;
-    if(!estop_in)estop = 0;
+    if(!estop_in && !machine_is_on)estop = 0;
 
 timeout.T = t_timeout;
 timeout_clmp.T = t_clamp_timeout;
+clamp.T = t_clamp_delay;
 }//FUNCTION

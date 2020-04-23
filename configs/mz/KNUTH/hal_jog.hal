@@ -5,7 +5,7 @@
 setp jog.jog-feed               500
 setp jog.jog-rapid-feed         8000
 setp jog.spindle-counts-per-rev [SPINDLE]ENCODER_SCALE
-setp jog.hwheel-increment       0.01
+#setp jog.hwheel-increment       0.01
 
 net jog_x_p jog.jog-xp
 net jog_x_m jog.jog-xm
@@ -15,13 +15,17 @@ net jog_rpd jog.jog-rapid
 net hwheelx jog.hwheel-x
 net hwheelz jog.hwheel-z
 
+net jog_inc10 jog.inc10
+net jog_inc10 jog.inc100
+
 net feed_g95         jog.is-g95
 net gui_feed         jog.feed
 net halui_fovr_value jog.override
 net motion-sp-on     jog.spindle-on
 
 net s-pos-rawcounts   jog.spindle-count
-net h-wheel-rawcounts jog.hwheel-count
+net h-wheel-rawcounts_x jog.hwheel-count-x
+net h-wheel-rawcounts_z jog.hwheel-count-z
 
 net x-jog-counts jog.jog-x-count
 net x-jog-counts axis.0.jog-counts

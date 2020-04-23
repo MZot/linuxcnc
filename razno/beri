@@ -65,3 +65,11 @@ and with kpartx -a imagefile the partitions will accessible via /dev/mapper/loop
 You can mount it now with mount /dev/mapper/loop0pX /mnt/ -o loop,ro. 
 After unmounting you can disconnect the mapper devices with kpartx -d imagefile.
 
+
+git
+komanda da lokalno izbrisanih datotek ne brise na serverju
+git ls-files --deleted -z | git update-index --assume-unchanged -z --stdin
+
+
+dovoli izvajanje skript z dvoklikom v filemanagerju
+xfconf-query -c thunar -p /misc-exec-shell-scripts-by-default -n -t bool -s true

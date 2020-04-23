@@ -1,6 +1,6 @@
-component sp_gearbox "automatic spindle gearbox control";
+component sp_gearbox "automatic spindle gearbox control for KNUTH";
 /*
-Copyright: 2019
+Copyright: 2020
 Author:  Mit Zot
 
 This program is free software; you can redistribute it and/or modify
@@ -18,47 +18,41 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/*
-. '/home/cnc/LinuxCNC/linuxcnc-2.7/scripts/rip-environment'
-sudo '/home/cnc/LinuxCNC/linuxcnc-2.7/bin/halcompile' --install '/home/cnc/LinuxCNC/configs/NCT_CROPI/halcomps/sp_gearbox.comp'
-*/
-
 //inputs
+pin in bit   abort          "halui.abort";
 pin in bit   machine_is_on  "halui.machine.is-on";
 pin in bit   spindle_on     "motion.spindle-on";
-pin in float speed_cmd      "motion.spindle-speed-cmd-rps spindle S value without override";
-pin in float speed_in       "motion.spindle-speed-out spindle rpm with override";
+pin in float speed_s        "motion.spindle-speed-cmd-rps spindle S value without override";
+pin in float speed_cmd      "motion.spindle-speed-out-rps spindle rps with override";
 pin in float speed_fb       "rps actual speed from encoder for at speed and N==0 detection";
-pin in bit   N0             "N==0 from servo";
+pin in bit   n_0            "N==0 from servo";
+pin in bit   at_speed_in    "at speed from servo";
 pin in bit   servo_rdy      "ready signal from servo";
-pin in bit   switch_1       "gearbox active 1st gear fb";
-pin in bit   switch_2       "gearbox active 2nd gear fb";
-pin in bit   switch_3       "gearbox active 2nd gear fb";
+pin in bit   switch_1       "";
+pin in bit   switch_2       "";
+pin in bit   switch_3       "";
+pin in bit   switch_4       "";
 pin io bit   M41            "manual gear selection, 1st gear";
 pin io bit   M42            "manual gear selection, 2nd gear";
 pin io bit   M43            "manual gear selection, 3rd gear";
-pin in bit   at_speed_in    "at speed from servo";
-pin in bit   abort          "halui.abort";
 
 //parameters
-pin in float    scale_1     "scale values";
+pin in float    scale_1        "scale values";
 pin in float    scale_2;
 pin in float    scale_3;
-pin in unsigned max_speed_1     "speed ranges rpm";
-pin in unsigned min_speed_2;  //
-pin in unsigned max_speed_2;  //
-pin in unsigned min_speed_3;  //
 
 //outputs
-pin out float speed_out     "analog value for spindle servo, (speed_in * scale_x)";
+pin out float velo_cmd      "analog value for spindle servo, (speed_in * scale_x)";
 pin out bit servo_en        "servo enable";
-pin out bit gear_1          "gearbox activate 1st gear valve";
-pin out bit gear_2          "gearbox activate 2nd gear valve";
-pin out bit gear_3          "gearbox activate 3rd gear valve";
-pin out bit gear_4          "gearbox activate 4th gear valve";
-pin out bit gear_5          "gearbox activate 5th gear valve";
+pin out bit motor1cw        "gearbox motor 1 cw";
+pin out bit motor1ccw       "gearbox motor 1 ccw";
+pin out bit motor2cw        "gearbox motor 2 cw";
+pin out bit motor2ccw       "gearbox motor 2 ccw";
 pin out bit at_speed        "spindle is at speed motion.spindle.at-speed";
 pin out bit error           "timeout";
+pin out bit gear1_ok        "first gear to HMI";
+pin out bit gear2_ok        "second gear to HMI";
+pin out bit gear3_ok        "third gear to HMI";
 
 // --- spindel inhibit OR'd---
 pin in bit      spin_inh1;
@@ -80,10 +74,8 @@ pin out float sp_load_out           "gmoccapy.spindle_load_bar";
 pin in bit estop_in;
 pin out bit estop_out;
 
-pin out bit ss;
-
-
-pin out unsigned state     "statemachine";
+pin out unsigned gbstate     "statemachine";
+pin out unsigned spstate     "0=stop, 1=run, 2=pendeln";
 
 function _;
 license "GPL"; // indicates GPL v2 or later
@@ -91,38 +83,49 @@ license "GPL"; // indicates GPL v2 or later
 
 
 #define STANDSTILL_SPEED 0.1  //rps
-#define GEARCHANGE_SPEED 4.0  //hz
+#define PENDEL_SPEED     0.1
+
 
 typedef enum {
-  IDLE,
-  TO_1,
-  TO_2,
-  TO_3,
-  ERR
-} the_state;
+    IDLE,
+    TO_1,
+    TO_2,
+    TO_3,
+    ERR,
+    ACK
+} the_gbstate;
+
+typedef enum {
+    STOP,
+    RUN, 
+    PENDEL,
+    POSITION
+} the_spstate;
+
+
 
 typedef struct {
         float T;
         float ET;
-        bool IN;
-        bool OUT;
+        bool  IN;
+        bool  OUT;
 } timer;
 
 static timer stndstill = {.T = 1.500, .ET = 0, .OUT = false, .IN = false};
-static timer atspeed   = {.T = .200, .ET = 0, .OUT = false, .IN = false};
+static timer atspeed   = {.T =  .200, .ET = 0, .OUT = false, .IN = false};
 static timer timeout   = {.T = 5.000, .ET = 0, .OUT = false, .IN = false};
-static timer sw1       = {.T =  .300, .ET = 0, .OUT = false, .IN = false}; //1st gear switch debounce
-static timer sw2       = {.T =  .300, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
-static timer sw3       = {.T =  .300, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
-static timer tof_sp_en = {.T =  3.00, .ET = 0, .OUT = false, .IN = false}; //TOF za zaviranje vretena
-static timer tchange   = {.T = .100, .ET = 0, .OUT = false, .IN = false};
+static timer sw1       = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //1st gear switch debounce
+static timer sw2       = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
+static timer sw3       = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
+static timer sw4       = {.T =  .400, .ET = 0, .OUT = false, .IN = false};
+static timer tof_sp_en = {.T = 3.000, .ET = 0, .OUT = false, .IN = false}; //TOF za zaviranje vretena
+static timer pendelcw  = {.T =  .500, .ET = 0, .OUT = false, .IN = false};
+static timer pendelccw = {.T =  .700, .ET = 0, .OUT = false, .IN = false};
 
 static bool m_fp[8]={0};
 
 static bool enable_sp = 0;
-static bool gear1_ok = 0;
-static bool gear2_ok = 0;
-static bool gear3_ok = 0;
+
 
 void iec_ton(timer *t, float fper){
    if(t->IN) t->ET += fper;
@@ -160,112 +163,132 @@ static bool change = 0;
 
 FUNCTION(_){
 
-     sw1.IN = switch_1 && machine_is_on;
-     sw2.IN = switch_2 && machine_is_on;
-     sw3.IN = switch_3 && machine_is_on;
+     sw1.IN = switch_1;
+     sw2.IN = switch_2;
+     sw3.IN = switch_3;
+     sw4.IN = switch_4;
 
-     gear1_ok =  sw1.OUT && !sw2.OUT && !sw3.OUT;
-     gear2_ok =  sw2.OUT && !sw1.OUT && !sw3.OUT;
-     gear3_ok =  sw3.OUT && !sw2.OUT && !sw1.OUT;
-     stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && N0 && !servo_en;
-     atspeed.IN   = servo_en && servo_rdy && at_speed_in
-                    && (gear1_ok || gear2_ok|| gear3_ok);
+     gear1_ok = (!sw1.OUT && sw2.OUT && !sw3.OUT && sw4.OUT);
+     gear2_ok = (sw1.OUT && !sw2.OUT && !sw3.OUT && sw4.OUT);
+     gear3_ok = (sw1.OUT && !sw2.OUT && sw3.OUT && !sw4.OUT);
+     
 
-ss=stndstill.OUT;
-     switch (state) {
-       case IDLE:
-            if(iec_fp(machine_is_on, &m_fp[0])){
-                if(switch_1 && !switch_2 && !switch_3)state=TO_1;
-                if(!switch_1 && switch_2 && !switch_3)state=TO_2;
-                if(!switch_1 && !switch_2 && switch_3)state=TO_3;
-            }//machine_is_on fp
+    switch (gbstate) {
+        case IDLE:
+            if(M41 && gear1_ok)M41=0;
+            if(M42 && gear2_ok)M42=0;
+            if(M43 && gear3_ok)M43=0;
 
-            if(M41 && gear1_ok ||M42 && gear2_ok ||M43 && gear3_ok)M41=M42=M43=0;
-
-            if(M41 && stndstill.OUT && !spindle_on){state=TO_1;change = 1;}
-            if(M42 && stndstill.OUT && !spindle_on){state=TO_2;change = 1;}
-            if(M43 && stndstill.OUT && !spindle_on){state=TO_3;change = 1;}
-            gear_1=gear_2=gear_3=gear_4=0;
+            if(M41 && stndstill.OUT && !spindle_on)gbstate=TO_1;
+            if(M42 && stndstill.OUT && !spindle_on)gbstate=TO_2;
+            if(M43 && stndstill.OUT && !spindle_on)gbstate=TO_3;
+            motor1cw=motor1ccw=motor2cw=motor2ccw=0;
+            if((fabs(speed_s) > STANDSTILL_SPEED) && spindle_on)  spstate = RUN;
+            else                                            spstate = STOP;
+            
+            if(spindle_on && !(gear1_ok || gear2_ok || gear3_ok))spstate=ERR; //izpad potrditve med vrtenjem
             break;
 
-       case TO_1:
-            if(tchange.OUT){
-            gear_1=0;
-            gear_2=1;
-            gear_3=1;
-            gear_4=0;
-            }
-            if(gear1_ok){
-                state=IDLE;
-                M41=M42=M43=0;
-                change = 0;
-            }
+        case TO_1:
+            spstate=PENDEL;
+            motor1cw=motor2cw=0;
+            motor1ccw=motor2ccw=1;
+            if(gear1_ok) gbstate=IDLE;
+            break;
+        
+        case TO_2:
+            spstate=PENDEL;
+            motor1ccw=motor2cw=0;
+            motor1cw=motor2ccw=1;
+            if(gear2_ok) gbstate=IDLE;   
+            break;             
+            
+        case TO_3:
+            spstate=PENDEL;
+            motor1ccw=motor2ccw=0;
+            motor1cw=motor2cw=1;
+            if(gear3_ok) gbstate=IDLE;
             break;
 
-       case TO_2:
-            if(tchange.OUT){
-                gear_1=1;
-                gear_2=0;
-                gear_3=0;
-                gear_4=1;
-            }
-            if(gear2_ok){
-                state=IDLE;
-                M41=M42=M43=0;
-                change = 0;
-            }
+
+        case ERR:
+            rtapi_print_msg(RTAPI_MSG_ERR, "Napaka menjalnika\n");
+            gbstate = ACK;
+        case ACK:
+            if(abort && !machine_is_on) spstate = IDLE;
+            motor1cw=motor1ccw=motor2cw=motor2ccw=0;
+            M41=M42=M43=0;
+            servo_en = 0;
+            velo_cmd = 0;
+            spstate = STOP;
+            estop = 1;
+            error = 1;
             break;
+    }; //switch state
+    
+    timeout.IN = gbstate != IDLE;
+    if(timeout.OUT) gbstate=ERR;
+     
+     
 
-       case TO_3:
-            if(tchange.OUT){
-                gear_1=1;
-                gear_2=0;
-                gear_3=1;
-                gear_4=0;
-            }
-            if(gear3_ok){
-                state=IDLE;
-                M41=M42=M43=0;
-                change = 0;
-            }
+    switch (spstate) {
+        case STOP:
+            servo_en = 0;
+            velo_cmd = 0.0;
             break;
+        case RUN:
+            if(gear1_ok)velo_cmd = scale_1 * (speed_cmd);
+            if(gear2_ok)velo_cmd = scale_2 * (speed_cmd);
+            if(gear3_ok)velo_cmd = scale_3 * (speed_cmd);
+            servo_en = 1;
+            break;
+        case PENDEL:
+            servo_en=1;
+            if(pendelcw.OUT)
+                velo_cmd = PENDEL_SPEED;
+            else
+                velo_cmd = -PENDEL_SPEED;
+            break;
+    }
+    pendelcw.IN = !pendelccw.OUT && spstate==PENDEL;
+    pendelccw.IN = pendelcw.OUT;
+    
 
-       case ERR:
-        rtapi_print_msg(RTAPI_MSG_ERR, "spindle gear err\n");
-        state=IDLE;
-        break;
+     //koncna stikala
+     if(switch_1)motor1cw = 0;
+     if(switch_2)motor1ccw = 0;
+     if(switch_3)motor2cw = 0;
+     if(switch_4)motor2ccw = 0;
 
-     }; //switch state
-
-     gear_5=gear_1||gear_2||gear_3||gear_4;
+     if(!estop_out || !machine_is_on){
+         spstate=STOP;
+         M41=M42=M43=0;
+         motor1cw=motor1ccw=motor2cw=motor2ccw=0;
+         servo_en=0;
+         velo_cmd=0;
+     }
+     
+     
+     
      estop_out = estop_in && !estop;
-     if(!estop_in)estop = 0;
+     if(!estop_in && !machine_is_on)estop = 0;
 
      sp_inhibit_out = spin_inh1 || spin_inh3 || spin_inh3 || spin_inh4
                       || !(gear1_ok || gear2_ok || gear3_ok);
-     tof_sp_en.IN = estop_out && machine_is_on && spindle_on && (fabs(speed_cmd)>0.05);
-     servo_en = tof_sp_en.OUT || change;
-     at_speed = atspeed.OUT && servo_en && !sp_inhibit_out;
-     if(gear1_ok)speed_out = scale_1 * fabs(speed_in);
-     if(gear2_ok)speed_out = scale_2 * fabs(speed_in);
-     if(gear3_ok)speed_out = scale_3 * fabs(speed_in);
-     if(!servo_en || !spindle_on || sp_inhibit_out)speed_out = 0;
-     if(change)speed_out = GEARCHANGE_SPEED;
-
-     tchange.IN=change;
-
-     if(abort || !estop_out){
-         state=IDLE;
-         M41=M42=M43=0;
-         speed_out = 0;
-         change = 0;
-     }
+     
+     stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && !servo_en && !spindle_on;
+     atspeed.IN   = servo_en && spindle_on &&  //servo_rdy &&
+                    (fabs(speed_fb) > (fabs(speed_cmd) - fabs(speed_cmd*0.2))) &&
+                    (fabs(speed_fb) < (fabs(speed_cmd) + fabs(speed_cmd*0.2))) &&
+                    (gear1_ok || gear2_ok || gear3_ok);
+     at_speed = atspeed.OUT && !sp_inhibit_out;
 
      //override
      sp_override_counts = sp_override_pot * (100/24.0) + 50;  //50 - 150 pri 0-24V
 
      //gui load bar
-     sp_load_out = sp_load_in * 50.0;
+     //sp_load_out = sp_load_in * 50.0;
+     sp_load_out = fabs(speed_cmd) - fabs(speed_fb);
 
      iec_ton(&stndstill, fperiod);  //call "function blocks"
      iec_ton(&atspeed, fperiod);
@@ -273,7 +296,8 @@ ss=stndstill.OUT;
      iec_ton(&sw1, fperiod);
      iec_ton(&sw2, fperiod);
      iec_ton(&sw3, fperiod);
-     iec_tof(&tof_sp_en, fperiod);
-     iec_ton(&tchange, fperiod);
+     iec_ton(&sw4, fperiod);
+     iec_ton(&pendelcw, fperiod);
+     iec_ton(&pendelccw, fperiod);
 
 }//FUNCTION
