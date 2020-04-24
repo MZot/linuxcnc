@@ -21,11 +21,13 @@ net   7i77-analogin3 <= hm2_5i25.0.7i77.0.0.analogin3
 #net              <= hm2_5i25.0.7i77.0.0.input-00
 #net              <= hm2_5i25.0.7i77.0.0.input-01
 #net              <= hm2_5i25.0.7i77.0.0.input-02
-#net              <= hm2_5i25.0.7i77.0.0.input-03
-#net              <= hm2_5i25.0.7i77.0.0.input-04  #
-#net              <= hm2_5i25.0.7i77.0.0.input-05  #
-#net              <= hm2_5i25.0.7i77.0.0.input-06
-#net              <= hm2_5i25.0.7i77.0.0.input-07
+
+net sp_servo_rdy  <= hm2_5i25.0.7i77.0.0.input-03
+net sp_inh_lub_p  <= hm2_5i25.0.7i77.0.0.input-04-not  #tlak mazanja
+net sp_inh_lub_ol <= hm2_5i25.0.7i77.0.0.input-05      #overload mazanja
+net cool_overload <= hm2_5i25.0.7i77.0.0.input-06      #overload hlajenja
+net sp_inh_door_l <= hm2_5i25.0.7i77.0.0.input-07-not  #vrata zaklenjena
+
 net   x-pos-limit <= hm2_5i25.0.7i77.0.0.input-08-not
 net   z-pos-limit <= hm2_5i25.0.7i77.0.0.input-09-not
 net     x-home-sw <= hm2_5i25.0.7i77.0.0.input-10
@@ -36,9 +38,9 @@ net   z-neg-limit <= hm2_5i25.0.7i77.0.0.input-13-not
 net      estop-in <= hm2_5i25.0.7i77.0.0.input-15
 
 net     sw_gear1 <= hm2_5i25.0.7i77.0.0.input-16
-net     sw_gear1 <= hm2_5i25.0.7i77.0.0.input-17
-net     sw_gear1 <= hm2_5i25.0.7i77.0.0.input-18
-net     sw_gear1 <= hm2_5i25.0.7i77.0.0.input-19
+net     sw_gear2 <= hm2_5i25.0.7i77.0.0.input-17
+net     sw_gear3 <= hm2_5i25.0.7i77.0.0.input-18
+net     sw_gear4 <= hm2_5i25.0.7i77.0.0.input-19
 net      turr_s1 <= hm2_5i25.0.7i77.0.0.input-20
 net      turr_s2 <= hm2_5i25.0.7i77.0.0.input-21
 net      turr_s3 <= hm2_5i25.0.7i77.0.0.input-22
@@ -46,7 +48,6 @@ net      turr_s4 <= hm2_5i25.0.7i77.0.0.input-23
 net      turr_s5 <= hm2_5i25.0.7i77.0.0.input-24
 net      turr_s6 <= hm2_5i25.0.7i77.0.0.input-25
 net   turr_sclmp <= hm2_5i25.0.7i77.0.0.input-26
-#net              <= hm2_5i25.0.7i77.0.0.input-26
 #net              <= hm2_5i25.0.7i77.0.0.input-27
 #net              <= hm2_5i25.0.7i77.0.0.input-28
 #net              <= hm2_5i25.0.7i77.0.0.input-29
@@ -57,23 +58,23 @@ net   turr_sclmp <= hm2_5i25.0.7i77.0.0.input-26
 #************************************
 #izhodi
 #************************************
-net           gear2f => hm2_5i25.0.7i77.0.0.output-00  
-net           gear2b => hm2_5i25.0.7i77.0.0.output-01  
-net     motion-sp-on => hm2_5i25.0.7i77.0.0.output-02  #mazanje glavnega vretena
+net         spgbm1cw => hm2_5i25.0.7i77.0.0.output-00  
+net        spgbm1ccw => hm2_5i25.0.7i77.0.0.output-01  
+net halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-02  #mazanje glavnega vretena
 #net                  => hm2_5i25.0.7i77.0.0.output-03
 #net                  => hm2_5i25.0.7i77.0.0.output-04
 net         estop-out => hm2_5i25.0.7i77.0.0.output-05
-net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-06
+net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-06 
 net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-07
 
-net           turr-cw => hm2_5i25.0.7i77.0.0.output-08
-net          turr-ccw => hm2_5i25.0.7i77.0.0.output-09
+net           turr_cw => hm2_5i25.0.7i77.0.0.output-08
+net          turr_ccw => hm2_5i25.0.7i77.0.0.output-09
 net       flood_is_on => hm2_5i25.0.7i77.0.0.output-10 
 net              lube => hm2_5i25.0.7i77.0.0.output-11 
-net      motion-sp-on => hm2_5i25.0.7i77.0.0.output-12 #kljucavnica
+net    spgb_door_lock => hm2_5i25.0.7i77.0.0.output-12 #kljucavnica, ko je S > 0
 net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-14 #luc v delovnem prostoru
-net            gear1f => hm2_5i25.0.7i77.0.0.output-13  
-net            gear1b => hm2_5i25.0.7i77.0.0.output-15
+net          spgbm2cw => hm2_5i25.0.7i77.0.0.output-13  
+net         spgbm2ccw => hm2_5i25.0.7i77.0.0.output-15
 
 
 
@@ -131,7 +132,7 @@ net    halui_mach_off hm2_5i25.0.gpio.019.in_not
 net     halui_mach_on hm2_5i25.0.gpio.020.in_not
 net          nc_start hm2_5i25.0.gpio.021.in_not
 net       halui_pause hm2_5i25.0.gpio.022.in_not 
-net       halui_abort hm2_5i25.0.gpio.023.in_not
+net      button_abort hm2_5i25.0.gpio.023.in_not
 #net        hm2_5i25.0.gpio.024.in_not
 #net        hm2_5i25.0.gpio.025.in_not
 #net        hm2_5i25.0.gpio.026.in_not

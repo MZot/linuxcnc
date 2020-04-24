@@ -62,10 +62,10 @@ variable int32_t hwheel_count_old_z;
 variable uint32_t hwheel_count_diff_z;
 
 
-
 function _;
 license "GPL";
 ;;
+
 
 #define TICKS_MINUTE (60*1000)  //1kHz servo-thread
 
@@ -77,9 +77,9 @@ FUNCTION(_){
     hwheel_count_diff_z  = hwheel_count_z - hwheel_count_old_z;
 	hwheel_count_old_z   = hwheel_count_z;
 
-    if(inc100)      hwheel_increment=0.1/4;
-    else if(inc10)  hwheel_increment=0.01/4;
-    else            hwheel_increment=0.001/4;
+    if(inc100)      hwheel_increment=0.1/4.0;
+    else if(inc10)  hwheel_increment=0.01/4.0;
+    else            hwheel_increment=0.001/4.0;
 
     if( jog_rapid || !is_g95 || !spindle_on){  //rapid jog or G94
 	    if(jog_rapid) jog_scale_z = (jog_rapid_feed * override) / TICKS_MINUTE;

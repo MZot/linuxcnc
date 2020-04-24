@@ -2,13 +2,10 @@
 #        gmoccapy_postgui.hal file                                #
 ###################################################################
 
-
-net tool-change      iocontrol.0.tool-change
 #net tool-change      gmoccapy.toolchange-change
-net tool-changed     iocontrol.0.tool-changed
 #net tool-changed     gmoccapy.toolchange-changed
 
-net tool-prep-number gmoccapy.toolchange-number   <=  iocontrol.0.tool-prep-number
+net tool-prep-number gmoccapy.toolchange-number
 
 net tooloffset-x  gmoccapy.tooloffset-x  <=  motion.tooloffset.x
 net tooloffset-z  gmoccapy.tooloffset-z  <=  motion.tooloffset.z
@@ -17,13 +14,13 @@ net halui_abort gmoccapy.delete-message
 net halui_abort gmoccapy.nc-abort
 net    nc_start gmoccapy.nc-start
 
-net          s-vel-fb  gmoccapy.spindle_feedback
+net           s-vel-fb gmoccapy.spindle_feedback
 net   spindle-at-speed gmoccapy.spindle_at_speed_led
 net        gui-sp-load gmoccapy.spindle_load_bar
 
-net sw_gear1 gmoccapy.sp-gear-1
-net sw_gear2 gmoccapy.sp-gear-2
-net sw_gear3 gmoccapy.sp-gear-3
+net is_gear1 gmoccapy.sp-gear-1
+net is_gear2 gmoccapy.sp-gear-2
+net is_gear3 gmoccapy.sp-gear-3
 
 net feed_g95 gmoccapy.g95-active
 net gui_feed gmoccapy.feed

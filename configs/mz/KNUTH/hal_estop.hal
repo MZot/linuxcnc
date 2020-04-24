@@ -17,17 +17,17 @@ setp estop.in7 1
 setp estop.in8 1
 
 net     halui_abort halui.estop.reset
-net   estop-out_req iocontrol.0.user-request-enable
-net   estop-out_req estop.user-request-enable
-net user-enable-out iocontrol.0.user-enable-out
-net user-enable-out estop.user-enable
+net   estop_out_req iocontrol.0.user-request-enable
+net   estop_out_req estop.user-request-enable
+net user_enable_out iocontrol.0.user-enable-out
+net user_enable_out estop.user-enable
 net      emc_enable estop.emc-enable
 net      emc_enable iocontrol.0.emc-enable-in
 
 
-net turret-estop estop.in1
-net     gb-estop estop.in2  
-net    plc-estop estop.in3
+net turret_estop estop.in1
+net   spgb_estop estop.in2  
+net    plc_estop estop.in3
 
 
 

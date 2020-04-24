@@ -5,24 +5,28 @@
 
 
 net halui_mach_is_on plc.machine-is-on
-net halui_abort      plc.abort
+net button_abort     plc.abort
+net halui_abort      plc.abort_pulse
 setp plc.t-lube-interval [LUBE]INTERVAL
 setp plc.t-lube-time     [LUBE]TIME
-net lube_sw          plc.lube-switch
+
+#net lube_sw          plc.lube-switch
+net lube             plc.lube-switch #simulacija tlaka mazanja vodil 
+
 net lube             plc.lube
 net turr_feed_inh    plc.feed-inh1
 net feedinh2         plc.feed-inh2
 net feedinh3         plc.feed-inh3
 net feedinh4         plc.feed-inh4
-net motion-feedinh   plc.feed-inhibit-out
+net motion_feedinh   plc.feed-inhibit-out
 
 net halui_fovr_value plc.feed-ovr-val
 net halui_fovr_cnts  plc.f-ovr-cnts
 net feed_pot         plc.f-ovr-pot
 
-net halui_flood_on   plc.flood-on
-net halui_flood_off  plc.flood-off
 net sw_flood         plc.sw-flood
 net flood_is_on      plc.flood-is-on
+net halui_flood_on   plc.flood-on
+net halui_flood_off  plc.flood-off
 
-net sp-y5  plc.y5
+net cool_overload    plc.cool-overload

@@ -27,8 +27,8 @@ addf jog servo-thread
 loadrt turret_sauter names=turr
 addf turr   servo-thread
 
-loadrt nct_plc names=plc
+loadrt plc names=plc
 addf plc    servo-thread
 
-#loadrt sp_gearbox names=spgb
-#addf   spgb servo-thread
+loadrt sp_gearbox names=spgb
+addf   spgb servo-thread

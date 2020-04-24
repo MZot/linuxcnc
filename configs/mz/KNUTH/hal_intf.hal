@@ -4,22 +4,27 @@
 
 #various interface signals
 
-net halui_abort      halui.abort
-net halui_sp_fw      halui.spindle.forward
-net halui_sp_rv      halui.spindle.reverse
-net halui_sp_stop    halui.spindle.stop
+net      halui_abort halui.abort
+net      halui_sp_fw halui.spindle.forward
+net      halui_sp_rv halui.spindle.reverse
+net    halui_sp_stop halui.spindle.stop
 net halui_mach_is_on halui.machine.is-on
-net halui_mach_on    halui.machine.on
-net halui_mach_off   halui.machine.off
-net halui_flood_on   halui.flood.on
-net halui_flood_off  halui.flood.off
-net flood_is_on      iocontrol.0.coolant-flood
-net halui_pause      halui.program.pause
-net halui-mdi-00     halui.mdi-command-00
-net halui-mdi-01     halui.mdi-command-01
-net halui-mdi-02     halui.mdi-command-02
-net halui-mdi-03     halui.mdi-command-03
-net motion-feedinh   motion.feed-inhibit
+net    halui_mach_on halui.machine.on
+net   halui_mach_off halui.machine.off
+net   halui_flood_on halui.flood.on
+net  halui_flood_off halui.flood.off
+net      halui_pause halui.program.pause
+net     halui_mdi_00 halui.mdi-command-00
+net     halui_mdi_01 halui.mdi-command-01
+net     halui_mdi_02 halui.mdi-command-02
+net     halui_mdi_03 halui.mdi-command-03
+net    halui_pgm_run halui.program.is-running
+net   motion_feedinh motion.feed-inhibit
+net motion_sp_inhibit motion.spindle-inhibit
+net      flood_is_on iocontrol.0.coolant-flood
+net tool-change      iocontrol.0.tool-change
+net tool-changed     iocontrol.0.tool-changed
+net tool-prep-number iocontrol.0.tool-prep-number
 
 setp halui.feed-override.direct-value  1
 setp halui.rapid-override.direct-value 1
@@ -40,7 +45,6 @@ net halui_spovr_value halui.spindle-override.value
 net  halui_spovr_cnts halui.spindle-override.counts
 
 net   halui-jog-speed halui.jog-speed
-
 #net jog_p halui.jog.selected.plus
 #net jog_m halui.jog.selected.minus
 #net halui-joint-0-sel   halui.joint.0.select

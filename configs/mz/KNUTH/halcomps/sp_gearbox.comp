@@ -74,6 +74,8 @@ pin out float sp_load_out           "gmoccapy.spindle_load_bar";
 pin in bit estop_in;
 pin out bit estop_out;
 
+pin out bit door_lock;
+
 pin out unsigned gbstate     "statemachine";
 pin out unsigned spstate     "0=stop, 1=run, 2=pendeln";
 
@@ -81,9 +83,9 @@ function _;
 license "GPL"; // indicates GPL v2 or later
 ;;
 
-
+#include <math.h>
 #define STANDSTILL_SPEED 0.1  //rps
-#define PENDEL_SPEED     0.1
+#define PENDEL_SPEED     1.0
 
 
 typedef enum {
@@ -162,6 +164,8 @@ static bool change = 0;
 
 
 FUNCTION(_){
+    
+     door_lock = fabs(speed_s) > STANDSTILL_SPEED;
 
      sw1.IN = switch_1;
      sw2.IN = switch_2;
@@ -183,10 +187,10 @@ FUNCTION(_){
             if(M42 && stndstill.OUT && !spindle_on)gbstate=TO_2;
             if(M43 && stndstill.OUT && !spindle_on)gbstate=TO_3;
             motor1cw=motor1ccw=motor2cw=motor2ccw=0;
-            if((fabs(speed_s) > STANDSTILL_SPEED) && spindle_on)  spstate = RUN;
-            else                                            spstate = STOP;
+            if((fabs(speed_s) > STANDSTILL_SPEED) && spindle_on) spstate = RUN;
+            else                                                 spstate = STOP;
             
-            if(spindle_on && !(gear1_ok || gear2_ok || gear3_ok))spstate=ERR; //izpad potrditve med vrtenjem
+            if(spindle_on && !(gear1_ok || gear2_ok || gear3_ok))gbstate=ERR; //izpad potrditve med vrtenjem
             break;
 
         case TO_1:
@@ -237,17 +241,18 @@ FUNCTION(_){
             velo_cmd = 0.0;
             break;
         case RUN:
-            if(gear1_ok)velo_cmd = scale_1 * (speed_cmd);
-            if(gear2_ok)velo_cmd = scale_2 * (speed_cmd);
-            if(gear3_ok)velo_cmd = scale_3 * (speed_cmd);
             servo_en = 1;
+            if(gear1_ok)velo_cmd = scale_1 * (speed_cmd);
+            else if(gear2_ok)velo_cmd = scale_2 * (speed_cmd);
+            else if(gear3_ok)velo_cmd = scale_3 * (speed_cmd);
+            else {velo_cmd = 0; servo_en = 0;}
             break;
         case PENDEL:
             servo_en=1;
             if(pendelcw.OUT)
-                velo_cmd = PENDEL_SPEED;
+                velo_cmd = PENDEL_SPEED * scale_1;
             else
-                velo_cmd = -PENDEL_SPEED;
+                velo_cmd = -PENDEL_SPEED * scale_1;
             break;
     }
     pendelcw.IN = !pendelccw.OUT && spstate==PENDEL;
@@ -277,7 +282,7 @@ FUNCTION(_){
                       || !(gear1_ok || gear2_ok || gear3_ok);
      
      stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && !servo_en && !spindle_on;
-     atspeed.IN   = servo_en && spindle_on &&  //servo_rdy &&
+     atspeed.IN   = servo_en && spindle_on && servo_rdy &&
                     (fabs(speed_fb) > (fabs(speed_cmd) - fabs(speed_cmd*0.2))) &&
                     (fabs(speed_fb) < (fabs(speed_cmd) + fabs(speed_cmd*0.2))) &&
                     (gear1_ok || gear2_ok || gear3_ok);

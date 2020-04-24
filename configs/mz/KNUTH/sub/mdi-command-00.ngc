@@ -1,10 +1,10 @@
 O<mdi-command-00> sub
- M66 E0 L0   ;motion.analog-in-00, dobi iz stanja revolverja
- #<tx> = [#5399 + 1]
- o<tc1> if [#<tx> GT 6]
-   #<tx> = 1
- o<tc1> endif
- M6 T[#<tx>]
+; M66 E0 L0   ;motion.analog-in-00, dobi iz stanja revolverja
+; #<tx> = [#5399 + 1]
+; o<tc1> if [#<tx> GT 6]
+;   #<tx> = 1
+; o<tc1> endif
+; M6 T[#<tx>]
  G4 P0.5
  G43
 O<mdi-command-00> endsub

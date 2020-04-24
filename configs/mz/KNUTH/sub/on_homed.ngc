@@ -1,6 +1,6 @@
 O<on_homed> sub
 
-G7 G18 G21 G40 G49 G54 G80 G90 G95 G96 S100 D1000 F0.1 M9 M5 G64 P0.01
+G7 G18 G21 G40 G49 G54 G80 G90 G95 G96 S50 D1000 F0.1 M9 M5 G64 P0.01
 
 #<_toolchange_pos_x> = [#5181 * 2]
 #<_toolchange_pos_z> = #5183
