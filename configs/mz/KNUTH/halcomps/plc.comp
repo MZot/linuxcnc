@@ -54,6 +54,10 @@ pin out bit flood_on;       //halui.flood_on
 pin out bit flood_off;      //halui.flood_off
 pin in  bit flood_is_on;    //halui.flood_is_on
 
+pin in  bit sp_jog_cw;
+pin in  bit sp_jog_ccw;
+pin out bit sp_stp;
+
 function _;
 license "GPL"; // indicates GPL v2 or later
 ;;
@@ -109,6 +113,8 @@ bool iec_fn(bool in, bool *m){
 
 
 FUNCTION(_){
+    sp_stp = !sp_jog_cw && !sp_jog_ccw;
+    
     lube_interval.T = t_lube_interval;
     lube_time.T = t_lube_time;
     lube_err.T=lube_time.T/2;
@@ -139,7 +145,7 @@ FUNCTION(_){
         flood_off = 0;
     }
     if(iec_fp(cool_overload, &fp[2]))
-        rtapi_print_msg(RTAPI_MSG_ERR, "Crpalka za hlajenje preobremenjena!\n");
+        //rtapi_print_msg(RTAPI_MSG_ERR, "Crpalka za hlajenje preobremenjena!\n");
     if(abort) fp[2] = 0;
 
     f_ovr_cnts = f_ovr_pot * (150/24.0);

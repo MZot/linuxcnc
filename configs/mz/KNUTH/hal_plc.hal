@@ -6,7 +6,7 @@
 
 net halui_mach_is_on plc.machine-is-on
 net button_abort     plc.abort
-net halui_abort      plc.abort_pulse
+net halui_abort      plc.abort-pulse
 setp plc.t-lube-interval [LUBE]INTERVAL
 setp plc.t-lube-time     [LUBE]TIME
 
@@ -30,3 +30,7 @@ net halui_flood_on   plc.flood-on
 net halui_flood_off  plc.flood-off
 
 net cool_overload    plc.cool-overload
+
+net      halui_sp_fw plc.sp-jog-cw
+net      halui_sp_rv plc.sp-jog-ccw
+net    halui_sp_stop plc.sp-stp

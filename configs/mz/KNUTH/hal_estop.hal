@@ -24,10 +24,10 @@ net user_enable_out estop.user-enable
 net      emc_enable estop.emc-enable
 net      emc_enable iocontrol.0.emc-enable-in
 
-
-net turret_estop estop.in1
-net   spgb_estop estop.in2  
-net    plc_estop estop.in3
+net     estop-in estop.in1
+net turret_estop estop.in2
+net   spgb_estop estop.in3  
+net    plc_estop estop.in4
 
 
 

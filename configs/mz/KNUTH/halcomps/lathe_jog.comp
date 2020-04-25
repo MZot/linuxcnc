@@ -101,11 +101,11 @@ FUNCTION(_){
 	    if(jog_xm && !jog_xp)jog_x_count -= spindle_count_diff;
      }//else rapid
 
-        if(hwheel_x && (!jog_rapid && !jog_xp && !jog_xm)){
+        if((!jog_rapid && !jog_xp && !jog_xm)){
 	      jog_scale_x=hwheel_increment/2;  //diameter
         }
 
-        if(hwheel_z && (!jog_rapid && !jog_zp && !jog_zm)){
+        if((!jog_rapid && !jog_zp && !jog_zm)){
 	      jog_scale_z=hwheel_increment;
         }
 

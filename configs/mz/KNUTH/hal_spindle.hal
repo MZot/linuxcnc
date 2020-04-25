@@ -28,16 +28,6 @@ net sp_out          hm2_5i25.0.7i77.0.1.analogout5
 #net motion-sp-on    hm2_5i25.0.7i77.0.1.spinena       #test, brisi
 #net 7i84-analogin0  hm2_5i25.0.7i77.0.1.analogout5  #test, brisi
 
-# ---LinuxCNC motion signals---
-net motion_sp_out        motion.spindle-speed-out
-net motion_sp_out_abs    motion.spindle-speed-out-abs  #spindle rpm with override
-net motion_sp_cmd_rps    motion.spindle-speed-cmd-rps  #spindle S value without override
-net motion_sp_on         motion.spindle-on
-net motion_sp_reverse    motion.spindle-reverse
-net motion_sp_forward    motion.spindle-forward
-net motion_sp_brake      motion.spindle-brake
-net spindle_at_speed     motion.spindle-at-speed
-net spindle_inhibit      motion.spindle-inhibit
 
 # ---spindle gearbox component signals/setup---
 net spgb_estop        spgb.estop-out
@@ -47,8 +37,9 @@ net motion_sp_on      spgb.spindle-on
 net motion_sp_cmd_rps spgb.speed-s
 net motion_sp_out     spgb.speed-cmd
 net s-vel-fb          spgb.speed-fb
-net sp_N0             spgb.N0
-net sp_servo_rdy      spgb.servo-rdy
+net sp_N0             spgb.n-0
+#net sp_servo_rdy      spgb.servo-rdy
+setp spgb.servo-rdy 1
 net sw_gear1          spgb.switch-1
 net sw_gear2          spgb.switch-2
 net sw_gear3          spgb.switch-3
@@ -73,14 +64,15 @@ net halui_spovr_cnts  spgb.sp-override-counts
 net gui-sp-load       spgb.sp-load-out
 
 #izhodi na aktuatorje menjalnika
-net  spgbm1cw spgb.motor1cw
+net spgbm1cw spgb.motor1cw
 net spgbm1ccw spgb.motor1ccw
-net  spgbm2cw spgb.motor2cw
+net spgbm2cw spgb.motor2cw
 net spgbm2ccw spgb.motor2ccw
 
-setp spgb.scale-1      0.13
-setp spgb.scale-2      0.05
-setp spgb.scale-3      0.016
+setp spgb.drift        -0.1
+setp spgb.scale-1      -0.07
+setp spgb.scale-2      -0.0175
+setp spgb.scale-3       -0.00439
 
 #setp spgb.max-speed-1  100
 #setp spgb.max-speed-2  200
@@ -88,4 +80,4 @@ setp spgb.scale-3      0.016
 #setp spgb.min-speed-2  10
 #setp spgb.min-speed-3  10
 
-sets sp-N0        1
+

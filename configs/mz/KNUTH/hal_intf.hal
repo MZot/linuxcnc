@@ -19,12 +19,23 @@ net     halui_mdi_01 halui.mdi-command-01
 net     halui_mdi_02 halui.mdi-command-02
 net     halui_mdi_03 halui.mdi-command-03
 net    halui_pgm_run halui.program.is-running
-net   motion_feedinh motion.feed-inhibit
-net motion_sp_inhibit motion.spindle-inhibit
 net      flood_is_on iocontrol.0.coolant-flood
 net tool-change      iocontrol.0.tool-change
 net tool-changed     iocontrol.0.tool-changed
 net tool-prep-number iocontrol.0.tool-prep-number
+
+# ---LinuxCNC motion signals---
+net motion_sp_out        motion.spindle-speed-out
+net motion_sp_out_abs    motion.spindle-speed-out-abs  #spindle rpm with override
+net motion_sp_cmd_rps    motion.spindle-speed-cmd-rps  #spindle S value without override
+net motion_sp_on         motion.spindle-on
+net motion_sp_reverse    motion.spindle-reverse
+net motion_sp_forward    motion.spindle-forward
+net motion_sp_brake      motion.spindle-brake
+net spindle_at_speed     motion.spindle-at-speed
+net spindle_inhibit      motion.spindle-inhibit
+net motion_feedinh       motion.feed-inhibit
+
 
 setp halui.feed-override.direct-value  1
 setp halui.rapid-override.direct-value 1

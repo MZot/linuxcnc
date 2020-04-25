@@ -28,7 +28,7 @@ net sp_inh_lub_ol <= hm2_5i25.0.7i77.0.0.input-05      #overload mazanja
 net cool_overload <= hm2_5i25.0.7i77.0.0.input-06      #overload hlajenja
 net sp_inh_door_l <= hm2_5i25.0.7i77.0.0.input-07-not  #vrata zaklenjena
 
-net   x-pos-limit <= hm2_5i25.0.7i77.0.0.input-08-not
+#net   x-pos-limit <= hm2_5i25.0.7i77.0.0.input-08-not
 net   z-pos-limit <= hm2_5i25.0.7i77.0.0.input-09-not
 net     x-home-sw <= hm2_5i25.0.7i77.0.0.input-10
 net     z-home-sw <= hm2_5i25.0.7i77.0.0.input-11
@@ -51,8 +51,8 @@ net   turr_sclmp <= hm2_5i25.0.7i77.0.0.input-26
 #net              <= hm2_5i25.0.7i77.0.0.input-27
 #net              <= hm2_5i25.0.7i77.0.0.input-28
 #net              <= hm2_5i25.0.7i77.0.0.input-29
-#net              <= hm2_5i25.0.7i77.0.0.input-30
-#net              <= hm2_5i25.0.7i77.0.0.input-31
+net   halui_sp_rv <= hm2_5i25.0.7i77.0.0.input-30
+net   halui_sp_fw <= hm2_5i25.0.7i77.0.0.input-31
 
 
 #************************************
@@ -63,7 +63,7 @@ net        spgbm1ccw => hm2_5i25.0.7i77.0.0.output-01
 net halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-02  #mazanje glavnega vretena
 #net                  => hm2_5i25.0.7i77.0.0.output-03
 #net                  => hm2_5i25.0.7i77.0.0.output-04
-net         estop-out => hm2_5i25.0.7i77.0.0.output-05
+net   user_enable_out => hm2_5i25.0.7i77.0.0.output-05
 net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-06 
 net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-07
 
@@ -72,8 +72,8 @@ net          turr_ccw => hm2_5i25.0.7i77.0.0.output-09
 net       flood_is_on => hm2_5i25.0.7i77.0.0.output-10 
 net              lube => hm2_5i25.0.7i77.0.0.output-11 
 net    spgb_door_lock => hm2_5i25.0.7i77.0.0.output-12 #kljucavnica, ko je S > 0
-net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-14 #luc v delovnem prostoru
-net          spgbm2cw => hm2_5i25.0.7i77.0.0.output-13  
+net  halui_mach_is_on => hm2_5i25.0.7i77.0.0.output-13 #luc v delovnem prostoru
+net          spgbm2cw => hm2_5i25.0.7i77.0.0.output-14  
 net         spgbm2ccw => hm2_5i25.0.7i77.0.0.output-15
 
 
@@ -127,14 +127,16 @@ net         spgbm2ccw => hm2_5i25.0.7i77.0.0.output-15
 #************************************
 
 #net   hm2_5i25.0.gpio.017.in_not
+net           jog_rpd hm2_5i25.0.gpio.017.in_not
 net          sw_flood hm2_5i25.0.gpio.018.in_not
 net    halui_mach_off hm2_5i25.0.gpio.019.in_not
 net     halui_mach_on hm2_5i25.0.gpio.020.in_not
 net          nc_start hm2_5i25.0.gpio.021.in_not
 net       halui_pause hm2_5i25.0.gpio.022.in_not 
 net      button_abort hm2_5i25.0.gpio.023.in_not
-#net        hm2_5i25.0.gpio.024.in_not
-#net        hm2_5i25.0.gpio.025.in_not
-#net        hm2_5i25.0.gpio.026.in_not
-#net        hm2_5i25.0.gpio.027.in_not
-#net     hm2_5i25.0.gpio.028.in_not
+net jog_x_p       hm2_5i25.0.gpio.024.in_not
+net jog_x_m       hm2_5i25.0.gpio.025.in_not
+net jog_z_p       hm2_5i25.0.gpio.026.in_not
+net jog_z_m       hm2_5i25.0.gpio.027.in_not
+net jog_inc10     hm2_5i25.0.gpio.028.in_not
+net jog_inc100    hm2_5i25.0.gpio.029.in_not

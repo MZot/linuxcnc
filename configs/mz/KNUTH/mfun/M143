@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. '/home/cnc/LinuxCNC/linuxcnc-2.7/scripts/rip-environment'
+. '/home/cnc/LinuxCNC/linuxcnc/scripts/rip-environment'
 halcmd setp spgb.M43 1
 halcmd setp spgb.M42 0
 halcmd setp spgb.M41 0

@@ -43,6 +43,7 @@ pin in float    scale_3;
 
 //outputs
 pin out float velo_cmd      "analog value for spindle servo, (speed_in * scale_x)";
+pin in float drift;
 pin out bit servo_en        "servo enable";
 pin out bit motor1cw        "gearbox motor 1 cw";
 pin out bit motor1ccw       "gearbox motor 1 ccw";
@@ -176,6 +177,8 @@ FUNCTION(_){
      gear2_ok = (sw1.OUT && !sw2.OUT && !sw3.OUT && sw4.OUT);
      gear3_ok = (sw1.OUT && !sw2.OUT && sw3.OUT && !sw4.OUT);
      
+     timeout.IN = motor1cw ||  motor1ccw || motor2cw || motor2ccw;
+     if(timeout.OUT) gbstate=ERR;
 
     switch (gbstate) {
         case IDLE:
@@ -219,7 +222,8 @@ FUNCTION(_){
             rtapi_print_msg(RTAPI_MSG_ERR, "Napaka menjalnika\n");
             gbstate = ACK;
         case ACK:
-            if(abort && !machine_is_on) spstate = IDLE;
+            timeout.IN = 0;
+            if(abort && !machine_is_on) gbstate = IDLE;
             motor1cw=motor1ccw=motor2cw=motor2ccw=0;
             M41=M42=M43=0;
             servo_en = 0;
@@ -230,8 +234,7 @@ FUNCTION(_){
             break;
     }; //switch state
     
-    timeout.IN = gbstate != IDLE;
-    if(timeout.OUT) gbstate=ERR;
+
      
      
 
@@ -286,7 +289,7 @@ FUNCTION(_){
                     (fabs(speed_fb) > (fabs(speed_cmd) - fabs(speed_cmd*0.2))) &&
                     (fabs(speed_fb) < (fabs(speed_cmd) + fabs(speed_cmd*0.2))) &&
                     (gear1_ok || gear2_ok || gear3_ok);
-     at_speed = atspeed.OUT && !sp_inhibit_out;
+     at_speed = atspeed.OUT;
 
      //override
      sp_override_counts = sp_override_pot * (100/24.0) + 50;  //50 - 150 pri 0-24V
@@ -294,6 +297,8 @@ FUNCTION(_){
      //gui load bar
      //sp_load_out = sp_load_in * 50.0;
      sp_load_out = fabs(speed_cmd) - fabs(speed_fb);
+     
+     velo_cmd = velo_cmd + drift;
 
      iec_ton(&stndstill, fperiod);  //call "function blocks"
      iec_ton(&atspeed, fperiod);
