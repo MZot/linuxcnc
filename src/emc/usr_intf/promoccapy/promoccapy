@@ -1603,7 +1603,7 @@ class gmoccapy( object ):
         # keep the timer running
         return True
 
-
+    syncfs=False
     def _slow_periodic(self):
         error = self.error_channel.poll()
         if error:
@@ -1631,6 +1631,10 @@ class gmoccapy( object ):
             if self.display_units != 'in':
                 self.display_units = 'in'
                 self.widgets.gremlin.set_display_units('in')
+        
+        if self.syncfs:
+            self.syncfs=False
+            subprocess.Popen("sync", shell=True, executable='/bin/bash' ) 
 
 
 
@@ -1781,7 +1785,7 @@ class gmoccapy( object ):
         self.log_error("Machine shut down")
         self.save_state()
         self.widgets.window1.destroy()
-        subprocess.Popen("sudo halt", shell=True, executable='/bin/bash' )  #shutdown
+        subprocess.Popen("sync;sync;sudo halt", shell=True, executable='/bin/bash' )  #shutdown
 
     def on_btn_exit_linuxcnc_clicked( self, widget, data = None ):
         self.log_error("Application exit")
@@ -1987,6 +1991,7 @@ class gmoccapy( object ):
         #self.widgets.ntb_info.set_current_page( 0 )
         #self.widgets.ntb_jog.set_current_page( NTB_JOG_DEFAULT )
         self.widgets.togglebuttonPWR.set_active(False)
+        self.syncfs=True
 
     def on_hal_status_state_on( self, widget ):
         widgetlist = ["btn_homing",
@@ -3152,6 +3157,7 @@ class gmoccapy( object ):
             self.widgets.label_editted.set_visible(False)
         self.widgets.ncam.treeview.grab_focus()
         widget.set_active(False)
+        self.syncfs=True
 
 
     def on_btn_redo_features_clicked( self, widget, data = None ):
@@ -4594,6 +4600,7 @@ class gmoccapy( object ):
             self.command.wait_complete()
             self.command.mode( linuxcnc.MODE_MANUAL )
             self.command.wait_complete()
+            self.syncfs=True
 
 
     def auto_tool_measure_x(self):
@@ -5228,6 +5235,7 @@ class gmoccapy( object ):
                 self.widgets.label_editted.set_visible(False)
             self.widgets.btn_save.set_sensitive(True)
             self.widgets.btn_save.set_active(False)
+            self.syncfs=True
 
     def on_editview_modified_changed( self, widget, data = None ):
             self.widgets.label_editted.set_visible(True)
