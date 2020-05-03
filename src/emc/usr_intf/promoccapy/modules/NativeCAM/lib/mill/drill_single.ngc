@@ -33,6 +33,8 @@ o<drill_single> sub
 			G82 Z[#4 - #6] R[#3 + #<_drill_retract>] P#<_drill_dwell>
 		o<100> elseif [#<_drill_mode> EQ 83]
 			G83 Z[#4 - #6] R[#3 + #<_drill_retract>] Q#<_drill_q>
+        o<100> elseif [#<_drill_mode> EQ 331]
+			G33.1 Z[#4 - #6] K#<_thread_k>
 		o<100> endif
 		G80
 	o11 endif

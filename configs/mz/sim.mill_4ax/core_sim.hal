@@ -48,7 +48,7 @@ net Zpos axis.2.motor-pos-cmd => axis.2.motor-pos-fb ddt_z.in
 net Apos axis.3.motor-pos-cmd => axis.3.motor-pos-fb
 
 # estop loopback
-#net estop-loop iocontrol.0.user-enable-out iocontrol.0.emc-enable-in
+net estop-loop iocontrol.0.user-enable-out iocontrol.0.emc-enable-in
 
 # create signals for tool loading loopback
 net tool-prep-loop iocontrol.0.tool-prepare iocontrol.0.tool-prepared
