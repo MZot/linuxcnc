@@ -2548,7 +2548,7 @@ class gmoccapy( object ):
 
 
         self.widgets.lbl_current_vel.set_text("%d" % (self.stat.current_vel * 60.0))
-        self.widgets.lbl_fc_value.set_text("%.2f" % ((self.stat.current_vel * 60.0 * self.faktor)/self.halcomp["spindle_feedback"]) if self.halcomp["spindle_feedback"] > 5 else u"\u221E")  #inifinit symbol
+        self.widgets.lbl_fc_value.set_text("%.2f" % ((self.stat.current_vel * self.faktor)/self.halcomp["spindle_feedback"]) if self.halcomp["spindle_feedback"] > 0.1 else u"\u221E")  #inifinit symbol
 
         # converting 0.0 to string brings nothing, so the string is empty
         # happens only on start up
