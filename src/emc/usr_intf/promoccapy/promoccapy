@@ -1635,6 +1635,9 @@ class gmoccapy( object ):
         if self.syncfs:
             self.syncfs=False
             subprocess.Popen("sync", shell=True, executable='/bin/bash' ) 
+        
+        if self.stat.interp_state == linuxcnc.INTERP_IDLE  and self.stat.task_mode != linuxcnc.MODE_MANUAL:
+            self.command.mode( linuxcnc.MODE_MANUAL )
 
 
 
