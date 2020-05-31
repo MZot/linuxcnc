@@ -1,0 +1,37 @@
+# core HAL config file
+
+# first load all the RT modules that will be needed
+# kinematics
+loadrt trivkins
+# motion controller, get name and thread periods from ini file
+loadrt [EMCMOT]EMCMOT base_period_nsec=[EMCMOT]BASE_PERIOD servo_period_nsec=[EMCMOT]SERVO_PERIOD num_joints=[TRAJ]AXES
+
+loadrt hostmot2
+
+loadrt hm2_eth board_ip="10.10.10.10" config="  num_encoders=6 num_pwmgens=0 num_3pwmgens=0 num_stepgens=0 sserial_port_0=200xxxxx"
+setp    hm2_7i92.0.watchdog.timeout_ns 5000000
+addf hm2_7i92.0.read          servo-thread
+addf hm2_7i92.0.write         servo-thread
+
+
+# add motion controller functions to servo thread
+addf motion-command-handler servo-thread
+addf motion-controller servo-thread
+
+loadrt pid names=pid.x,pid.z
+addf pid.x.do-pid-calcs       servo-thread
+addf pid.z.do-pid-calcs       servo-thread
+
+loadrt lathe_jog names=jog
+addf jog servo-thread
+
+loadrt turret_sauter names=turr
+addf turr   servo-thread
+
+loadrt plc names=plc
+addf plc    servo-thread
+
+loadrt sp_gearbox names=spgb
+addf   spgb servo-thread
+
+loadusr -W ./halcomps/usbio

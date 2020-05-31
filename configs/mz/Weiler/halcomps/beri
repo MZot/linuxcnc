@@ -1,0 +1,2 @@
+. '/home/cnc/LinuxCNC/linuxcnc/scripts/rip-environment'
+sudo '/home/cnc/LinuxCNC/linuxcnc/bin/halcompile' --install '/home/cnc/LinuxCNC/configs/KNUTH/halcomps/turret_sauter.comp'

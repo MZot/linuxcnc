@@ -1,0 +1,75 @@
+###################################################################
+#        hal_intf.hal                                               #
+###################################################################
+
+#various interface signals
+
+net      halui_abort halui.abort
+net      halui_sp_fw halui.spindle.forward
+net      halui_sp_rv halui.spindle.reverse
+net    halui_sp_stop halui.spindle.stop
+net halui_mach_is_on halui.machine.is-on
+net    halui_mach_on halui.machine.on
+net   halui_mach_off halui.machine.off
+net   halui_flood_on halui.flood.on
+net  halui_flood_off halui.flood.off
+net      halui_pause halui.program.pause
+net     halui_mdi_00 halui.mdi-command-00
+net     halui_mdi_01 halui.mdi-command-01
+net     halui_mdi_02 halui.mdi-command-02
+net     halui_mdi_03 halui.mdi-command-03
+net    halui_pgm_run halui.program.is-running
+net      flood_is_on iocontrol.0.coolant-flood
+net tool-change      iocontrol.0.tool-change
+net tool-changed     iocontrol.0.tool-changed
+net tool-prep-number iocontrol.0.tool-prep-number
+
+# ---LinuxCNC motion signals---
+net motion_sp_out        motion.spindle-speed-out
+net motion_sp_out_abs    motion.spindle-speed-out-abs  #spindle rpm with override
+net motion_sp_cmd_rps    motion.spindle-speed-cmd-rps  #spindle S value without override
+net motion_sp_on         motion.spindle-on
+net motion_sp_reverse    motion.spindle-reverse
+net motion_sp_forward    motion.spindle-forward
+net motion_sp_brake      motion.spindle-brake
+net spindle_at_speed     motion.spindle-at-speed
+net spindle_inhibit      motion.spindle-inhibit
+net motion_feedinh       motion.feed-inhibit
+
+
+setp halui.feed-override.direct-value  1
+setp halui.rapid-override.direct-value 1
+setp halui.rapid-override.count-enable 1
+setp halui.feed-override.count-enable  1
+setp halui.feed-override.scale         0.01
+setp halui.rapid-override.scale        0.01
+
+setp halui.spindle-override.count-enable  1
+setp halui.spindle-override.direct-value  1
+setp halui.spindle-override.scale         0.01
+
+net  halui_fovr_value halui.feed-override.value
+net   halui_fovr_cnts halui.feed-override.counts
+net  halui_rovr_value halui.rapid-override.value
+net   halui_fovr_cnts halui.rapid-override.counts
+net halui_spovr_value halui.spindle-override.value
+net  halui_spovr_cnts halui.spindle-override.counts
+
+net   halui-jog-speed halui.jog-speed
+#net jog_p halui.jog.selected.plus
+#net jog_m halui.jog.selected.minus
+#net halui-joint-0-sel   halui.joint.0.select
+#net halui-joint-1-sel   halui.joint.1.select
+#net halui-joint-2-sel   halui.joint.2.select
+#net halui-joint-3-sel   halui.joint.3.select
+#net halui-jog-sel-inc   axis.0.jog-scale
+#net halui-jog-sel-inc   axis.1.jog-scale
+#net halui-jog-sel-inc   axis.2.jog-scale
+#net halui-jog-sel-inc halui.jog.selected.increment
+#net joint-selected-count  axis.0.jog-counts
+#net joint-selected-count  axis.1.jog-counts
+#net joint-selected-count  axis.2.jog-counts
+
+setp axis.0.jog-vel-mode 1
+setp axis.1.jog-vel-mode 1
+setp axis.2.jog-vel-mode 1
