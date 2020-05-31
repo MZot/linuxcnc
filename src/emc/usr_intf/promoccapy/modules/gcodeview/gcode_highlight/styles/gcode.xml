@@ -23,7 +23,7 @@
 
   <style name="bracket-match" foreground="#000000" background="#FFFF00" bold="true"/>
   <style name="bracket-mismatch" background="#ff4b52" underline="true"/>
-  <style name="current-line" foreground="#000000" background="#FFE0BB"/>
+  <style name="current-line" foreground="#000000" background="grey"/>
   <style name="cursor" foreground="#000000"/>
   <style name="line-numbers" foreground="#000000" background="#c4c2c2"/>
   <style name="search-match" foreground="#000000" background="#fffd8c" bold="true" underline="true"/>

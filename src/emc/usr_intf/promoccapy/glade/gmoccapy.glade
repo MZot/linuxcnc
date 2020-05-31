@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
+  <!-- interface-requires gtksourceview 0.0 -->
+  <!-- interface-requires gladevcp 0.0 -->
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy project-wide -->
   <object class="GtkAdjustment" id="adf_probe_vel">
@@ -1514,6 +1516,18 @@
                                                         <child>
                                                           <placeholder/>
                                                         </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
                                                       </object>
                                                       <packing>
                                                         <property name="expand">False</property>
@@ -1619,12 +1633,26 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="EMC_MDIHistory" id="hal_mdihistory">
-                                    <property name="height_request">200</property>
+                                  <object class="GtkScrolledWindow" id="scrolledwindow4">
                                     <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="hscrollbar_policy">never</property>
+                                    <property name="vscrollbar_policy">never</property>
                                     <child>
-                                      <placeholder/>
+                                      <object class="GtkSourceView" id="hal_mdihistory">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="left_margin">2</property>
+                                        <property name="right_margin">2</property>
+                                        <property name="show_line_numbers">True</property>
+                                        <property name="show_line_marks">True</property>
+                                        <property name="tab_width">4</property>
+                                        <property name="auto_indent">True</property>
+                                        <property name="insert_spaces_instead_of_tabs">True</property>
+                                        <property name="highlight_current_line">True</property>
+                                        <property name="indent_on_tab">False</property>
+                                        <signal name="button-press-event" handler="on_mdi_click" swapped="no"/>
+                                      </object>
                                     </child>
                                   </object>
                                   <packing>
@@ -3821,6 +3849,18 @@
                                 <property name="left_attach">8</property>
                                 <property name="right_attach">9</property>
                               </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
                             </child>
                             <child>
                               <placeholder/>
@@ -12478,11 +12518,14 @@ LinuxCNC</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="lbl_space_18">
-                        <property name="width_request">85</property>
-                        <property name="height_request">56</property>
+                      <object class="GtkToggleButton" id="btn_select_edit">
+                        <property name="label">gtk-execute</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="use_stock">True</property>
+                        <signal name="clicked" handler="on_btn_select_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -13149,19 +13192,6 @@ LinuxCNC</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="lbl_space_14">
-                        <property name="width_request">85</property>
-                        <property name="height_request">56</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">4</property>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkToggleButton" id="btn_remove_features">
                         <property name="label">gtk-remove</property>
                         <property name="visible">True</property>
@@ -13174,7 +13204,7 @@ LinuxCNC</property>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">5</property>
+                        <property name="position">4</property>
                       </packing>
                     </child>
                     <child>
@@ -13186,6 +13216,22 @@ LinuxCNC</property>
                         <property name="use_action_appearance">False</property>
                         <property name="use_stock">True</property>
                         <signal name="clicked" handler="on_btn_add_features_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToggleButton" id="btn_select_ncam">
+                        <property name="label">gtk-execute</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_action_appearance">False</property>
+                        <property name="use_stock">True</property>
+                        <signal name="clicked" handler="on_btn_select_ncam_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>

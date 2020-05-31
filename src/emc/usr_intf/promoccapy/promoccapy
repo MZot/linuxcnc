@@ -273,6 +273,7 @@ class gmoccapy( object ):
 
         self._init_offsetpage()  #must be before window.show()
         self._init_gcodeview()
+        self._init_mdi()
         self._init_editview()
         self._init_features()
         # finally show the window
@@ -345,7 +346,8 @@ class gmoccapy( object ):
                      "tbtn_view_tool_path1", "tbtn_view_dimension1", "tbtn_user_tabs", "tbtn_optional_stops", "tbtn_optional_blocks", "tbtn_fullsize_preview", "tbtn_fullsize_preview1",
                       "tbtn_setup", "rbt_auto", "rbt_manual", "tbtn_rel", "tbtn_dtg", "btn_select", "btn_new_xml_file1", "btn_save_features", "btn_save", "btn_save_tool_table", "btn_select", "btn_copy",
                       "btn_delete_tool", "btn_add_tool", "btn_tool_touchoff_x","btn_tool_touchoff_z", "tbtn_measure_xc", "tbtn_measure_yc", "tbtn_measure_xr", "tbtn_measure_yr", "btn_run",
-                      "tbtn_measure_ci", "tbtn_measure_p1", "tbtn_measure_p2", "tbtn_measure_p3", "tbtn_measure_p4", "tbtn_measure_calculate", "tbtn_measure_set_zero", "btn_set_tool_change_pos"]
+                      "tbtn_measure_ci", "tbtn_measure_p1", "tbtn_measure_p2", "tbtn_measure_p3", "tbtn_measure_p4", "tbtn_measure_calculate", "tbtn_measure_set_zero", "btn_set_tool_change_pos",
+                      "btn_select_edit", "btn_select_ncam", "btn_add_features", "btn_redo_features", "btn_undo_features", "btn_remove_features"]
         for widget in widgetlist:
            self.widgets[widget].modify_bg( gtk.STATE_ACTIVE, gtk.gdk.color_parse( "#FFFF00" ) )
 
@@ -425,7 +427,7 @@ class gmoccapy( object ):
         ]
         self.h_tabs.append( tab_setup )
 
-        tab_edit = [( 0, "btn_load1" ), ( 1, "btn_undo" ), ( 2, "btn_redo" ), ( 4, "btn_search" ),
+        tab_edit = [( 0, "btn_load1" ), ( 1, "btn_undo" ), ( 2, "btn_redo" ), ( 4, "btn_search") , ( 7, "btn_select_edit"), 
                     ( 8, "btn_save" ), ( 9, "btn_back_edit" )
         ]
         self.h_tabs.append( tab_edit )
@@ -447,8 +449,8 @@ class gmoccapy( object ):
         ]
         self.h_tabs.append( tab_srch )
 
-        tab_ncam = [( 0, "btn_open_features" ),( 1, "btn_undo_features" ),( 2, "btn_redo_features" ),( 5, "btn_remove_features" ),
-                    ( 6, "btn_add_features" ),( 7, "btn_save_features" ),( 8, "tbtn_fullsize_preview2" ),( 9, "btn_back_features" )]
+        tab_ncam = [( 0, "btn_open_features" ),( 1, "btn_undo_features" ),( 2, "btn_redo_features" ),( 4, "btn_remove_features" ),
+                    ( 5, "btn_add_features" ), ( 7, "btn_save_features" ), ( 6, "btn_select_ncam"),  ( 8, "tbtn_fullsize_preview2" ),( 9, "btn_back_features" )]
         self.h_tabs.append( tab_ncam )
 
         tab_meas = [( 0, "tbtn_measure_p1" ),( 1, "tbtn_measure_p2" ),( 2, "tbtn_measure_p3" ),( 3, "tbtn_measure_p4" ),
@@ -1129,6 +1131,42 @@ class gmoccapy( object ):
     def _init_gcodeview( self ):
         self.widgets.gcode_view = GcodeView(preview=False)
         self.widgets.scrolledwindow1.add( self.widgets.gcode_view.gtksourceview )
+        
+    def _init_mdi(self):
+        # Set up paths
+        PYDIR = os.path.dirname(os.path.realpath(__file__))
+        LANGDIR = os.path.join(WIDGETSDIR, 'gcodeview', 'gcode_highlight', "language-specs")
+        STYLEDIR = os.path.join(WIDGETSDIR, 'gcodeview', 'gcode_highlight', "styles")
+        # setup style and lang managers
+        self.lm = gtksourceview.LanguageManager()
+        self.sm = gtksourceview.StyleSchemeManager()
+        self.lm.set_search_path([LANGDIR])
+        self.sm.set_search_path([STYLEDIR])
+        self.mdi_buf = gtksourceview.Buffer()
+        self.widgets.hal_mdihistory.set_buffer(self.mdi_buf)
+        self.mdi_buf.set_style_scheme(self.sm.get_scheme('gcode'))
+        self.mdi_buf.set_language(self.lm.get_language('gcode'))
+        self.mdi_buf.set_text( self.prefs.getpref( "mdi_history", ";MDI window\n;Pressing NC Start will execute selected line\n;\nG0X0", str ) )
+        
+    def on_mdi_click(self, view, ev):
+        if "GDK_2BUTTON_PRESS" in str(ev.type):
+            mdi = self.get_mdi_line()
+            if mdi.strip() != '':                
+                self.command.mode( linuxcnc.MODE_MDI )
+                self.command.wait_complete()
+                self.command.mdi(mdi)
+    
+    def get_mdi_line(self):
+        end = self.mdi_buf.get_iter_at_mark(self.mdi_buf.get_insert())
+        if not self._is_last_in_line(self.mdi_buf):
+            end.forward_to_line_end()
+        start = self.mdi_buf.get_iter_at_mark(self.mdi_buf.get_insert())
+        start.backward_line()
+        start.forward_line()
+        return self.mdi_buf.get_text(start, end)
+
+        
+        
 
 
     # first we hide all the axis columns the unhide the ones we want
@@ -1750,7 +1788,7 @@ class gmoccapy( object ):
         self.widgets.ntb_button.set_current_page( 0 )
         self.widgets.ntb_info.set_current_page( 0 )
         self.widgets.ntb_jog.set_current_page( 1 )
-        self.widgets.hal_mdihistory.entry.grab_focus()
+        self.widgets.hal_mdihistory.grab_focus()
         self.command.mode( linuxcnc.MODE_MANUAL )
         self.command.wait_complete()
         self.widgets.rbt_auto.set_active(False)
@@ -1774,12 +1812,13 @@ class gmoccapy( object ):
     def set_tool_change_pos(self, widget):
         self.mdi("O<on_set_tool_change_pos> call")
         widget.set_active(False)
-        self.widgets.hal_mdihistory.entry.grab_focus()
+        self.widgets.hal_mdihistory.grab_focus()
         return
 
     def save_state(self):
         self.prefs.putpref( "open_file", self.loaded_file, str )
         self.prefs.putpref( "ncam_file", self.widgets.ncam.file, str )
+        self.prefs.putpref( "mdi_history", self.mdi_buf.get_text(self.mdi_buf.get_start_iter(), self.mdi_buf.get_end_iter()), str )
         with open(ERRPATH, "w") as openfile:
             openfile.write(self.widgets.error_log_tw.get_buffer().get_text( self.widgets.error_log_tw.get_buffer().get_start_iter(), self.widgets.error_log_tw.get_buffer().get_end_iter()))
 
@@ -1797,7 +1836,7 @@ class gmoccapy( object ):
 
     # if you press "down" key when in mdi mode, then the next widget gets focus, give focus back to mdi entry
     def on_togglebuttonEMG_focus( self, widget, data = None ):
-        glib.timeout_add(5, self.widgets.hal_mdihistory.entry.grab_focus)
+        glib.timeout_add(5, self.widgets.hal_mdihistory.grab_focus)
 
 
 # button handlers End
@@ -2033,7 +2072,7 @@ class gmoccapy( object ):
         self.widgets.ntb_info.set_current_page( 0 )
         self.widgets.ntb_jog.set_current_page( 1 ) #NTB_JOG_DEFAULT )
         #self._check_limits()
-        self.widgets.hal_mdihistory.entry.grab_focus()
+        self.widgets.hal_mdihistory.grab_focus()
         #self.widgets.rbt_mdi.set_active( True )
 
 
@@ -2310,14 +2349,6 @@ class gmoccapy( object ):
             return True #other keys dont go through, so you can't type anything until you press enter key - cell_edited
 
 
-        #tipke levo desno
-        if keyname == "Left" and signal:
-           if self.widgets.hal_mdihistory.tv.has_focus():
-            self.widgets.hal_mdihistory.entry.grab_focus()
-
-        if keyname == "Right" and signal:
-           if self.widgets.hal_mdihistory.tv.has_focus():
-            self.widgets.hal_mdihistory.entry.grab_focus()
 
         if ( self.widgets.tbtn_fullsize_preview.get_active() or self.widgets.tbtn_fullsize_preview1.get_active() or self.widgets.tbtn_fullsize_preview2.get_active()) and self.widgets.ntb_preview.get_visible():
           if keyname == "Right" and signal:
@@ -2337,15 +2368,31 @@ class gmoccapy( object ):
 
 
         # Only in MDI mode the RETURN key should execute a command #only nc-start pin executes mdi
-        if keyname == "Return":
-         if self.widgets.hal_mdihistory.tv.has_focus(): #if self.stat.task_mode == linuxcnc.MODE_MDI:
-            #print("Got enter in MDI")
-            #self.widgets.hal_mdihistory.submit()
-            # we need to leave here, otherwise the check for jogging
-            # only allowed in manual mode will finish the sub
-            #print "enter mdi"
-            return True
-
+        if self.widgets.hal_mdihistory.has_focus(): #if self.stat.task_mode == linuxcnc.MODE_MDI:
+         if keyname == "Return" and signal:
+  
+            if self._is_last_in_line(self.mdi_buf): #prazna vrstica ali kurzor na koncu, doda samo eno novo vrstico
+              return
+            #ali skoci na konec in doda novo vrstico, da ne prelamlja vrstice
+            end = self.mdi_buf.get_iter_at_mark(self.mdi_buf.get_insert())
+            end.forward_to_line_end()
+            self.mdi_buf.place_cursor(end)
+            self.widgets.hal_mdihistory.scroll_to_iter(end, 0, True, 0, 0.5)
+            return 
+              
+         if keyname  == "Up" and signal:
+              iter = self.mdi_buf.get_iter_at_mark(self.mdi_buf.get_insert())
+              iter.backward_line()
+              self.widgets.hal_mdihistory.scroll_to_iter(iter, 0, True, 0, 0.5)
+              return
+         if keyname  == "Down" and signal:
+              iter = self.mdi_buf.get_iter_at_mark(self.mdi_buf.get_insert())
+              self.widgets.hal_mdihistory.scroll_to_iter(iter, 0, True, 0, 0.5)
+              return
+        if keyname == ("Right"):  #v desno gre samo do konca vrstice
+              if self._is_last_in_line(self.mdi_buf):
+                  return True
+              return
 
         else:
             #print( "This key has not been implemented yet" )
@@ -2353,6 +2400,15 @@ class gmoccapy( object ):
             return
         self.last_key_event = keyname, signal
         return
+        
+    def _is_last_in_line(self, buf):
+          iter = buf.get_iter_at_mark(buf.get_insert())
+          end = buf.get_iter_at_mark(buf.get_insert())
+          end.forward_line()
+          end.backward_char()
+          return iter.get_line_offset() == end.get_line_offset()
+             
+        
 
     # Notification stuff.
     def init_notification( self ):
@@ -3563,7 +3619,7 @@ class gmoccapy( object ):
 
     def on_ntb_info_switch_page( self, widget, page, page_num, data = None ):
         if self.stat.task_mode == linuxcnc.MODE_MDI:
-            self.widgets.hal_mdihistory.entry.grab_focus()
+            self.widgets.hal_mdihistory.grab_focus()
         elif self.stat.task_mode == linuxcnc.MODE_AUTO:
             self.widgets.gcode_view.gtksourceview.grab_focus()
 
@@ -3616,7 +3672,7 @@ class gmoccapy( object ):
 
         elif self.widgets.rbt_manual.get_active():  # go back to jog_buttons
             self.widgets.ntb_button.set_current_page( 0 )
-            self.widgets.hal_mdihistory.entry.grab_focus()
+            self.widgets.hal_mdihistory.grab_focus()
             if self.widgets.tbtn_fullsize_preview1.get_active():
                 self.widgets.vbx_jog.set_visible(False)
 
@@ -3994,7 +4050,7 @@ class gmoccapy( object ):
             axis = "Unknown"
             message = _( "Offset %s could not be set, because off unknown axis" ) % axis
             dialogs.warning_dialog(self, _("Wrong offset setting!"), message )
-            self.widgets.hal_mdihistory.entry.grab_focus()
+            self.widgets.hal_mdihistory.grab_focus()
             
         if self.stat.tool_in_spindle == 9999 and axis in "XYZ" and not self.lathe_mode:   
             if self.stat.probe_tripped: 
@@ -4060,7 +4116,7 @@ class gmoccapy( object ):
           self.widgets.offsetpage1.view2.grab_focus()
         else:
           widget.set_active(False)
-          self.widgets.hal_mdihistory.entry.grab_focus()
+          self.widgets.hal_mdihistory.grab_focus()
 
 # TODO: End
 
@@ -4483,7 +4539,7 @@ class gmoccapy( object ):
              self.halcomp['toolchange-change'] = False
              #self.halcomp['toolchange-changed'] = True
              self.dialog_toolchange.hide()
-             self.widgets.hal_mdihistory.entry.grab_focus()
+             self.widgets.hal_mdihistory.grab_focus()
 
 
 
@@ -4721,6 +4777,7 @@ class gmoccapy( object ):
       self.command.mode( linuxcnc.MODE_MANUAL )
       self.command.wait_complete()
       widget.set_active(False)
+      glib.timeout_add(5, self.jog)
 
 
     # select a tool entering a number
@@ -4735,7 +4792,8 @@ class gmoccapy( object ):
             #glib.timeout_add(5, self.mdi, "O<on_man_tool_call> call [%i]" % int( val ))
 
         widget.set_active(False)
-        self.widgets.hal_mdihistory.entry.grab_focus()
+        self.widgets.hal_mdihistory.grab_focus()
+        glib.timeout_add(50, self.jog)
         return
 
     def mdi(self, mdi):
@@ -4748,7 +4806,7 @@ class gmoccapy( object ):
     def jog(self):
         self.command.mode( linuxcnc.MODE_MANUAL )
         self.command.wait_complete()
-
+        self.widgets.hal_mdihistory.grab_focus()
 
 
     #set feed in manual mode
@@ -4773,7 +4831,7 @@ class gmoccapy( object ):
        self.command.wait_complete()
        self.command.mode( linuxcnc.MODE_MANUAL )
        self.command.wait_complete()
-       self.widgets.hal_mdihistory.entry.grab_focus()
+       self.widgets.hal_mdihistory.grab_focus()
 
 
     # set tool with M61 Q? or with T? M6
@@ -4805,7 +4863,7 @@ class gmoccapy( object ):
             message = _( "Could not understand the entered tool number. Will not change anything" )
             dialogs.warning_dialog( self, _( "Important Warning!" ), message )
        widget.set_active(False)
-       self.widgets.hal_mdihistory.entry.grab_focus()
+       self.widgets.hal_mdihistory.grab_focus()
 
 # =========================================================
 # gremlin relevant calls
@@ -4937,14 +4995,32 @@ class gmoccapy( object ):
 
 
 
-    fileExists=False
+    def on_btn_select_ncam_clicked( self, widget, data = None ):
+        if widget.get_active():
+            try:
+                filename = self.widgets.ncam.file
+                self.widgets.ncam.save_file()
+                self.widgets.hal_action_open.load_file(filename)
+                self.widgets.gcode_view.load_file(filename)
+                self.widgets.gremlin.load()
+                glib.timeout_add(500, widget.set_active, False)
+            except:
+                pass
+    
     def on_btn_select_clicked( self, widget, data = None ):
         if widget.get_active():
-          glib.timeout_add(1, self.select_clicked, widget)
+            try:
+                if widget == self.widgets.btn_select:
+                    fname = self.widgets.filechooser_widget.get_path_at_cursor()
+                elif widget == self.widgets.btn_select_edit:
+                    fname = self.widgets.editview.current_file
+                glib.timeout_add(1, self.select_clicked, widget, fname)
+            except:
+                pass
 
-    def select_clicked( self, widget ):
+    def select_clicked( self, widget, filename ):
          try:
-          filename = self.widgets.filechooser_widget.get_path_at_cursor()
+          #filename = self.widgets.filechooser_widget.get_path_at_cursor()
           if not stat.S_ISDIR(os.stat(filename).st_mode):
            self.widgets.hal_action_open.load_file(filename)
            self.widgets.gcode_view.load_file(filename)
@@ -5385,6 +5461,7 @@ class gmoccapy( object ):
     def on_btn_run_clicked( self, widget, data = None ):
           if widget.get_active():
             glib.timeout_add(100, self.nc_start)
+    
 
     def nc_start(self):
          self.halcomp["apply-offsets"] = False
@@ -5393,7 +5470,7 @@ class gmoccapy( object ):
          elif self.halcomp['toolchange-change']:
            self.halcomp["toolchange-changed"] = True
            self.dialog_toolchange.hide()
-           self.widgets.hal_mdihistory.entry.grab_focus()
+           self.widgets.hal_mdihistory.grab_focus()
            return
          elif self.auto_tool_meas_x:
              self.tool_meas_dialog.response(gtk.RESPONSE_REJECT)
@@ -5403,8 +5480,19 @@ class gmoccapy( object ):
              self.tool_meas_dialog.response(gtk.RESPONSE_REJECT)
              self.auto_tool_measure_z()
              return             
+         elif self.widgets.hal_mdihistory.has_focus():
+             mdi = self.get_mdi_line()
+             if mdi.strip() != '':                
+                 self.command.mode( linuxcnc.MODE_MDI )
+                 self.command.wait_complete()
+                 self.command.mdi(mdi)
+                 iter = self.mdi_buf.get_iter_at_mark(self.mdi_buf.get_insert())
+                 self.mdi_buf.place_cursor(iter)
+                 self.widgets.hal_mdihistory.scroll_to_iter(
+                                        self.mdi_buf.get_iter_at_mark(
+                                            self.mdi_buf.get_insert()), 0, True, 0, 0.5) 
+             
          elif self.widgets.ntb_jog.get_current_page() == 1:  #self.widgets.hal_mdihistory.tv.has_focus(): #if self.stat.task_mode == linuxcnc.MODE_MDI:
-            self.widgets.hal_mdihistory.submit()
             if self.stat.paused:
               self.command.auto(linuxcnc.AUTO_RESUME)
               self.widgets.tbtn_pause.set_active(False)
@@ -5450,7 +5538,7 @@ class gmoccapy( object ):
            message = _( "Tool Change has been aborted!\n" )
            message += _( "The old tool will remain set!" )
            self._show_error( ( 11, _( message ) ) )  #dialogs.warning_dialog( self, message )
-           self.widgets.hal_mdihistory.entry.grab_focus()
+           self.widgets.hal_mdihistory.grab_focus()
 
          self.command.abort()
          self.start_line = 0
