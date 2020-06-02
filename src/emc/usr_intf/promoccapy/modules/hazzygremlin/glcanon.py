@@ -1799,10 +1799,20 @@ class GlCanonDraw:
         (0,-1), (1,0), (0,1), (-1,0),   # 5..8
         (0,0)                           # 9
     ]
+    lathe_shapes_back = [
+        None,                           # 0
+        (-1,-1), (-1,1), (1,1), (1,-1), # 1..4
+        (0,-1), (-1,0), (0,1), (1,0),   # 5..8
+        (0,0)                           # 9
+    ]
     def lathetool(self, current_tool):
         glDepthFunc(GL_ALWAYS)
         diameter, frontangle, backangle, orientation = current_tool[-4:]
         w = 3/8.
+        
+        if '-X' in self.geometry:
+            frontangle = 360 - frontangle
+            backangle = 360 - backangle
 
         radius = self.to_internal_linear_unit(diameter) / 2.
         glColor3f(*self.colors['lathetool'])
@@ -1822,7 +1832,10 @@ class GlCanonDraw:
                 glVertex3f(radius * math.cos(t), 0.0, radius * math.sin(t))
             glEnd()
         else:
-            dx, dy = self.lathe_shapes[orientation]
+            if '-X' in self.geometry:
+                dx, dy = self.lathe_shapes_back[orientation]
+            else:
+                dx, dy = self.lathe_shapes[orientation]
 
             min_angle = min(backangle, frontangle) * math.pi / 180
             max_angle = max(backangle, frontangle) * math.pi / 180
