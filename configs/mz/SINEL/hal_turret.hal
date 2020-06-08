@@ -1,0 +1,36 @@
+###################################################################
+#        hal_turret.hal
+###################################################################
+
+# create signals for tool loading loopback
+net tool-prep-loop iocontrol.0.tool-prepare iocontrol.0.tool-prepared
+
+net       tool-change turr.tool-change   
+net      tool-changed turr.tool-changed
+net  tool-prep-number turr.tool-prep-number
+net          tool-num turr.tool-number => iocontrol.0.tool-number
+net turr-current-tool turr.current-tool => motion.analog-in-00
+
+net     turret_estop turr.estop-out
+net  user_enable_out turr.estop-in
+net halui_mach_is_on turr.machine-is-on
+net     motion_sp_on turr.spindle-is-on
+net    turr_feed_inh turr.feed-inhibit
+
+net turr_s1 turr.s-1
+net turr_s2 turr.s-2
+net turr_s3 turr.s-3
+net turr_s4 turr.s-4
+net turr_s5 turr.s-5
+net turr_s6 turr.s-6
+net turr_s7 turr.s-7
+net turr_s8 turr.s-8
+net turr_sclmp turr.s-clmp
+
+net    turr_cw turr.cw
+net   turr_ccw turr.ccw
+net turr_brake turr.brake
+
+setp turr.t-timeout       30.0
+setp turr.t-clamp-timeout 5.0
+setp turr.t-clamp-delay   0.3

@@ -1,0 +1,21 @@
+O<probe_yp> sub
+
+o<if01> if [#<_hal[motion.probe-input]> EQ 1]
+    (MSG, Priklopi taster!)
+    M30
+o<if01> endif
+
+#<xx> = #<_x>           ;shrani trenutno pozicijo
+#<yy> = #<_y> 
+#<zz> = #<_z> 
+#<tr> = [#5410/2]       ;polmer kroglice iz tool tabele
+
+
+G91 G38.2 Y+10 F100     ;inkrementalno do kosa
+G90 G38.4 Y#<yy> F10    ;stran od kosa
+G90 G1 Y#<yy> F1000     ;nazaj na absolutno pozicijo
+
+#5062 = [#5062 + #<tr>] ;popravi vrnjeno vrednost za polmer kroglice
+
+O<probe_yp> endsub
+M2

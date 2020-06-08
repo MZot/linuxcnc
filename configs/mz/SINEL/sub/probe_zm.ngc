@@ -1,0 +1,19 @@
+O<probe_zm> sub
+
+o<if01> if [#<_hal[motion.probe-input]> EQ 1]
+    (MSG, Priklopi taster!)
+    M30
+o<if01> endif
+
+#<zz> = #<_z>         ;shrani trenutno pozicijo
+#<tl> = #5403         ;dolzina tipala iz tool tabele
+
+
+G91 G38.2 Z-10 F100     ;inkrementalno do kosa
+G90 G38.4 Z#<zz> F10    ;stran od kosa
+G90 G1 Z#<zz> F1000     ;nazaj na absolutno pozicijo
+
+#5063 = [#5063 - #<tl>] ;popravi vrnjeno vrednost za dolzino tipala
+
+O<probe_zm> endsub
+M2
