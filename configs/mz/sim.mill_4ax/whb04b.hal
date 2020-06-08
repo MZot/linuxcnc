@@ -1,8 +1,8 @@
-loadusr -W whb04b
+loadusr -W /home/cnc/LinuxCNC/whb04/whb/whb04b
 
-net axis0jogenable axis.0.jog-enable whb04b.sel_x
-net axis1jogenable axis.1.jog-enable whb04b.sel_y
-net axis2jogenable axis.2.jog-enable whb04b.sel_z
+net axis-0-jogenable axis.0.jog-enable whb04b.sel_x
+net axis-1-jogenable axis.1.jog-enable whb04b.sel_y
+net axis-2-jogenable axis.2.jog-enable whb04b.sel_z
 
 net joginc whb04b.inc
 net joginc axis.0.jog-scale

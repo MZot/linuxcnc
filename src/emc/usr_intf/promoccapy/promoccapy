@@ -756,14 +756,10 @@ class gmoccapy( object ):
             self.widgets.Combi_DRO_y.set_property( "unhomed_color", gtk.gdk.color_parse( self.unhomed_color ) )
             self.widgets.Combi_DRO_y.set_property( "actual", self.dro_actual)
 
-            # For gremlin we don"t need the following button
-            #if self.backtool_lathe:
-            #    self.widgets.rbt_view_y2.set_active( True )
-            #else:
-            #    self.widgets.rbt_view_y.set_active( True )
-            #self.widgets.rbt_view_p.hide()
-            #self.widgets.rbt_view_x.hide()
-            #self.widgets.rbt_view_z.hide()
+            if self.backtool_lathe:
+                self.widgets.gremlin.set_view('y2')
+            else:
+                self.widgets.gremlin.set_view('y')
 
             # check if G7 or G8 is active
             if "70" in self.stat.gcodes:
@@ -1275,7 +1271,7 @@ class gmoccapy( object ):
         else:
             self.widgets.gremlin.set_view('z')
         self.widgets.gremlin.set_display_units(self.stat.linear_units)
-        self.widgets.gremlin.mouse_btn_mode = 2
+        self.widgets.gremlin.mouse_btn_mode = 0
         self.widgets.gremlin.use_commanded = not self.dro_actual
 
         self.widgets.gremlin.connect('gcode-error', self.on_gremlin_gcode_error)
@@ -4895,7 +4891,13 @@ class gmoccapy( object ):
 
     def on_btn_gremlin_change_view_clicked( self, widget, data = None ):
        if self.widgets.btn_gremlin_view_x.get_visible():
-        self.widgets.gremlin.set_view('y')
+        if self.lathe_mode:
+                if self.backtool_lathe:
+                    self.widgets.gremlin.set_view('y2')
+                else:
+                    self.widgets.gremlin.set_view('y')
+        else:
+                self.widgets.gremlin.set_view('y')
         self.widgets.btn_gremlin_view_x.set_visible(False)
         self.widgets.btn_gremlin_view_y.set_visible(True)
        elif self.widgets.btn_gremlin_view_y.get_visible():

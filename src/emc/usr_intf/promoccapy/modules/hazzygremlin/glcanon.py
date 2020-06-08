@@ -446,6 +446,7 @@ class GlCanonDraw:
                     print "Error: invalid [DISPLAY] DRO_FORMAT_MM in INI file"
                 else:
                     self.dro_mm = temp
+            self.is_back_tool_lathe = self.inifile.find("DISPLAY", "BACK_TOOL_LATHE")
 
     def init_glcanondraw(self,trajcoordinates="XYZABCUVW",kinsmodule="trivkins",msg=""):
         self.trajcoordinates = trajcoordinates.upper().replace(" ","")
@@ -629,6 +630,7 @@ class GlCanonDraw:
     def show_extents(self):
         s = self.stat
         g = self.canon
+        
 
         if g is None: return
 
@@ -661,32 +663,32 @@ class GlCanonDraw:
         self.color_limit(0)
         glBegin(GL_LINES)
         if self.is_lathe():
+
             #max X
-            y_pos = g.min_extents[y] - pullback
-            glVertex3f(0+offset[x], y_pos, z_pos)
-            glVertex3f(g.max_extents[x], y_pos, z_pos) #vertikalna max
-            glVertex3f(0+offset[x], y_pos - dashwidth, z_pos - zdashwidth) #dash 0 max
-            glVertex3f(0+offset[x], y_pos + dashwidth, z_pos + zdashwidth)
-            glVertex3f(g.max_extents[x], y_pos - dashwidth, z_pos - zdashwidth) #dash x max
-            glVertex3f(g.max_extents[x], y_pos + dashwidth, z_pos + zdashwidth)
+            
+            glVertex3f(g.max_extents[x],    0, g.min_extents[z] - pullback)
+            glVertex3f(0+offset[x],         0, g.min_extents[z] - pullback) #vertikalna max
+            glVertex3f(g.max_extents[x],    0, g.min_extents[z] - pullback + dashwidth) #dash x max
+            glVertex3f(g.max_extents[x],    0, g.min_extents[z] - pullback - dashwidth)
+            glVertex3f(0+offset[x],         0, g.min_extents[z] - pullback + dashwidth) #dash 0 max
+            glVertex3f(0+offset[x],         0, g.min_extents[z] - pullback - dashwidth)
+
 
             #min X
-            glVertex3f(0+offset[x], y_pos, g.max_extents[z]+ pullback)                  #vertikalna min
-            glVertex3f(g.min_extents[x], y_pos, g.max_extents[z]+ pullback)
-            glVertex3f(0+offset[x], y_pos - dashwidth, g.max_extents[z]+ pullback - zdashwidth) #dash 0 min
-            glVertex3f(0+offset[x], y_pos + dashwidth, g.max_extents[z]+ pullback + zdashwidth)
-            glVertex3f(g.min_extents[x], y_pos - dashwidth, g.max_extents[z]+ pullback - zdashwidth) #dash x min
-            glVertex3f(g.min_extents[x], y_pos + dashwidth, g.max_extents[z]+ pullback + zdashwidth)
+            glVertex3f(0+offset[x],         0, g.max_extents[z]+ pullback)                  #vertikalna min
+            glVertex3f(g.min_extents[x],    0, g.max_extents[z]+ pullback)
+            glVertex3f(0+offset[x],         0, g.max_extents[z]+ pullback - dashwidth) #dash 0 min
+            glVertex3f(0+offset[x],         0, g.max_extents[z]+ pullback + dashwidth)
+            glVertex3f(g.min_extents[x],    0, g.max_extents[z]+ pullback - dashwidth) #dash x min
+            glVertex3f(g.min_extents[x],    0, g.max_extents[z]+ pullback + dashwidth)
 
             #Z
-            x_pos = g.min_extents[x] - pullback
-            y_pos = g.min_extents[y] - pullback
-            glVertex3f(0+offset[x], y_pos, g.min_extents[z])
-            glVertex3f(0+offset[x], y_pos, g.max_extents[z])
-            glVertex3f(0+offset[x] - dashwidth, y_pos - zdashwidth, g.min_extents[z])
-            glVertex3f(0+offset[x] + dashwidth, y_pos + zdashwidth, g.min_extents[z])
-            glVertex3f(0+offset[x] - dashwidth, y_pos - zdashwidth, g.max_extents[z])
-            glVertex3f(0+offset[x] + dashwidth, y_pos + zdashwidth, g.max_extents[z]) 
+            glVertex3f(0+offset[x],             0, g.min_extents[z])
+            glVertex3f(0+offset[x],             0, g.max_extents[z])
+            glVertex3f(0+offset[x] - dashwidth, 0, g.min_extents[z])
+            glVertex3f(0+offset[x] + dashwidth, 0, g.min_extents[z])
+            glVertex3f(0+offset[x] - dashwidth, 0, g.max_extents[z])
+            glVertex3f(0+offset[x] + dashwidth, 0, g.max_extents[z]) 
 
         else:
          if view != x and g.max_extents[x] > g.min_extents[x]:
@@ -734,7 +736,7 @@ class GlCanonDraw:
             offset = 0, 0, 0
 
         if self.is_lathe():
-            y_pos = g.min_extents[y] - 6.0*dashwidth
+            y_pos = 0
 
             bbox = self.color_limit(g.min_extents_notool[x] < machine_limit_min[x])
             glPushMatrix()
@@ -751,11 +753,11 @@ class GlCanonDraw:
             glPushMatrix()
             f = fmt % ((g.max_extents[x] - offset[x]) * dimscale * 2.0)
             f =  'f' + f
-            glTranslatef(g.max_extents[x] - halfchar, y_pos, z_pos)
+            glTranslatef(g.max_extents[x] + halfchar, 0, g.min_extents[z]-pullback- 3*charsize)
             glRotatef(-90, 0, 0, 1)
-            if view == y:
-                glRotatef(90, 0, 1, 0)
-                glTranslatef(dashwidth*1.5, 0, 0)
+            glRotatef(-90, 0, 1, 0)
+            
+            glTranslatef(dashwidth*1.5, 0, 0)
             glScalef(charsize, charsize, charsize)
             self.hershey.plot_string(f, 0, bbox)
             glPopMatrix()
@@ -790,8 +792,7 @@ class GlCanonDraw:
             glTranslatef(dashwidth*1.5, 0, 0)
             self.hershey.plot_string(f, 0, bbox)
             glPopMatrix()
-
-            
+    
 
         else:
          if view != z and g.max_extents[z] > g.min_extents[z]:
@@ -1156,6 +1157,12 @@ class GlCanonDraw:
             glBitmap(width,height,xorig,yorig,xmove,ymove,limiticon)
             return
 
+    lathe_orient = [
+        90,                           # 0
+        135, 45, 315, 225, # 1..4
+        0, 90, 180, 270,   # 5..8
+        90                           # 9
+    ]
     def redraw(self):
         s = self.stat
         s.poll()
@@ -1382,7 +1389,12 @@ class GlCanonDraw:
                     else:
                         cone_scale = 1
                     if self.is_lathe():
-                        glRotatef(90, 0, 1, 0)
+                        if current_tool != None:
+                            o = current_tool[-1:][0]
+                            r = self.lathe_orient[o]
+                        else:
+                            r = 90
+                        glRotatef(r, 0, 1, 0)
                     cone = self.dlist("cone", gen=self.make_cone)
                     glScalef(cone_scale, cone_scale, cone_scale)
                     glColor3f(*self.colors['cone'])
@@ -1717,18 +1729,23 @@ class GlCanonDraw:
 
         glColor3f(*self.colors['axis_x'])
         glBegin(GL_LINES)
-        glVertex3f(1.0,0.0,0.0)
-        glVertex3f(0.0,0.0,0.0)
+        if self.is_lathe():
+            glVertex3f(-1.0,0.0,0.0)
+            glVertex3f(0.0,0.0,0.0)
+        else:
+            glVertex3f(1.0,0.0,0.0)
+            glVertex3f(0.0,0.0,0.0)
         glEnd()
+        
 
         if view != x:
             glPushMatrix()
             if self.is_lathe():
-                glTranslatef(1.3, -0.1, 0)
+                glTranslatef(-0.3, -0.1, 0)
                 glTranslatef(0, 0, -0.1)
                 glRotatef(-90, 0, 1, 0)
                 glRotatef(90, 1, 0, 0)
-                glTranslatef(0.1, 0, 0)
+                glTranslatef(0.1, 1.0, 0)
             else:
                 glTranslatef(1.2, -0.1, 0)
                 if view == y:
@@ -1772,7 +1789,9 @@ class GlCanonDraw:
             elif view == y or view == p:
                 glRotatef(90, 1, 0, 0)
             if self.is_lathe():
-                glTranslatef(0, -.1, 0)
+                glTranslatef(0, -0.1, 0)
+                if self.is_back_tool_lathe == '1':
+                    glRotatef(180, 0, 1, 0)
             glScalef(0.2, 0.2, 0.2)
             self.hershey.plot_string(letters[2], 0.5)
             glPopMatrix()
@@ -1799,21 +1818,11 @@ class GlCanonDraw:
         (0,-1), (1,0), (0,1), (-1,0),   # 5..8
         (0,0)                           # 9
     ]
-    lathe_shapes_back = [
-        None,                           # 0
-        (-1,-1), (-1,1), (1,1), (1,-1), # 1..4
-        (0,-1), (-1,0), (0,1), (1,0),   # 5..8
-        (0,0)                           # 9
-    ]
     def lathetool(self, current_tool):
         glDepthFunc(GL_ALWAYS)
         diameter, frontangle, backangle, orientation = current_tool[-4:]
         w = 3/8.
-        
-        if '-X' in self.geometry:
-            frontangle = 360 - frontangle
-            backangle = 360 - backangle
-
+        glDisable(GL_CULL_FACE)#lathe tool needs to be visable form both sides
         radius = self.to_internal_linear_unit(diameter) / 2.
         glColor3f(*self.colors['lathetool'])
         glBegin(GL_LINES)
@@ -1832,10 +1841,7 @@ class GlCanonDraw:
                 glVertex3f(radius * math.cos(t), 0.0, radius * math.sin(t))
             glEnd()
         else:
-            if '-X' in self.geometry:
-                dx, dy = self.lathe_shapes_back[orientation]
-            else:
-                dx, dy = self.lathe_shapes[orientation]
+            dx, dy = self.lathe_shapes[orientation]
 
             min_angle = min(backangle, frontangle) * math.pi / 180
             max_angle = max(backangle, frontangle) * math.pi / 180
@@ -1871,6 +1877,7 @@ class GlCanonDraw:
                 radius * dy + radius * math.cos(circlemaxangle) + sz * cosmax)
 
             glEnd()
+        glEnable(GL_CULL_FACE)
         glDepthFunc(GL_LESS)
 
     def extents_info(self):

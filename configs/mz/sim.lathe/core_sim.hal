@@ -16,9 +16,15 @@ addf testabs servo-thread
 
 
 #loadrt hostmot2
+#loadrt hm2_eth board_ip="10.10.10.10" config=" num_encoders=6 num_pwmgens=0 num_stepgens=0 sserial_port_0=200000"
+#setp    hm2_7i92.0.watchdog.timeout_ns 5000000
+#addf hm2_7i92.0.read          servo-thread
+#addf hm2_7i92.0.write         servo-thread
+
+
+#loadrt hostmot2
 #loadrt hm2_pci config=" num_encoders=6 num_pwmgens=0 num_stepgens=0 sserial_port_0=000xxx"
 #setp    hm2_5i25.0.watchdog.timeout_ns 5000000
-
 #addf hm2_5i25.0.read          servo-thread
 #addf hm2_5i25.0.write         servo-thread
 

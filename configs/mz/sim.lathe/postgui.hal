@@ -5,8 +5,9 @@
 
 
 net spindle-speed-limited  =>  abs_spindle_feedback.in
-net spindle-abs  abs_spindle_feedback.out  =>  gmoccapy.spindle_feedback
+net spindle-abs  abs_spindle_feedback.out  
 net spindle-at-speed      gmoccapy.spindle_at_speed_led
+net spfb gmoccapy.spindle_feedback motion.spindle-speed-out-rps
 
 # the unlink pin commands are only used, because they are connected
 # in core_sim.hal and we use this file to simulate
