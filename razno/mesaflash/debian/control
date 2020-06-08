@@ -1,0 +1,15 @@
+Source: mesaflash
+Maintainer: LinuxCNC Developers <emc-developers@lists.sourceforge.net>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.4
+Build-Depends: libpci-dev, debhelper (>= 9), pkg-config
+Vcs-Browser: https://github.com/linuxcnc/mesaflash
+Vcs-git: https://github.com/LinuxCNC/mesaflash.git -b master
+
+Package: mesaflash
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Mesa Electronics utility tool
+	Configuration and diagnostic tool for
+	Mesa Electronics PCI(E)/ETH/EPP/USB/SPI boards
