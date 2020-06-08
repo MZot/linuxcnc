@@ -1,0 +1,10 @@
+o<on_abort> sub
+
+;(debug, on_abort executing
+#<offset> = [#<_coord_system> / 10]
+G59.3 ;osvezi prikaz v gremlinu
+G7 G18 G21 G40 G49 G54 G80 G90 G95 F0.1 M9 M5 G64 P0.01
+G43
+G#<offset>
+o<on_abort> endsub
+M2

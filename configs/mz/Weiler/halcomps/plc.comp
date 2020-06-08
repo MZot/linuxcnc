@@ -1,0 +1,168 @@
+component plc "PLC KNUTH";
+/*
+Copyright: 2020
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+// ---INPUTS---
+pin in  bit machine_is_on;  //halui.machine-is-on
+pin in  bit abort;          //reset pushbutton
+pin out bit abort_pulse;    //extended abort
+
+// -- estop --
+pin in  bit estop_in;
+pin out bit estop_out;
+
+// ---LUBE---
+pin in float t_lube_interval;  //
+pin in float t_lube_time;      //
+pin in   bit lube_switch;
+pin out  bit lube;
+
+// --- feed inhibit ---
+pin in  bit feed_inh1;
+pin in  bit feed_inh2;
+pin in  bit feed_inh3;
+pin in  bit feed_inh4;
+pin out bit feed_inhibit_out;    //motion.feed-inhibit
+
+pin in  bit cool_overload;
+
+
+// --- Feed override ---
+pin in   float feed_ovr_val;   //halui.feed-override.value (feedback from halui for jog speed override)
+pin in   float f_ovr_pot;      //feed override pot hm2_5i25.0.7i77.0.0.analogin0
+pin out signed f_ovr_cnts;     //halui.rapid-override.counts && halui.feed-override.counts
+
+//  --- flood ---
+pin in  bit sw_flood;       //cooling on off button (toggle)
+pin out bit flood_on;       //halui.flood_on
+pin out bit flood_off;      //halui.flood_off
+pin in  bit flood_is_on;    //halui.flood_is_on
+
+pin in  bit sp_jog_cw;
+pin in  bit sp_jog_ccw;
+pin out bit sp_stp;
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+typedef struct {
+        float T;
+        float ET;
+        bool IN;
+        bool OUT;
+} timer;
+
+static timer lube_interval   = {.T = 1500.0, .ET = 0, .OUT = false, .IN = false};
+static timer lube_time       = {.T = 2.0, .ET = 0, .OUT = false, .IN = false};
+static timer lube_err        = {.T = 1.0, .ET = 0, .OUT = false, .IN = false};
+static timer lube_pwon_delay = {.T = 2.0, .ET = 0, .OUT = false, .IN = false};
+static timer abort_extend    = {.T = 1.0, .ET = 0, .OUT = false, .IN = false};
+static timer flood_extend    = {.T = 0.3, .ET = 0, .OUT = false, .IN = false};
+
+
+static bool fp[8]={0};
+
+static bool estop = 0;
+
+void iec_ton(timer *t, float fper){
+   if(t->IN) t->ET += fper;
+   else      t->ET = 0.0;
+   if(t->ET >= t->T){
+      t->ET = t->T;
+      t->OUT = true;
+   }
+   else t->OUT = false;
+}
+
+void iec_tof(timer *t, float fper){
+   if(t->IN) t->ET = t->T;
+   else      t->ET -= fper;
+
+   if(t->ET < 0.0)t->ET = 0.0;
+   t->OUT = (t->ET > 0.0);
+}
+
+bool iec_fp(bool in, bool *m){
+        bool out=in && !*m;
+        *m=in;
+        return out;
+} //iec_fp
+
+bool iec_fn(bool in, bool *m){
+        bool out=!in && *m;
+        *m=in;
+        return out;
+} //iec_fn
+
+
+FUNCTION(_){
+    sp_stp = !sp_jog_cw && !sp_jog_ccw;
+    
+    lube_interval.T = t_lube_interval;
+    lube_time.T = t_lube_time;
+    lube_err.T=lube_time.T/2;
+
+    lube_pwon_delay.IN = machine_is_on;
+    lube_time.IN = !lube_interval.OUT && lube_pwon_delay.OUT;
+    lube_interval.IN = lube_time.OUT;
+    lube = (!lube_time.OUT && lube_pwon_delay.OUT);
+
+    lube_err.IN = lube && !lube_switch;
+    if(iec_fp(lube_err.OUT, &fp[0]))
+        rtapi_print_msg(RTAPI_MSG_ERR, "Napaka mazanja vodil!\n");
+
+    flood_extend.IN = sw_flood;
+    if(iec_fp(flood_extend.OUT, &fp[1]))
+    {
+        if(flood_is_on){
+             flood_off = 1;
+             flood_on = 0;
+        }
+        else{
+             flood_on = 1;
+             flood_off = 0;
+        }
+    }
+    if(!flood_extend.OUT){
+        flood_on = 0;
+        flood_off = 0;
+    }
+    if(iec_fp(cool_overload, &fp[2]))
+        //rtapi_print_msg(RTAPI_MSG_ERR, "Crpalka za hlajenje preobremenjena!\n");
+    if(abort) fp[2] = 0;
+
+    f_ovr_cnts = f_ovr_pot * (150/24.0);
+
+    feed_inhibit_out = (feed_inh1 || feed_inh2 || feed_inh3 || feed_inh4);
+
+    abort_extend.IN = abort;
+    abort_pulse = abort_extend.OUT;
+
+    estop_out = estop_in && !estop;
+    if(!estop_in)estop = 0;
+
+    //call "function blocks"
+    iec_ton(&lube_interval, fperiod);
+    iec_ton(&lube_time, fperiod);
+    iec_ton(&lube_err, fperiod);
+    iec_ton(&lube_pwon_delay, fperiod);
+    iec_tof(&abort_extend, fperiod);
+    iec_tof(&flood_extend, fperiod);
+}//FUNCTION

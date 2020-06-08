@@ -1,0 +1,46 @@
+###################################################################
+#        hal_jog.hal
+###################################################################
+
+setp jog.jog-feed               500
+setp jog.jog-rapid-feed         8000
+setp jog.spindle-counts-per-rev [SPINDLE]ENCODER_SCALE
+#setp jog.hwheel-increment       0.01
+
+net jog_x_p jog.jog-xp
+net jog_x_m jog.jog-xm
+net jog_z_p jog.jog-zp
+net jog_z_m jog.jog-zm
+net jog_rpd jog.jog-rapid
+net hwheelx jog.hwheel-x
+net hwheelz jog.hwheel-z
+
+net jog_inc10 jog.inc10
+net jog_inc100 jog.inc100
+
+net feed_g95         jog.is-g95
+net gui_feed         jog.feed
+net halui_fovr_value jog.override
+net motion_sp_on     jog.spindle-on
+
+net s-pos-rawcounts   jog.spindle-count
+net h-wheel-rawcounts_x jog.hwheel-count-x
+net h-wheel-rawcounts_z jog.hwheel-count-z
+
+net x-jog-counts jog.jog-x-count
+net x-jog-counts axis.0.jog-counts
+net z-jog-counts jog.jog-z-count
+net z-jog-counts axis.2.jog-counts
+
+net x-jog-scale jog.jog-scale-x
+net x-jog-scale axis.0.jog-scale
+net z-jog-scale jog.jog-scale-z
+net z-jog-scale axis.2.jog-scale
+
+net setman jog.set-manual halui.mode.manual
+net halui_abort jog.abort
+
+setp axis.0.jog-vel-mode 1
+setp axis.2.jog-vel-mode 1
+setp axis.0.jog-enable 1
+setp axis.2.jog-enable 1

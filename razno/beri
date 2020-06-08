@@ -13,13 +13,14 @@ sudo pip install yapps
 
 BUILD LINUXCNC
 cd linuxcnc-dev/debian
-./configure uspace 
+./configure uspace
 cd ..
-dpkg-checkbuilddeps	
+dpkg-checkbuilddeps
 cd src
 ./autogen.sh
 ./configure --with-realtime=uspace
 make clear
+make clean
 make -j4
 sudo make setuid
 
@@ -56,13 +57,24 @@ sudo ./mesaflash --device 5i25 --reload
 
 6i25 ima isti FW kot 5i25
 
+7i92
+ip a
+sudo nano /etc/network/interfaces
+    auto enp0s25
+    iface enp0s25 inet static
+    address 10.10.10.1
+    netmask 255.255.255.0
+
+sudo /etc/init.d/networking restart
+ping 10.10.10.10
+
 
 sudo dd if=xx of=xx bs=1M status=progress
 
 mountanje slike diska:
-With kpartx -l imagefile you get an overview of the partitions in the image file 
-and with kpartx -a imagefile the partitions will accessible via /dev/mapper/loop0pX (X is the number of the partition). 
-You can mount it now with mount /dev/mapper/loop0pX /mnt/ -o loop,ro. 
+With kpartx -l imagefile you get an overview of the partitions in the image file
+and with kpartx -a imagefile the partitions will accessible via /dev/mapper/loop0pX (X is the number of the partition).
+You can mount it now with mount /dev/mapper/loop0pX /mnt/ -o loop,ro.
 After unmounting you can disconnect the mapper devices with kpartx -d imagefile.
 
 
