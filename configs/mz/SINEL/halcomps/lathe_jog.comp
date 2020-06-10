@@ -62,7 +62,7 @@ license "GPL";
 #define TICKS_MINUTE (60*1000)  //1kHz servo-thread
 
 FUNCTION(_){
-	spindle_count_diff = abs(spindle_count - spindle_count_old);
+	spindle_count_diff = fabs(spindle_count - spindle_count_old);
 	spindle_count_old  = spindle_count;
 	hwheel_count_diff  = hwheel_count - hwheel_count_old;
 	hwheel_count_old   = hwheel_count;

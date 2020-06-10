@@ -1,4 +1,4 @@
-component plc "PLC KNUTH";
+component plc "PLC SINEL";
 /*
 Copyright: 2020
 Author:  Mit Zot
@@ -62,12 +62,7 @@ function _;
 license "GPL"; // indicates GPL v2 or later
 ;;
 
-typedef struct {
-        float T;
-        float ET;
-        bool IN;
-        bool OUT;
-} timer;
+#include "def.h"
 
 static timer lube_interval   = {.T = 1500.0, .ET = 0, .OUT = false, .IN = false};
 static timer lube_time       = {.T = 2.0, .ET = 0, .OUT = false, .IN = false};
@@ -81,35 +76,6 @@ static bool fp[8]={0};
 
 static bool estop = 0;
 
-void iec_ton(timer *t, float fper){
-   if(t->IN) t->ET += fper;
-   else      t->ET = 0.0;
-   if(t->ET >= t->T){
-      t->ET = t->T;
-      t->OUT = true;
-   }
-   else t->OUT = false;
-}
-
-void iec_tof(timer *t, float fper){
-   if(t->IN) t->ET = t->T;
-   else      t->ET -= fper;
-
-   if(t->ET < 0.0)t->ET = 0.0;
-   t->OUT = (t->ET > 0.0);
-}
-
-bool iec_fp(bool in, bool *m){
-        bool out=in && !*m;
-        *m=in;
-        return out;
-} //iec_fp
-
-bool iec_fn(bool in, bool *m){
-        bool out=!in && *m;
-        *m=in;
-        return out;
-} //iec_fn
 
 
 FUNCTION(_){
@@ -148,7 +114,7 @@ FUNCTION(_){
         //rtapi_print_msg(RTAPI_MSG_ERR, "Crpalka za hlajenje preobremenjena!\n");
     if(abort) fp[2] = 0;
 
-    f_ovr_cnts = f_ovr_pot * (150/24.0);
+    f_ovr_cnts = f_ovr_pot * (150/244);
 
     feed_inhibit_out = (feed_inh1 || feed_inh2 || feed_inh3 || feed_inh4);
 

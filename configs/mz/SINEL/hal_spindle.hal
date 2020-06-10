@@ -38,13 +38,13 @@ net motion_sp_cmd_rps spgb.speed-s
 net motion_sp_out     spgb.speed-cmd
 net s-vel-fb          spgb.speed-fb
 net sp_N0             spgb.n-0
-#net sp_servo_rdy      spgb.servo-rdy
+net sp_servo_rdy      spgb.servo-rdy
 setp spgb.servo-rdy 1
 net sw_gear1          spgb.switch-1
 net sw_gear2          spgb.switch-2
 net sw_gear3          spgb.switch-3
 net sw_gear4          spgb.switch-4
-#net sp_servo_at_speed spgb.at-speed-in
+net sp_servo_at_speed spgb.at-speed-in
 net halui_abort       spgb.abort
 net sp_out            spgb.velo-cmd
 net sp_en             spgb.servo-en
@@ -60,24 +60,14 @@ net spin_inh4         spgb.spin-inh4
 net spgb_door_lock    spgb.door-lock 
 net spindle_pot       spgb.sp-override-pot
 net halui_spovr_cnts  spgb.sp-override-counts
-#net 7i77-analogin0    spgb.sp-load-in
+net 7i77-analogin0    spgb.sp-load-in
 net gui-sp-load       spgb.sp-load-out
 
-#izhodi na aktuatorje menjalnika
-net spgbm1cw spgb.motor1cw
-net spgbm1ccw spgb.motor1ccw
-net spgbm2cw spgb.motor2cw
-net spgbm2ccw spgb.motor2ccw
 
 setp spgb.drift        -0.1
 setp spgb.scale-1      -0.07
 setp spgb.scale-2      -0.0175
-setp spgb.scale-3       -0.00439
+setp spgb.scale-3      -0.00439
 
-#setp spgb.max-speed-1  100
-#setp spgb.max-speed-2  200
-#setp spgb.max-speed-3  300
-#setp spgb.min-speed-2  10
-#setp spgb.min-speed-3  10
 
 

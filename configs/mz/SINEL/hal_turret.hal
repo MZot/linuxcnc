@@ -30,6 +30,7 @@ net turr_sclmp turr.s-clmp
 net    turr_cw turr.cw
 net   turr_ccw turr.ccw
 net turr_brake turr.brake
+net turr_index turr.index
 
 setp turr.t-timeout       30.0
 setp turr.t-clamp-timeout 5.0
