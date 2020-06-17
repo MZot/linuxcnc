@@ -1,0 +1,339 @@
+component sp_gearbox "automatic spindle gearbox control for KNUTH";
+/*
+Copyright: 2020
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+//inputs
+pin in bit   abort          "halui.abort";
+pin in bit   machine_is_on  "halui.machine.is-on";
+pin in bit   spindle_on     "motion.spindle-on";
+pin in float speed_s        "motion.spindle-speed-cmd-rps spindle S value without override";
+pin in float speed_cmd      "motion.spindle-speed-out-rps spindle rps with override";
+pin in float speed_fb       "rps actual speed from encoder for at speed and N==0 detection";
+pin in bit   n_0            "N==0 from servo";
+pin in bit   at_speed_in    "at speed from servo";
+pin in bit   servo_rdy      "ready signal from servo";
+pin in bit   switch_1       "";
+pin in bit   switch_2       "";
+pin in bit   switch_3       "";
+pin in bit   switch_4       "";
+pin io bit   M41            "manual gear selection, 1st gear";
+pin io bit   M42            "manual gear selection, 2nd gear";
+pin io bit   M43            "manual gear selection, 3rd gear";
+
+//chuck
+pin io bit M10              "Chuck clamp M code";
+pin io bit M11              "Chuck unclamp M code";
+pin in bit M12              "Select external clamping";
+pin in bit M13              "Select internal clamping";
+pin in bit foot_sw_clamp    "Clamp ";
+pin in bit foot_sw_unclamp  "Unclamp";
+pin in bit cyl_is_fw        "Clamping cilinder is forward/external unclamped";
+pin in bit cyl_is_bw        "Clamping cylinder is back/external clamped";   
+pin out bit cyl_fw          "Clamping cylinder forward";
+pin out bit cyl_bw          "Clamping cylinder backward"; 
+pin in bit program_is_running "halui.program.is-running";
+
+
+//parameters
+pin in float    scale_1        "scale values";
+pin in float    scale_2;
+pin in float    scale_3;
+
+//outputs
+pin out float velo_cmd      "analog value for spindle servo, (speed_in * scale_x)";
+pin in float drift;
+pin out bit servo_en        "servo enable";
+pin out bit motor1cw        "gearbox motor 1 cw";
+pin out bit motor1ccw       "gearbox motor 1 ccw";
+pin out bit motor2cw        "gearbox motor 2 cw";
+pin out bit motor2ccw       "gearbox motor 2 ccw";
+pin out bit at_speed        "spindle is at speed motion.spindle.at-speed";
+pin out bit error           "timeout";
+pin out bit gear1_ok        "first gear to HMI";
+pin out bit gear2_ok        "second gear to HMI";
+pin out bit gear3_ok        "third gear to HMI";
+
+// --- spindel inhibit OR'd---
+pin in bit      spin_inh1;
+pin in bit      spin_inh2;
+pin in bit      spin_inh3;
+pin in bit      spin_inh4;
+pin out bit     sp_inhibit_out     "motion.spindle-inhibit";
+
+// --- spindle override ---
+pin in float sp_override_pot        "spindle override potentiometer";
+pin in float sp_override_value      "halui.spindle-override.value";
+pin out signed sp_override_counts   "halui.spindle-override.counts";
+
+// --- spindle load ---
+pin in float sp_load_in;
+pin out float sp_load_out           "gmoccapy.spindle_load_bar";
+
+// -- estop --
+pin in bit estop_in;
+pin out bit estop_out;
+
+pin out bit door_lock;
+
+pin out unsigned gbstate     "statemachine";
+pin out unsigned spstate     "0=stop, 1=run, 2=pendeln";
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+#include "def.h"
+#include <math.h>
+#define STANDSTILL_SPEED 0.1  //rps
+#define PENDEL_SPEED     1.0
+
+
+typedef enum {
+    IDLE,
+    TO_1,
+    TO_2,
+    TO_3,
+    ERR,
+    ACK
+} the_gbstate;
+
+typedef enum {
+    STOP,
+    RUN, 
+    PENDEL,
+    POSITION
+} the_spstate;
+
+
+
+static message messages[N_MSGS]={
+    {"Napaka menjalnika\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Kos ni vpet!! ESTOP\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0}
+};
+
+
+static timer stndstill = {.T = 1.500, .ET = 0, .OUT = false, .IN = false};
+static timer atspeed   = {.T =  .200, .ET = 0, .OUT = false, .IN = false};
+static timer timeout   = {.T = 5.000, .ET = 0, .OUT = false, .IN = false};
+static timer sw1       = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //1st gear switch debounce
+static timer sw2       = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
+static timer sw3       = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //2nd gear switch debounce
+static timer sw4       = {.T =  .400, .ET = 0, .OUT = false, .IN = false};
+static timer tof_sp_en = {.T = 3.000, .ET = 0, .OUT = false, .IN = false}; //TOF za zaviranje vretena
+static timer pendelcw  = {.T =  .500, .ET = 0, .OUT = false, .IN = false};
+static timer pendelccw = {.T =  .700, .ET = 0, .OUT = false, .IN = false};
+static timer foot_sw_clamp_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
+static timer foot_sw_unclamp_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
+static timer cyl_is_fw_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
+static timer cyl_is_bw_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
+
+static bool m_fp[8]={0};
+static bool fp_clamp=0;
+static bool fp_unclamp=0;
+
+static bool enable_sp = 0;
+
+
+static bool estop = 0;
+static bool change = 0;
+
+
+FUNCTION(_){
+    
+     door_lock = fabs(speed_s) > STANDSTILL_SPEED;
+
+
+    switch (gbstate) {
+        case IDLE:
+
+            if((fabs(speed_s) > STANDSTILL_SPEED) && spindle_on) spstate = RUN;
+            else                                                 spstate = STOP;
+            
+
+        case TO_1:
+            spstate=PENDEL;
+            motor1cw=motor2cw=0;
+            motor1ccw=motor2ccw=1;
+            if(gear1_ok) gbstate=IDLE;
+            break;
+        
+        case TO_2:
+            spstate=PENDEL;
+            motor1ccw=motor2cw=0;
+            motor1cw=motor2ccw=1;
+            if(gear2_ok) gbstate=IDLE;   
+            break;             
+            
+        case TO_3:
+            spstate=PENDEL;
+            motor1ccw=motor2ccw=0;
+            motor1cw=motor2cw=1;
+            if(gear3_ok) gbstate=IDLE;
+            break;
+
+
+        case ERR:
+            set_message(&messages[0], 1); //napaka menjalnika
+            gbstate = ACK;
+        case ACK:
+            timeout.IN = 0;
+            if(abort && !machine_is_on) gbstate = IDLE;
+            motor1cw=motor1ccw=motor2cw=motor2ccw=0;
+            M41=M42=M43=0;
+            servo_en = 0;
+            velo_cmd = 0;
+            spstate = STOP;
+            estop = 1;
+            error = 1;
+            break;
+    }; //switch state
+    
+
+     
+     
+
+    switch (spstate) {
+        case STOP:
+            servo_en = 0;
+            velo_cmd = 0.0;
+            break;
+        case RUN:
+            servo_en = 1;
+            velo_cmd = scale_1 * (speed_cmd);
+            break;
+        case PENDEL:
+            servo_en=1;
+            if(pendelcw.OUT)
+                velo_cmd = PENDEL_SPEED * scale_1;
+            else
+                velo_cmd = -PENDEL_SPEED * scale_1;
+            break;
+    }
+    pendelcw.IN = !pendelccw.OUT && spstate==PENDEL;
+    pendelccw.IN = pendelcw.OUT;
+    
+
+    if(!estop_out || !machine_is_on){
+     spstate=STOP;
+     M41=M42=M43=0;
+     motor1cw=motor1ccw=motor2cw=motor2ccw=0;
+     servo_en=0;
+     velo_cmd=0;
+     M10=M11=0;
+    }
+    
+    if(abort){
+        M10=M11=0;
+    }
+     
+     
+    //chuck Clamping
+    /*
+    pin io bit M10              "Chuck clamp M code";
+    pin io bit M11              "Chuck unclamp M code";
+    pin in bit M12              "Select external clamping";
+    pin in bit M13              "Select internal clamping";
+    pin in bit foot_sw_clamp    "Clamp ";
+    pin in bit foot_sw_unclamp  "Unclamp";
+    pin in bit cyl_is_fw        "Clamping cilinder is forward/external unclamped"
+    pin in bit cyl_is_bw        "Clamping cylinder is back/external clamped"   
+    pin out bit cyl_fw          "Clamping cylinder forward";
+    pin out bit cyl_bw          "Clamping cylinder backward"; 
+    */
+    foot_sw_clamp_t.IN =    foot_sw_clamp && !foot_sw_unclamp;
+    foot_sw_unclamp_t.IN = !foot_sw_clamp && foot_sw_unclamp;
+    cyl_is_bw_t.IN = !cyl_is_fw && cyl_is_bw && cyl_bw && !cyl_fw;
+    cyl_is_fw_t.IN = cyl_is_fw && !cyl_is_bw && !cyl_bw && cyl_fw;
+
+    if (M11 || iec_fp(foot_sw_unclamp_t.OUT, &fp_unclamp) && !program_is_running){ //unclamp
+         if(!M13) //default to external clamping
+         {
+             if(stndstill.OUT){cyl_bw=0;cyl_fw=1;} //unclamp external
+         }//!M13
+         else{ //M13, internal
+             if(stndstill.OUT){cyl_bw=1;cyl_fw=0;} //unclamp internal
+         }//M13
+    }//M11
+    if (M10 || iec_fp(foot_sw_clamp_t.OUT, &fp_clamp) && !program_is_running){ //clamp
+         if(!M13) //default to external clamping
+         {
+             if(stndstill.OUT){cyl_bw=1;cyl_fw=0;} //clamp external
+         }//!M13
+         else{ //M13, internal
+             if(stndstill.OUT){cyl_bw=0;cyl_fw=1;} //clamp internal
+         }//M13
+    }//M10
+
+
+    if (fabs(speed_fb) > STANDSTILL_SPEED) //izpad vpenjanja med vrtenjem, notaus!
+        if( (M13 && !cyl_is_fw_t.OUT) ||
+            (!M13 && !cyl_is_bw_t.OUT )){
+                estop=1;
+                set_message(&messages[5], 1); //izpad vpenjanja
+            }
+            
+    //potrditve MFUN vpenjanja
+    if(M10 && (!M13 && cyl_is_bw_t.OUT)) M10=0;
+    if(M10 && (M13 && cyl_is_fw_t.OUT)) M10=0;
+    if(M11 && (!M13 && cyl_is_fw_t.OUT)) M11=0;
+    if(M11 && (M13 && cyl_is_bw_t.OUT)) M11=0;
+        
+     
+     estop_out = estop_in && !estop;
+     if(!estop_in && !machine_is_on)estop = 0;
+
+     sp_inhibit_out = spin_inh1 || spin_inh3 || spin_inh3 || spin_inh4 ||
+                        M13 && !cyl_is_fw_t.OUT ||
+                        !M13 && !cyl_is_bw_t.OUT;
+     
+     stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && !servo_en && !spindle_on;
+     atspeed.IN   = servo_en && spindle_on && servo_rdy &&
+                    (fabs(speed_fb) > (fabs(speed_cmd) - fabs(speed_cmd*0.2))) &&
+                    (fabs(speed_fb) < (fabs(speed_cmd) + fabs(speed_cmd*0.2))) &&
+                    !sp_inhibit_out;
+     at_speed = atspeed.OUT;
+
+     //override
+     sp_override_counts = sp_override_pot * (100/244) + 50;  //50 - 150 pri 0-24V
+
+     //gui load bar
+     //sp_load_out = sp_load_in * 50.0;
+    
+    if(sp_inhibit_out)velo_cmd=0;
+     
+     velo_cmd = velo_cmd + drift;
+     
+     reset_messages(messages, abort==1);
+     iec_ton(&stndstill, fperiod);  //call "function blocks"
+     iec_ton(&atspeed, fperiod);
+     iec_ton(&timeout, fperiod);
+     iec_ton(&pendelcw, fperiod);
+     iec_ton(&pendelccw, fperiod);
+     iec_ton(&foot_sw_clamp_t, fperiod);
+     iec_ton(&foot_sw_unclamp_t, fperiod);
+     iec_ton(&cyl_is_fw_t, fperiod);
+     iec_ton(&cyl_is_bw_t, fperiod);
+
+}//FUNCTION

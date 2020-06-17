@@ -1,0 +1,21 @@
+#!/bin/bash
+
+. '/home/cnc/LinuxCNC/linuxcnc/scripts/rip-environment'
+halcmd setp spgb.M41 1
+halcmd setp spgb.M43 0
+halcmd setp spgb.M42 0
+
+
+count="0"
+while [ $(halcmd getp spgb.M41) == "TRUE" ]
+do
+    count=$[$count+1]
+    if [ $count -gt 50 ]
+    then
+        echo "---timeout M141!!"
+        exit -1
+    fi
+    sleep 0.1s
+done
+
+exit 0

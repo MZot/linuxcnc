@@ -1,0 +1,155 @@
+#!/usr/bin/env python
+"""
+    USB IO HAL Component
+
+    Copyright 2020 Mit Zot
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+"""
+##############################
+#SUBSYSTEM=="usb", ATTR{idVendor}=="03eb", ATTR{idProduct}=="3110", MODE="666"
+#sudo nano /etc/udev/rules.d/91-usbio.rules
+##############################
+
+import sys, usb, time, hal
+
+
+h=hal.component("usbio")
+h.newpin("enc0", hal.HAL_S32, hal.HAL_OUT)
+h.newpin("ain0", hal.HAL_S32, hal.HAL_OUT)
+h.newpin("ain1", hal.HAL_S32, hal.HAL_OUT)
+h.newpin("ain2", hal.HAL_S32, hal.HAL_OUT)
+h.newpin("ain3", hal.HAL_S32, hal.HAL_OUT)
+h.newpin("in00", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in01", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in02", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in03", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in04", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in05", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in06", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in07", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in08", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in09", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in10", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in11", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in12", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in13", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("in14", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("estop-in", hal.HAL_BIT, hal.HAL_IN)
+h.newpin("estop-out", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("alive", hal.HAL_BIT, hal.HAL_OUT)
+h.newpin("time", hal.HAL_FLOAT, hal.HAL_OUT)
+h.newpin("time-max", hal.HAL_FLOAT, hal.HAL_OUT)
+h.ready()
+
+
+try:
+    while 1:
+        dev = None
+        print 'usbio: start'
+        while dev == None:
+            time.sleep(2)
+            dev = usb.core.find(idVendor=0x03eb, idProduct=0x3110)
+        print 'usbio: ok'
+        try:
+            if dev.is_kernel_driver_active(0) is True:
+                dev.detach_kernel_driver(0)
+        except usb.core.USBError as e:
+            print("usbio: Kernel driver won't give up control over device: %s" % str(e))
+
+        try:
+            dev.set_configuration()
+            dev.reset()
+        except usb.core.USBError as e:
+            print("usbio: Cannot set configuration the device: %s" % str(e))
+
+        endpoint = dev[0][(0,0)][0]
+        t=time.time()
+        tprej = t
+        while 1:
+         try:
+            data = dev.read(endpoint.bEndpointAddress, endpoint.wMaxPacketSize,
+                            timeout=1500)
+
+            h.alive = not h.alive
+            if data[8] > 127:
+              h.enc0 = h.enc0 - (256 - data[8])
+            else:
+              h.enc0 = h.enc0 + data[8]
+            h.ain0 = data[4]
+            h.ain1 = data[5]
+            h.ain2 = data[6]
+            h.ain3 = data[7]
+            h.in00 = data[0] & 1
+            h.in01 = data[0] & 2
+            h.in02 = data[0] & 4
+            h.in03 = data[0] & 8
+            h.in04 = data[0] & 16
+            h.in05 = data[1] & 1
+            h.in06 = data[1] & 2
+            h.in07 = data[1] & 4
+            h.in08 = data[1] & 8
+            h.in09 = data[1] & 16
+            h.in10 = data[2] & 1
+            h.in11 = data[2] & 2
+            h.in12 = data[2] & 4
+            h.in13 = data[2] & 8
+            h.in14 = data[2] & 16
+            
+            h['estop-out'] = h['estop-in']
+                
+
+            t = time.time()
+            h.time = t - tprej
+            if (h.time) > h['time-max']:
+                h['time-max'] = h.time
+            tprej = t
+
+
+
+         except Exception as e: # usb.core.USBError as e:
+             #print str(e)
+             #if e.errno != 110: # 110 is a timeout. 
+             h.alive=0
+             h.ain0 = 0
+             h.ain1 = 0
+             h.ain2 = 0
+             h.ain3 = 0
+             h.in00 = 0
+             h.in01 = 0
+             h.in02 = 0
+             h.in03 = 0
+             h.in04 = 0
+             h.in05 = 0
+             h.in06 = 0
+             h.in07 = 0
+             h.in08 = 0
+             h.in09 = 0
+             h.in10 = 0
+             h.in11 = 0
+             h.in12 = 0
+             h.in13 = 0
+             h.in14 = 0
+             h['estop-out'] = 0
+             print ("usbio: Error readin data: %s" % str(e))
+             print ("usbio: ESTOP")
+             usb.util.dispose_resources(dev)
+             break
+
+
+except KeyboardInterrupt:
+    raise SystemExit
+     

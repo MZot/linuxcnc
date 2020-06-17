@@ -1,0 +1,83 @@
+component testmsg;
+/*
+Copyright: 2020
+Author:  Mit Zot
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+//inputs
+pin in bit in1;
+pin in bit in2;
+pin in bit in3;
+pin in bit in4;
+pin in bit in5;
+pin in bit in6;
+pin in bit in7;
+pin in bit in8;
+pin in bit abort;
+
+pin out bit o1;
+pin out bit o2;
+pin out bit o3;
+
+
+
+
+function _;
+license "GPL"; // indicates GPL v2 or later
+;;
+
+#define N_MSGS 10
+typedef struct{
+    char str[100];
+    bool b;
+} message;
+static message messages[]={
+    {"Napaka menjalnika\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0}
+};
+
+void set_message(message *m, bool b){
+    if(b & !m->b) rtapi_print_msg(RTAPI_MSG_ERR, m->str);    
+    m->b = b;
+}
+
+void reset_messages(message m[], bool r){
+    static bool br=0;
+    if(r && !br)for(int i=0;i<N_MSGS;i++)m[i].b=0;
+    br=r;
+}
+
+
+FUNCTION(_){
+    
+      set_message(&messages[0], in1==1);
+      set_message(&messages[1], in2==1);
+      
+      reset_messages(messages, abort==1);
+      
+      o1=messages[0].b;
+      o2=messages[1].b;
+      o3=messages[2].b;
+    
+}//FUNCTION
