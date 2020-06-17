@@ -1,6 +1,8 @@
 ###################################################################
 #        hal_turret.hal
 ###################################################################
+loadrt turret_sauter names=turr
+addf turr   servo-thread
 
 # create signals for tool loading loopback
 net tool-prep-loop iocontrol.0.tool-prepare iocontrol.0.tool-prepared

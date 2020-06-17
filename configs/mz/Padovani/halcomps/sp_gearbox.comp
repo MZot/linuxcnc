@@ -59,6 +59,7 @@ pin in float    scale_3;
 pin out float velo_cmd      "analog value for spindle servo, (speed_in * scale_x)";
 pin in float drift;
 pin out bit servo_en        "servo enable";
+pin out bit servo_en_tof    "servo enable";
 pin out bit motor1cw        "gearbox motor 1 cw";
 pin out bit motor1ccw       "gearbox motor 1 ccw";
 pin out bit motor2cw        "gearbox motor 2 cw";
@@ -170,7 +171,7 @@ FUNCTION(_){
 
             if((fabs(speed_s) > STANDSTILL_SPEED) && spindle_on) spstate = RUN;
             else                                                 spstate = STOP;
-            
+            break;
 
         case TO_1:
             spstate=PENDEL;
@@ -304,9 +305,9 @@ FUNCTION(_){
      estop_out = estop_in && !estop;
      if(!estop_in && !machine_is_on)estop = 0;
 
-     sp_inhibit_out = spin_inh1 || spin_inh3 || spin_inh3 || spin_inh4 ||
-                        M13 && !cyl_is_fw_t.OUT ||
-                        !M13 && !cyl_is_bw_t.OUT;
+     sp_inhibit_out = spin_inh1 || spin_inh3 || spin_inh3 || spin_inh4; // ||
+                    //    M13 && !cyl_is_fw_t.OUT ||
+                    //    !M13 && !cyl_is_bw_t.OUT;
      
      stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && !servo_en && !spindle_on;
      atspeed.IN   = servo_en && spindle_on && servo_rdy &&
@@ -325,6 +326,9 @@ FUNCTION(_){
      
      velo_cmd = velo_cmd + drift;
      
+     tof_sp_en.IN = servo_en;
+     servo_en_tof = tof_sp_en.OUT;
+     
      reset_messages(messages, abort==1);
      iec_ton(&stndstill, fperiod);  //call "function blocks"
      iec_ton(&atspeed, fperiod);
@@ -335,5 +339,6 @@ FUNCTION(_){
      iec_ton(&foot_sw_unclamp_t, fperiod);
      iec_ton(&cyl_is_fw_t, fperiod);
      iec_ton(&cyl_is_bw_t, fperiod);
+     iec_tof(&tof_sp_en, fperiod);
 
 }//FUNCTION

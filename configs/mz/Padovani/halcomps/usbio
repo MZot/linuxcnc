@@ -109,7 +109,7 @@ try:
             h.in13 = data[2] & 8
             h.in14 = data[2] & 16
             
-            h['estop-out'] = h['estop-in']
+            h['estop-out'] = 1
                 
 
             t = time.time()

@@ -5,7 +5,7 @@
 setp jog.jog-feed               500
 setp jog.jog-rapid-feed         8000
 setp jog.spindle-counts-per-rev [SPINDLE]ENCODER_SCALE
-setp jog.hwheel-increment       0.01
+setp jog.hwheel-increment       0.0025
 
 net jog_x_p jog.jog-xp
 net jog_x_m jog.jog-xm
