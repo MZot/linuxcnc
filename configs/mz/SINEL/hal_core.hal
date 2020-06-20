@@ -24,8 +24,8 @@ addf pid.z.do-pid-calcs       servo-thread
 loadrt lathe_jog names=jog
 addf jog servo-thread
 
-loadrt turret_sauter names=turr
-addf turr   servo-thread
+#loadrt turret_sauter names=turr
+#addf turr   servo-thread
 
 loadrt plc names=plc
 addf plc    servo-thread

@@ -52,7 +52,6 @@ pin out bit index "indexing pin";
 // ---PARAMS--- default values, set in halfile 
 pin in float  t_timeout = 25.0      "timeout in seconds for tool change operation";
 pin in float  t_clamp_timeout = 2.0 "timeout in seconds for tool clamp/unclamp";
-pin in s32    n_tools = 6           "Number of pockets on turret";
 pin in float  t_clamp_delay = 0.5   "delay after clamping";
 //debug
 pin out s32 state;
@@ -63,36 +62,37 @@ license "GPL"; // indicates GPL v2 or later
 
 #include "def.h"
 
+#define N_TOOLS  8
+
 static int get_dir(int curr, int req){
-    return (req - curr + n_tools+n_tools/2) % n_tools - n_tools/2
+    return ((req - curr + N_TOOLS + N_TOOLS/2) % N_TOOLS - N_TOOLS/2);
 }
 
 //returns current tool number from switches state
 static int s_to_t(uint8_t s){
    switch (s){
-       //    tnum \ inpos \ parity
-        case 0x01 |  0x10 | 0x20:
+        case 0x11:
             return 1;
             break;
-        case 0x02 |  0x10:
+        case 0x12:
             return 2;
             break;
-        case 0x03 |  0x10 | 0x20:
+        case 0x13:
             return 3;
             break;
-        case 0x04 |  0x10:
+        case 0x14:
             return 4;
             break;
-        case 0x05 |  0x10 | 0x20:
+        case 0x15:
             return 5;
             break;
-        case 0x06 |  0x10:
+        case 0x16:
             return 6;
             break;
-        case 0x07 |  0x10 | 0x20:
+        case 0x17:
             return 7;
             break;
-        case 0x08 |  0x10:
+        case 0x18:
             return 8;
             break;
         default:
@@ -124,6 +124,7 @@ static timer wait_clamp   = {.T =  0.5, .ET = 0, .OUT = false, .IN = false};
 static timer clamp        = {.T =  0.5, .ET = 0, .OUT = false, .IN = false};
 
 static bool estop=0;
+static int dir=0;
 
 FUNCTION(_){
     if(iec_fp(timeout.OUT, &msg_fp[0]))
@@ -137,7 +138,7 @@ FUNCTION(_){
 
     curr_tool = s_to_t(s_1<<0 | s_2<<1 | s_3<<2 | s_4<<3 | s_5<<4 | s_6<<5 | s_7<<6 | s_8<<7);
     current_tool = curr_tool;
-    if(!s_clmp)current_tool=0;
+    //if(!s_clmp)current_tool=0;
 
     if(iec_fp(tool_change, &msg_fp[7])) requested_tool = tool_prep_number % 10;
 
@@ -159,7 +160,10 @@ FUNCTION(_){
             index=0;
             brake = s_clmp && machine_is_on;
             if(tool_change){
-                if((requested_tool <= n_tools) && (requested_tool>0)) state=UNCLAMP;
+                if((requested_tool <= N_TOOLS) && (requested_tool>0)){
+                 state=UNCLAMP;   
+                 dir = get_dir(curr_tool, requested_tool);  
+                } 
                 else {
                     rtapi_print_msg(RTAPI_MSG_ERR, "Napacno orodje!\n");
                     state=ERROR;
@@ -171,8 +175,8 @@ FUNCTION(_){
             timeout.IN = 1;
             timeout_clmp.IN = 1;
             brake = 0;
-            if (get_dir(curr_tool, requested_tool) > 0) cw=1; ccw=0;
-            else cw=0; ccw=1;
+            index = 0;
+            cw=1; ccw=0;       
             if(!s_clmp)state=ROTATE;
             break;
 
@@ -187,17 +191,20 @@ FUNCTION(_){
             timeout.IN = 1;
             cw=0;
             ccw=0;
+            brake = 1;
             index=1;
             wait_clamp.IN=1;
             if(wait_clamp.OUT) state=CLAMP;
             break;
 
       case CLAMP:
+            brake = 0;
+            index = 1;
             timeout.IN = 1;
             timeout_clmp.IN = 1;
             wait_clamp.IN=0;
-            cw=0;
-            ccw=1;
+            cw=0; ccw=1;
+            
             if(clamp.OUT){
                 state=DONE;
             };

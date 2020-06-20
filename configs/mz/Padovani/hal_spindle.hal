@@ -63,12 +63,22 @@ net spindle_pot       spgb.sp-override-pot
 net halui_spovr_cnts  spgb.sp-override-counts
 net 7i77-analogin0    spgb.sp-load-in
 net gui-sp-load       spgb.sp-load-out
+net foot_sw_clamp spgb.foot-sw-clamp
+net foot_sw_unclamp spgb.foot-sw-unclamp
+net cyl_fw spgb.cyl-fw
+net cyl_bw spgb.cyl-bw
+net press_bw spgb.press-bw
+net press_fw spgb.press-fw
+net press_bw spgb.cyl-is-bw
+net press_fw spgb.cyl-is-fw
+net halui_pgm_run spgb.program-is-running
 
 
-setp spgb.drift        0.0
-setp spgb.scale-1      -0.07
-setp spgb.scale-2      -0.0175
-setp spgb.scale-3      -0.00439
+
+setp spgb.drift        -0.25
+setp spgb.scale-1      -0.0023
+setp spgb.scale-2      -0.0023
+setp spgb.scale-3      -0.0023
 
 
 

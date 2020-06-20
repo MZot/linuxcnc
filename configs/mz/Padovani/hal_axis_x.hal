@@ -16,7 +16,7 @@ setp   pid.x.error-previous-target true
 net x-index-enable  <=> pid.x.index-enable
 net x-enable        =>  pid.x.enable
 net x-pos-cmd       =>  pid.x.command
-net x-vel-cmd       =>  pid.x.command-deriv
+#net x-vel-cmd       =>  pid.x.command-deriv
 net x-pos-fb        =>  pid.x.feedback
 net x-output        =>  pid.x.output
 

@@ -28,48 +28,49 @@ net   halui_mach_on <= hm2_7i92.0.7i77.0.0.input-03
 net emc_enable_in <= hm2_7i92.0.7i77.0.0.input-06     
 #net  <= hm2_7i92.0.7i77.0.0.input-07
 
-#net   x-pos-limit <= hm2_7i92.0.7i77.0.0.input-08
-#net   z-pos-limit <= hm2_7i92.0.7i77.0.0.input-09
-#net     x-home-sw <= hm2_7i92.0.7i77.0.0.input-10
-#net     z-home-sw <= hm2_7i92.0.7i77.0.0.input-11
-#net   x-neg-limit <= hm2_7i92.0.7i77.0.0.input-12
-#net   z-neg-limit <= hm2_7i92.0.7i77.0.0.input-13
+net   sw_flood_auto <= hm2_7i92.0.7i77.0.0.input-08
+net   sw_flood_on <= hm2_7i92.0.7i77.0.0.input-09
+#net      <= hm2_7i92.0.7i77.0.0.input-10
+#net      <= hm2_7i92.0.7i77.0.0.input-11
+net   foot_sw_clamp <= hm2_7i92.0.7i77.0.0.input-12
+net   foot_sw_unclamp <= hm2_7i92.0.7i77.0.0.input-13
 #net              <= hm2_7i92.0.7i77.0.0.input-14
 #net       <= hm2_7i92.0.7i77.0.0.input-15
 
-#net     sw_gear1 <= hm2_7i92.0.7i77.0.0.input-16
-#net     sw_gear2 <= hm2_7i92.0.7i77.0.0.input-17
-#net     sw_gear3 <= hm2_7i92.0.7i77.0.0.input-18
-##net     sw_gear4 <= hm2_7i92.0.7i77.0.0.input-19
-#net      turr_s1 <= hm2_7i92.0.7i77.0.0.input-20
-#net      turr_s2 <= hm2_7i92.0.7i77.0.0.input-21
-#net      turr_s3 <= hm2_7i92.0.7i77.0.0.input-22
-#net      turr_s4 <= hm2_7i92.0.7i77.0.0.input-23
-#net      turr_s5 <= hm2_7i92.0.7i77.0.0.input-24
-#net      turr_s6 <= hm2_7i92.0.7i77.0.0.input-25
-#net   turr_sclmp <= hm2_7i92.0.7i77.0.0.input-26
-#net              <= hm2_7i92.0.7i77.0.0.input-27
-#net              <= hm2_7i92.0.7i77.0.0.input-28
-#net              <= hm2_7i92.0.7i77.0.0.input-29
-#net   halui_sp_rv <= hm2_7i92.0.7i77.0.0.input-30
-#net   halui_sp_fw <= hm2_7i92.0.7i77.0.0.input-31
+net     turr_s1 <= hm2_7i92.0.7i77.0.0.input-16
+net     turr_s2 <= hm2_7i92.0.7i77.0.0.input-17
+net     turr_s3 <= hm2_7i92.0.7i77.0.0.input-18
+net     turr_s4 <= hm2_7i92.0.7i77.0.0.input-19
+net     turr_s5 <= hm2_7i92.0.7i77.0.0.input-20
+#net    turr_s6   <= hm2_7i92.0.7i77.0.0.input-21
+#net     turr_s7  <= hm2_7i92.0.7i77.0.0.input-22
+net     turr_sclmp  <= hm2_7i92.0.7i77.0.0.input-23
+#net       <= hm2_7i92.0.7i77.0.0.input-24
+#net       <= hm2_7i92.0.7i77.0.0.input-25
+net sp_servo_at_speed   <= hm2_7i92.0.7i77.0.0.input-26
+net sp_N0   <= hm2_7i92.0.7i77.0.0.input-26-not
+net  ts_press_fw            <= hm2_7i92.0.7i77.0.0.input-27
+net   press_fw           <= hm2_7i92.0.7i77.0.0.input-28
+net   press_bw           <= hm2_7i92.0.7i77.0.0.input-29
+net   z-home-sw <= hm2_7i92.0.7i77.0.0.input-30-not
+net   x-home-sw <= hm2_7i92.0.7i77.0.0.input-31-not
 
 
 #************************************
 #izhodi
 #************************************
-##net         spgbm1cw => hm2_7i92.0.7i77.0.0.output-00  
-#net        spgbm1ccw => hm2_7i92.0.7i77.0.0.output-01  
+net        cyl_fw => hm2_7i92.0.7i77.0.0.output-00  
+net        cyl_bw => hm2_7i92.0.7i77.0.0.output-01  
 #net halui_mach_is_on => hm2_7i92.0.7i77.0.0.output-02  #mazanje glavnega vretena
 #net                  => hm2_7i92.0.7i77.0.0.output-03
-#net                  => hm2_7i92.0.7i77.0.0.output-04
-#net   user_enable_out => hm2_7i92.0.7i77.0.0.output-05
+net        turr_brake          => hm2_7i92.0.7i77.0.0.output-04
+net   turr_index => hm2_7i92.0.7i77.0.0.output-05
 net  emc_enable_out => hm2_7i92.0.7i77.0.0.output-06 
 net        sp_en_tof => hm2_7i92.0.7i77.0.0.output-07
 
-#net           turr_cw => hm2_7i92.0.7i77.0.0.output-08
-#net          turr_ccw => hm2_7i92.0.7i77.0.0.output-09
-#net       flood_is_on => hm2_7i92.0.7i77.0.0.output-10 
+net           turr_cw => hm2_7i92.0.7i77.0.0.output-08
+net          turr_ccw => hm2_7i92.0.7i77.0.0.output-09
+net             flood => hm2_7i92.0.7i77.0.0.output-10 
 #net              lube => hm2_7i92.0.7i77.0.0.output-11 
 #net    spgb_door_lock => hm2_7i92.0.7i77.0.0.output-12 #kljucavnica, ko je S > 0
 #net  halui_mach_is_on => hm2_7i92.0.7i77.0.0.output-13 #luc v delovnem prostoru
@@ -167,7 +168,8 @@ net   halui_sp_fw usbio.in14
 net h-wheel-rawcounts usbio.enc0
 net       usbio_estop usbio.estop-out
 net   user_enable_out usbio.estop-in
-
+net feed_pot  usbio.ain1
+net spindle_pot usbio.ain0
 
 
 

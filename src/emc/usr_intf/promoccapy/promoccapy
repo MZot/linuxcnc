@@ -4784,8 +4784,9 @@ class gmoccapy( object ):
             self.tool_change = True
             self.command.mode( linuxcnc.MODE_MDI )
             self.command.wait_complete()
-            self.command.mdi("O<on_man_tool_call> call [%i]" % int( val ))
-            #glib.timeout_add(5, self.mdi, "O<on_man_tool_call> call [%i]" % int( val ))
+            #self.command.mdi("O<on_man_tool_call> call [%i]" % int( val ))
+            #self.command.wait_complete()
+            glib.timeout_add(5, self.mdi, "O<on_man_tool_call> call [%i]" % int( val ))
 
         widget.set_active(False)
         self.widgets.hal_mdihistory.grab_focus()

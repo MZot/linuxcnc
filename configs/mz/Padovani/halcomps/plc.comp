@@ -32,6 +32,7 @@ pin in float t_lube_interval;  //
 pin in float t_lube_time;      //
 pin in   bit lube_switch;
 pin out  bit lube;
+pin in   bit lube_level;
 
 // --- feed inhibit ---
 pin in  bit feed_inh1;
@@ -49,10 +50,11 @@ pin in   float f_ovr_pot;      //feed override pot hm2_5i25.0.7i77.0.0.analogin0
 pin out signed f_ovr_cnts;     //halui.rapid-override.counts && halui.feed-override.counts
 
 //  --- flood ---
-pin in  bit sw_flood;       //cooling on off button (toggle)
-pin out bit flood_on;       //halui.flood_on
-pin out bit flood_off;      //halui.flood_off
+pin in  bit sw_flood_on;       //cooling 
+pin in  bit sw_flood_auto;
 pin in  bit flood_is_on;    //halui.flood_is_on
+pin out bit flood;
+pin in bit turr_locked;
 
 pin in  bit sp_jog_cw;
 pin in  bit sp_jog_ccw;
@@ -77,6 +79,19 @@ static bool fp[8]={0};
 static bool estop = 0;
 
 
+static message messages[N_MSGS]={
+    {"asd\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0},
+    {"Nivo mazalnega olja nizek!\n",  0},
+    {"kjll\n",  0},
+    {"Text\n",  0},
+    {"Text\n",  0}
+};
+
+
 
 FUNCTION(_){
     sp_stp = !sp_jog_cw && !sp_jog_ccw;
@@ -90,31 +105,11 @@ FUNCTION(_){
     lube_interval.IN = lube_time.OUT;
     lube = (!lube_time.OUT && lube_pwon_delay.OUT);
 
-    lube_err.IN = lube && !lube_switch;
-    if(iec_fp(lube_err.OUT, &fp[0]))
-        rtapi_print_msg(RTAPI_MSG_ERR, "Napaka mazanja vodil!\n");
 
-    flood_extend.IN = sw_flood;
-    if(iec_fp(flood_extend.OUT, &fp[1]))
-    {
-        if(flood_is_on){
-             flood_off = 1;
-             flood_on = 0;
-        }
-        else{
-             flood_on = 1;
-             flood_off = 0;
-        }
-    }
-    if(!flood_extend.OUT){
-        flood_on = 0;
-        flood_off = 0;
-    }
-    if(iec_fp(cool_overload, &fp[2]))
-        //rtapi_print_msg(RTAPI_MSG_ERR, "Crpalka za hlajenje preobremenjena!\n");
-    if(abort) fp[2] = 0;
 
-    f_ovr_cnts = f_ovr_pot * (150/244);
+    flood = (sw_flood_on || (flood_is_on && sw_flood_auto)) && machine_is_on && turr_locked;
+
+    f_ovr_cnts = f_ovr_pot * (150.0/244.0);
 
     feed_inhibit_out = (feed_inh1 || feed_inh2 || feed_inh3 || feed_inh4);
 
@@ -123,8 +118,11 @@ FUNCTION(_){
 
     estop_out = estop_in && !estop;
     if(!estop_in)estop = 0;
+    
+    set_message(&messages[5], !lube_level);
 
     //call "function blocks"
+    reset_messages(messages, abort==1);
     iec_ton(&lube_interval, fperiod);
     iec_ton(&lube_time, fperiod);
     iec_ton(&lube_err, fperiod);

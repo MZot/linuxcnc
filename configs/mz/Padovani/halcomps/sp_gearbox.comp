@@ -43,11 +43,21 @@ pin in bit M12              "Select external clamping";
 pin in bit M13              "Select internal clamping";
 pin in bit foot_sw_clamp    "Clamp ";
 pin in bit foot_sw_unclamp  "Unclamp";
-pin in bit cyl_is_fw        "Clamping cilinder is forward/external unclamped";
-pin in bit cyl_is_bw        "Clamping cylinder is back/external clamped";   
+pin in bit cyl_is_fw        "Clamping cylinder is forward/external unclamped";
+pin in bit cyl_is_bw        "Clamping cylinder is back/external clamped";    
+pin in bit press_fw        "Clamping cylinder pressure switch forward";
+pin in bit press_bw        "Clamping cylinder pressure switch backward"; 
 pin out bit cyl_fw          "Clamping cylinder forward";
-pin out bit cyl_bw          "Clamping cylinder backward"; 
+pin out bit cyl_bw          "Clamping cylinder backward";
 pin in bit program_is_running "halui.program.is-running";
+
+//tailstock
+pin in bit ts_clamp            "Tailstock Clamp ";
+pin in bit ts_unclamp          "Tailstock Unclamp";
+pin in bit ts_cyl_is_fw        "Tailstock cylinder is forward/clamped"; 
+pin out bit ts_cyl_fw          "Tailstock cylinder forward";
+pin out bit ts_cyl_bw          "Tailstock cylinder backward"; 
+pin out bit ts_press_fw        "Tailstock cylinder pressure switch forward";
 
 
 //parameters
@@ -128,8 +138,8 @@ static message messages[N_MSGS]={
     {"Text\n",  0},
     {"Text\n",  0},
     {"Text\n",  0},
-    {"Kos ni vpet!! ESTOP\n",  0},
-    {"Text\n",  0},
+    {"Kos ni vpet! ESTOP\n",  0},
+    {"Konjicek ni vpet! ESTOP\n",  0},
     {"Text\n",  0},
     {"Text\n",  0}
 };
@@ -145,10 +155,11 @@ static timer sw4       = {.T =  .400, .ET = 0, .OUT = false, .IN = false};
 static timer tof_sp_en = {.T = 3.000, .ET = 0, .OUT = false, .IN = false}; //TOF za zaviranje vretena
 static timer pendelcw  = {.T =  .500, .ET = 0, .OUT = false, .IN = false};
 static timer pendelccw = {.T =  .700, .ET = 0, .OUT = false, .IN = false};
-static timer foot_sw_clamp_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
-static timer foot_sw_unclamp_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
+static timer foot_sw_clamp_t = {.T =  .200, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
+static timer foot_sw_unclamp_t = {.T =  .200, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
 static timer cyl_is_fw_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
 static timer cyl_is_bw_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
+static timer ts_clamped_t = {.T =  .600, .ET = 0, .OUT = false, .IN = false}; //tailstock clamped
 
 static bool m_fp[8]={0};
 static bool fp_clamp=0;
@@ -251,22 +262,10 @@ FUNCTION(_){
      
      
     //chuck Clamping
-    /*
-    pin io bit M10              "Chuck clamp M code";
-    pin io bit M11              "Chuck unclamp M code";
-    pin in bit M12              "Select external clamping";
-    pin in bit M13              "Select internal clamping";
-    pin in bit foot_sw_clamp    "Clamp ";
-    pin in bit foot_sw_unclamp  "Unclamp";
-    pin in bit cyl_is_fw        "Clamping cilinder is forward/external unclamped"
-    pin in bit cyl_is_bw        "Clamping cylinder is back/external clamped"   
-    pin out bit cyl_fw          "Clamping cylinder forward";
-    pin out bit cyl_bw          "Clamping cylinder backward"; 
-    */
     foot_sw_clamp_t.IN =    foot_sw_clamp && !foot_sw_unclamp;
     foot_sw_unclamp_t.IN = !foot_sw_clamp && foot_sw_unclamp;
-    cyl_is_bw_t.IN = !cyl_is_fw && cyl_is_bw && cyl_bw && !cyl_fw;
-    cyl_is_fw_t.IN = cyl_is_fw && !cyl_is_bw && !cyl_bw && cyl_fw;
+    cyl_is_bw_t.IN =  cyl_is_bw && cyl_bw && !cyl_fw;
+    cyl_is_fw_t.IN = cyl_is_fw  && cyl_fw && !cyl_bw;
 
     if (M11 || iec_fp(foot_sw_unclamp_t.OUT, &fp_unclamp) && !program_is_running){ //unclamp
          if(!M13) //default to external clamping
@@ -288,9 +287,9 @@ FUNCTION(_){
     }//M10
 
 
-    if (fabs(speed_fb) > STANDSTILL_SPEED) //izpad vpenjanja med vrtenjem, notaus!
-        if( (M13 && !cyl_is_fw_t.OUT) ||
-            (!M13 && !cyl_is_bw_t.OUT )){
+    if (fabs(speed_fb) > STANDSTILL_SPEED && servo_en) //izpad vpenjanja med vrtenjem, notaus!
+        if( (M13 && !cyl_is_bw_t.OUT) ||
+            (!M13 && !cyl_is_fw_t.OUT )){
                 estop=1;
                 set_message(&messages[5], 1); //izpad vpenjanja
             }
@@ -309,15 +308,15 @@ FUNCTION(_){
                     //    M13 && !cyl_is_fw_t.OUT ||
                     //    !M13 && !cyl_is_bw_t.OUT;
      
-     stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && !servo_en && !spindle_on;
-     atspeed.IN   = servo_en && spindle_on && servo_rdy &&
+     stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && !servo_en && !spindle_on && n_0;
+     atspeed.IN   = servo_en && spindle_on && servo_rdy && at_speed_in &&
                     (fabs(speed_fb) > (fabs(speed_cmd) - fabs(speed_cmd*0.2))) &&
                     (fabs(speed_fb) < (fabs(speed_cmd) + fabs(speed_cmd*0.2))) &&
                     !sp_inhibit_out;
      at_speed = atspeed.OUT;
 
      //override
-     sp_override_counts = sp_override_pot * (100/244) + 50;  //50 - 150 pri 0-24V
+     sp_override_counts = sp_override_pot * (100.0/244.0) + 50;  //50 - 150 pri 0-24V
 
      //gui load bar
      //sp_load_out = sp_load_in * 50.0;

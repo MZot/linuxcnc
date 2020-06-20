@@ -55,6 +55,11 @@ net   halui_fovr_cnts halui.rapid-override.counts
 net halui_spovr_value halui.spindle-override.value
 net  halui_spovr_cnts halui.spindle-override.counts
 
+sets halui_fovr_cnts 0
+sets halui_fovr_cnts 0
+sets halui_spovr_cnts 0
+
+
 net   halui-jog-speed halui.jog-speed
 #net jog_p halui.jog.selected.plus
 #net jog_m halui.jog.selected.minus

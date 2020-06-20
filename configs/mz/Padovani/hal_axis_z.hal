@@ -15,7 +15,7 @@ setp   pid.z.error-previous-target true
 net z-index-enable  <=> pid.z.index-enable
 net z-enable        =>  pid.z.enable
 net z-pos-cmd       =>  pid.z.command
-net z-vel-cmd       =>  pid.z.command-deriv
+#net z-vel-cmd       =>  pid.z.command-deriv
 net z-pos-fb        =>  pid.z.feedback
 net z-output        =>  pid.z.output
 
