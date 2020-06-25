@@ -21,7 +21,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // ---INPUTS---
 pin in  bit machine_is_on;  //halui.machine-is-on
 pin in  bit abort;          //reset pushbutton
-pin out bit abort_pulse;    //extended abort
+pin in  bit abort1;          //reset pushbutton
+pin out bit abort_out;    //extended abort;
+
+pin in bit nc_start;
+pin in bit nc_start1;
+pin out bit nc_start_out; 
 
 // -- estop --
 pin in  bit estop_in;
@@ -113,8 +118,10 @@ FUNCTION(_){
 
     feed_inhibit_out = (feed_inh1 || feed_inh2 || feed_inh3 || feed_inh4);
 
-    abort_extend.IN = abort;
-    abort_pulse = abort_extend.OUT;
+    abort_extend.IN = abort || abort1;
+    abort_out = abort_extend.OUT;
+    
+    nc_start_out = nc_start || nc_start1;
 
     estop_out = estop_in && !estop;
     if(!estop_in)estop = 0;

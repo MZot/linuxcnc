@@ -52,6 +52,8 @@ pin out bit cyl_bw          "Clamping cylinder backward";
 pin in bit program_is_running "halui.program.is-running";
 
 //tailstock
+pin io bit M20              "Chuck clamp M code";
+pin io bit M21              "Chuck unclamp M code";
 pin in bit ts_clamp            "Tailstock Clamp ";
 pin in bit ts_unclamp          "Tailstock Unclamp";
 pin in bit ts_cyl_is_fw        "Tailstock cylinder is forward/clamped"; 
@@ -130,6 +132,13 @@ typedef enum {
     POSITION
 } the_spstate;
 
+typedef enum {
+    TSIDLE,
+    TSCLAMP,
+    TSCLAMPED,
+    TSUNCLAMP
+} the_tsstate;
+
 
 
 static message messages[N_MSGS]={
@@ -157,14 +166,16 @@ static timer pendelcw  = {.T =  .500, .ET = 0, .OUT = false, .IN = false};
 static timer pendelccw = {.T =  .700, .ET = 0, .OUT = false, .IN = false};
 static timer foot_sw_clamp_t = {.T =  .200, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
 static timer foot_sw_unclamp_t = {.T =  .200, .ET = 0, .OUT = false, .IN = false}; //foot switch debounce
-static timer cyl_is_fw_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
-static timer cyl_is_bw_t = {.T =  .400, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
+static timer cyl_is_fw_t = {.T =  .700, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
+static timer cyl_is_bw_t = {.T =  .700, .ET = 0, .OUT = false, .IN = false}; //chuck switch debounce
 static timer ts_clamped_t = {.T =  .600, .ET = 0, .OUT = false, .IN = false}; //tailstock clamped
 
 static bool m_fp[8]={0};
 static bool fp_clamp=0;
 static bool fp_unclamp=0;
-
+static bool fp_ts1=0;
+static bool fp_ts2=0;
+static int  tsstate=0;
 static bool enable_sp = 0;
 
 
@@ -267,7 +278,7 @@ FUNCTION(_){
     cyl_is_bw_t.IN =  cyl_is_bw && cyl_bw && !cyl_fw;
     cyl_is_fw_t.IN = cyl_is_fw  && cyl_fw && !cyl_bw;
 
-    if (M11 || iec_fp(foot_sw_unclamp_t.OUT, &fp_unclamp) && !program_is_running){ //unclamp
+    if (M11 || (iec_fp(foot_sw_unclamp_t.OUT, &fp_unclamp) && !program_is_running)){ //unclamp
          if(!M13) //default to external clamping
          {
              if(stndstill.OUT){cyl_bw=0;cyl_fw=1;} //unclamp external
@@ -276,7 +287,7 @@ FUNCTION(_){
              if(stndstill.OUT){cyl_bw=1;cyl_fw=0;} //unclamp internal
          }//M13
     }//M11
-    if (M10 || iec_fp(foot_sw_clamp_t.OUT, &fp_clamp) && !program_is_running){ //clamp
+    if (M10 || (iec_fp(foot_sw_clamp_t.OUT, &fp_clamp) && !program_is_running)){ //clamp
          if(!M13) //default to external clamping
          {
              if(stndstill.OUT){cyl_bw=1;cyl_fw=0;} //clamp external
@@ -288,8 +299,8 @@ FUNCTION(_){
 
 
     if (fabs(speed_fb) > STANDSTILL_SPEED && servo_en) //izpad vpenjanja med vrtenjem, notaus!
-        if( (M13 && !cyl_is_bw_t.OUT) ||
-            (!M13 && !cyl_is_fw_t.OUT )){
+        if( (M13 && !cyl_is_fw_t.OUT) ||
+            (!M13 && !cyl_is_bw_t.OUT )){
                 estop=1;
                 set_message(&messages[5], 1); //izpad vpenjanja
             }
@@ -299,8 +310,49 @@ FUNCTION(_){
     if(M10 && (M13 && cyl_is_fw_t.OUT)) M10=0;
     if(M11 && (!M13 && cyl_is_fw_t.OUT)) M11=0;
     if(M11 && (M13 && cyl_is_bw_t.OUT)) M11=0;
+    
+    
+    
+    //tailstock
+    ts_cyl_fw=ts_clamp;
+    ts_cyl_bw=ts_unclamp;
+    if(iec_fp(ts_clamp, &fp_ts1) && stndstill.OUT)tsstate=TSCLAMP;
+    if(iec_fp(ts_unclamp, &fp_ts2) && stndstill.OUT)tsstate=TSUNCLAMP;
+    ts_clamped_t.IN = ts_clamp && ts_cyl_is_fw;
+    
+    switch (tsstate) {
+        case TSIDLE:
+            ts_cyl_fw=0;
+            ts_cyl_bw=0;
+        break;
         
-     
+        case TSCLAMP:
+            ts_cyl_fw=1;
+            ts_cyl_bw=0;
+            if(!ts_clamp)tsstate=TSIDLE;
+            if(ts_clamped_t.OUT)tsstate=TSCLAMPED;
+        break;
+        
+        case TSCLAMPED:
+            ts_cyl_fw=1;
+            ts_cyl_bw=0;
+            if(ts_unclamp)tsstate=TSUNCLAMP;
+        break;
+        
+        case TSUNCLAMP:
+            ts_cyl_fw=0;
+            ts_cyl_bw=1;
+            if(!ts_unclamp)tsstate=IDLE;
+        break;
+    };    
+        
+    if (fabs(speed_fb) > STANDSTILL_SPEED && servo_en) //izpad vpenjanja med vrtenjem, notaus!
+        if( !ts_cyl_is_fw){
+                estop=1;
+                set_message(&messages[6], 1); //izpad vpenjanja
+            }
+        
+        
      estop_out = estop_in && !estop;
      if(!estop_in && !machine_is_on)estop = 0;
 
@@ -309,10 +361,7 @@ FUNCTION(_){
                     //    !M13 && !cyl_is_bw_t.OUT;
      
      stndstill.IN = ((fabs(speed_fb) < STANDSTILL_SPEED)) && !servo_en && !spindle_on && n_0;
-     atspeed.IN   = servo_en && spindle_on && servo_rdy && at_speed_in &&
-                    (fabs(speed_fb) > (fabs(speed_cmd) - fabs(speed_cmd*0.2))) &&
-                    (fabs(speed_fb) < (fabs(speed_cmd) + fabs(speed_cmd*0.2))) &&
-                    !sp_inhibit_out;
+     atspeed.IN   = servo_en && spindle_on && servo_rdy && at_speed_in && !sp_inhibit_out;
      at_speed = atspeed.OUT;
 
      //override
@@ -338,6 +387,7 @@ FUNCTION(_){
      iec_ton(&foot_sw_unclamp_t, fperiod);
      iec_ton(&cyl_is_fw_t, fperiod);
      iec_ton(&cyl_is_bw_t, fperiod);
+     iec_ton(&ts_clamped_t, fperiod);
      iec_tof(&tof_sp_en, fperiod);
 
 }//FUNCTION

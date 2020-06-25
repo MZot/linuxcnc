@@ -4784,8 +4784,8 @@ class gmoccapy( object ):
         val = self.widgets.toolselector.show_dialog()
         if val > 0:
             self.tool_change = True
-            self.command.mode( linuxcnc.MODE_MDI )
-            self.command.wait_complete()
+            #self.command.mode( linuxcnc.MODE_MDI )
+            #self.command.wait_complete()
             #self.command.mdi("O<on_man_tool_call> call [%i]" % int( val ))
             #self.command.wait_complete()
             glib.timeout_add(5, self.mdi, "O<on_man_tool_call> call [%i]" % int( val ))
@@ -4800,7 +4800,7 @@ class gmoccapy( object ):
         self.command.wait_complete()
         self.command.mdi(mdi)
         self.command.wait_complete()
-        glib.timeout_add(5, self.jog)
+        #glib.timeout_add(5, self.jog)
 
     def jog(self):
         self.command.mode( linuxcnc.MODE_MANUAL )
@@ -5468,7 +5468,7 @@ class gmoccapy( object ):
             glib.timeout_add(100, self.nc_start)
     
 
-    def nc_start(self):
+    def nc_start(self): 
          self.halcomp["apply-offsets"] = False
          if  self.halcomp["offsets-applied"]:
            return
@@ -5484,8 +5484,9 @@ class gmoccapy( object ):
          elif self.auto_tool_meas_z:
              self.tool_meas_dialog.response(gtk.RESPONSE_REJECT)
              self.auto_tool_measure_z()
-             return             
-         elif self.widgets.hal_mdihistory.has_focus():
+             return              
+         elif self.widgets.ntb_jog.get_current_page() == 1:  #self.widgets.hal_mdihistory.tv.has_focus(): #if self.stat.task_mode == linuxcnc.MODE_MDI:
+            if self.widgets.hal_mdihistory.has_focus():
              mdi = self.get_mdi_line()
              if mdi.strip() != '':                
                  self.command.mode( linuxcnc.MODE_MDI )
@@ -5496,11 +5497,6 @@ class gmoccapy( object ):
                  self.widgets.hal_mdihistory.scroll_to_iter(
                                         self.mdi_buf.get_iter_at_mark(
                                             self.mdi_buf.get_insert()), 0, True, 0, 0.5) 
-             
-         elif self.widgets.ntb_jog.get_current_page() == 1:  #self.widgets.hal_mdihistory.tv.has_focus(): #if self.stat.task_mode == linuxcnc.MODE_MDI:
-            if self.stat.paused:
-              self.command.auto(linuxcnc.AUTO_RESUME)
-              self.widgets.tbtn_pause.set_active(False)
          elif self.stat.interp_state == linuxcnc.INTERP_IDLE:
           if self.start_line > 1 and self.modal_executed == False:
            print "executing REPOS"

@@ -15,7 +15,7 @@ net halui_abort gmoccapy.nc-abort
 net    nc_start gmoccapy.nc-start
 
 net           s-vel-fb gmoccapy.spindle_feedback
-net   spindle-at-speed gmoccapy.spindle_at_speed_led
+net   spindle_at_speed gmoccapy.spindle_at_speed_led
 net        gui-sp-load gmoccapy.spindle_load_bar
 
 net is_gear1 gmoccapy.sp-gear-1

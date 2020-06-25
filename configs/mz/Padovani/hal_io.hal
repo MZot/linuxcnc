@@ -24,18 +24,18 @@ net  halui_mach_off_ <= hm2_7i92.0.7i77.0.0.input-02
 net  halui_mach_off <= hm2_7i92.0.7i77.0.0.input-02-not
 net   halui_mach_on <= hm2_7i92.0.7i77.0.0.input-03
 #net sp_inh_lub_p  <= hm2_7i92.0.7i77.0.0.input-04
-##net sp_inh_lub_ol <= hm2_7i92.0.7i77.0.0.input-05      
+net  ts_cyl_is_fw <= hm2_7i92.0.7i77.0.0.input-05-not      
 net emc_enable_in <= hm2_7i92.0.7i77.0.0.input-06     
 #net  <= hm2_7i92.0.7i77.0.0.input-07
 
 net   sw_flood_auto <= hm2_7i92.0.7i77.0.0.input-08
 net   sw_flood_on <= hm2_7i92.0.7i77.0.0.input-09
-#net      <= hm2_7i92.0.7i77.0.0.input-10
-#net      <= hm2_7i92.0.7i77.0.0.input-11
-net   foot_sw_clamp <= hm2_7i92.0.7i77.0.0.input-12
-net   foot_sw_unclamp <= hm2_7i92.0.7i77.0.0.input-13
-#net              <= hm2_7i92.0.7i77.0.0.input-14
-#net       <= hm2_7i92.0.7i77.0.0.input-15
+net   ts_unclamp   <= hm2_7i92.0.7i77.0.0.input-10
+net  ts_clamp    <= hm2_7i92.0.7i77.0.0.input-11
+net     foot_sw_unclamp <= hm2_7i92.0.7i77.0.0.input-12
+net   foot_sw_clamp <= hm2_7i92.0.7i77.0.0.input-13
+net     button_abort1 <= hm2_7i92.0.7i77.0.0.input-14
+net  button_nc_start1 <= hm2_7i92.0.7i77.0.0.input-15
 
 net     turr_s1 <= hm2_7i92.0.7i77.0.0.input-16
 net     turr_s2 <= hm2_7i92.0.7i77.0.0.input-17
@@ -59,10 +59,10 @@ net   x-home-sw <= hm2_7i92.0.7i77.0.0.input-31-not
 #************************************
 #izhodi
 #************************************
-net        cyl_fw => hm2_7i92.0.7i77.0.0.output-00  
-net        cyl_bw => hm2_7i92.0.7i77.0.0.output-01  
-#net halui_mach_is_on => hm2_7i92.0.7i77.0.0.output-02  #mazanje glavnega vretena
-#net                  => hm2_7i92.0.7i77.0.0.output-03
+net        cyl_bw => hm2_7i92.0.7i77.0.0.output-00  
+net        cyl_fw => hm2_7i92.0.7i77.0.0.output-01  
+net     ts_cyl_fw => hm2_7i92.0.7i77.0.0.output-02  
+net   ts_cyl_bw => hm2_7i92.0.7i77.0.0.output-03
 net        turr_brake          => hm2_7i92.0.7i77.0.0.output-04
 net   turr_index => hm2_7i92.0.7i77.0.0.output-05
 net  emc_enable_out => hm2_7i92.0.7i77.0.0.output-06 
@@ -155,21 +155,21 @@ net      jog_z_p usbio.in01
 net      jog_x_p usbio.in02
 net      jog_z_m usbio.in03
 net      jog_x_m usbio.in04
-net     nc_start usbio.in05
+net button_nc_start usbio.in05
 net  halui_pause usbio.in06
 net button_abort usbio.in07
 #net   usbio.in08
 #net   usbio.in09
 net       hwheelz usbio.in10
 net       hwheelx usbio.in11
-net   halui_sp_rv usbio.in12
+net   halui_sp_fw usbio.in12
 net halui_sp_stop usbio.in13
-net   halui_sp_fw usbio.in14
+net   halui_sp_rv usbio.in14
+net      feed_pot usbio.ain0
+net   spindle_pot usbio.ain1
 net h-wheel-rawcounts usbio.enc0
 net       usbio_estop usbio.estop-out
 net   user_enable_out usbio.estop-in
-net feed_pot  usbio.ain1
-net spindle_pot usbio.ain0
 
 
 

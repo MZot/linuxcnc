@@ -5,8 +5,15 @@
 
 
 net halui_mach_is_on plc.machine-is-on
-net button_abort     plc.abort
-net halui_abort      plc.abort-pulse
+net     button_abort plc.abort
+net    button_abort1 plc.abort1
+net      halui_abort plc.abort-out
+net button_nc_start  plc.nc-start
+net button_nc_start1 plc.nc-start1
+net         nc_start plc.nc-start-out
+
+
+
 setp plc.t-lube-interval [LUBE]INTERVAL
 setp plc.t-lube-time     [LUBE]TIME
 net lube             plc.lube

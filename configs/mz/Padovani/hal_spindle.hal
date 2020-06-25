@@ -49,7 +49,7 @@ net halui_abort       spgb.abort
 net sp_out            spgb.velo-cmd
 net sp_en             spgb.servo-en
 net sp_en_tof         spgb.servo-en-tof
-net spindle-at-speed  spgb.at-speed
+net spindle_at_speed  spgb.at-speed
 net is_gear1          spgb.gear1-ok
 net is_gear2          spgb.gear2-ok
 net is_gear3          spgb.gear3-ok
@@ -63,6 +63,7 @@ net spindle_pot       spgb.sp-override-pot
 net halui_spovr_cnts  spgb.sp-override-counts
 net 7i77-analogin0    spgb.sp-load-in
 net gui-sp-load       spgb.sp-load-out
+
 net foot_sw_clamp spgb.foot-sw-clamp
 net foot_sw_unclamp spgb.foot-sw-unclamp
 net cyl_fw spgb.cyl-fw
@@ -72,6 +73,12 @@ net press_fw spgb.press-fw
 net press_bw spgb.cyl-is-bw
 net press_fw spgb.cyl-is-fw
 net halui_pgm_run spgb.program-is-running
+
+net   ts_clamp spgb.ts-clamp
+net ts_unclamp spgb.ts-unclamp
+net  ts_cyl_fw spgb.ts-cyl-bw
+net  ts_cyl_bw spgb.ts-cyl-fw
+net  ts_cyl_is_fw spgb.ts-cyl-is-fw
 
 
 
