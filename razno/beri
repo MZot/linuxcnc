@@ -82,6 +82,10 @@ git
 komanda da lokalno izbrisanih datotek ne brise na serverju
 git ls-files --deleted -z | git update-index --assume-unchanged -z --stdin
 
+zavrze lokalne spremembe in potegne verzijo iz streznika 
+git reset --hard HEAD
+git pull
+
 
 dovoli izvajanje skript z dvoklikom v filemanagerju
 xfconf-query -c thunar -p /misc-exec-shell-scripts-by-default -n -t bool -s true

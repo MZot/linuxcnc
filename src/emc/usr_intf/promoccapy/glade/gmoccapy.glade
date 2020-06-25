@@ -179,10 +179,10 @@
     <signal name="all-homed" handler="on_hal_status_all_homed" swapped="no"/>
     <signal name="not-all-homed" handler="on_hal_status_not_all_homed" swapped="no"/>
     <signal name="state-on" handler="on_hal_status_state_on" swapped="no"/>
-    <signal name="file-loaded" handler="on_hal_status_file_loaded" swapped="no"/>
+    <signal name="interp-paused" handler="on_hal_status_interp_paused" swapped="no"/>
     <signal name="mode-mdi" handler="on_hal_status_mode_mdi" swapped="no"/>
     <signal name="homed" handler="on_hal_status_homed" swapped="no"/>
-    <signal name="interp-paused" handler="on_hal_status_interp_paused" swapped="no"/>
+    <signal name="file-loaded" handler="on_hal_status_file_loaded" swapped="no"/>
     <signal name="line-changed" handler="on_hal_status_line_changed" swapped="no"/>
     <signal name="state-estop-reset" handler="on_hal_status_state_estop_reset" swapped="no"/>
     <signal name="mode-auto" handler="on_hal_status_mode_auto" swapped="no"/>
@@ -1528,6 +1528,9 @@
                                                         <child>
                                                           <placeholder/>
                                                         </child>
+                                                        <child>
+                                                          <placeholder/>
+                                                        </child>
                                                       </object>
                                                       <packing>
                                                         <property name="expand">False</property>
@@ -2201,17 +2204,30 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkHBox" id="box_spindle">
+                                      <object class="GtkHBox" id="box_custom_4">
+                                        <property name="can_focus">False</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkVBox" id="box_vel_info">
+                                        <property name="width_request">145</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <child>
-                                          <object class="GtkFrame" id="frm_spindle">
-                                            <property name="width_request">170</property>
+                                          <object class="GtkFrame" id="frm_max_vel">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="label_xalign">0.5</property>
                                             <child>
-                                              <object class="GtkAlignment" id="alignment4">
+                                              <object class="GtkAlignment" id="alignment6">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
                                                 <property name="top_padding">5</property>
@@ -2219,34 +2235,21 @@
                                                 <property name="left_padding">5</property>
                                                 <property name="right_padding">5</property>
                                                 <child>
-                                                  <object class="GtkVBox" id="vbox6">
+                                                  <object class="GtkVBox" id="vbox10">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <child>
-                                                      <object class="GtkHBox" id="hbox13">
+                                                      <object class="GtkHBox" id="hbox9">
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
-                                                        <property name="homogeneous">True</property>
                                                         <child>
-                                                          <object class="GtkLabel" id="lbl_sp_space1">
-                                                            <property name="width_request">40</property>
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <attributes>
-                                                            <attribute name="background" value="#f4c500000000"/>
-                                                            </attributes>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">False</property>
-                                                            <property name="position">0</property>
-                                                          </packing>
+                                                          <placeholder/>
                                                         </child>
                                                         <child>
-                                                          <object class="GtkLabel" id="active_speed_label">
+                                                          <object class="GtkLabel" id="lbl_feed_act">
                                                             <property name="visible">True</property>
                                                             <property name="can_focus">False</property>
-                                                            <property name="label">S9</property>
+                                                            <property name="label">F 275</property>
                                                             <attributes>
                                                             <attribute name="weight" value="bold"/>
                                                             <attribute name="scale" value="1.5"/>
@@ -2254,50 +2257,13 @@
                                                           </object>
                                                           <packing>
                                                             <property name="expand">True</property>
-                                                            <property name="fill">False</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="pack_type">end</property>
                                                             <property name="position">1</property>
                                                           </packing>
                                                         </child>
                                                         <child>
-                                                          <object class="GtkHBox" id="hbox22">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_sp_hold">
-                                                            <property name="width_request">40</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="label" translatable="yes">STOP</property>
-                                                            <attributes>
-                                                            <attribute name="background" value="#f4c500000000"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">False</property>
-                                                            <property name="position">0</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_sp_space">
-                                                            <property name="width_request">40</property>
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <attributes>
-                                                            <attribute name="background" value="#f4c500000000"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">False</property>
-                                                            <property name="fill">False</property>
-                                                            <property name="position">1</property>
-                                                            </packing>
-                                                            </child>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">2</property>
-                                                          </packing>
+                                                          <placeholder/>
                                                         </child>
                                                       </object>
                                                       <packing>
@@ -2307,7 +2273,7 @@
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <object class="GtkHSeparator" id="hseparator9">
+                                                      <object class="GtkHSeparator" id="hseparator6">
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
                                                       </object>
@@ -2318,29 +2284,59 @@
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <object class="GtkHBox" id="hbox14">
-                                                        <property name="height_request">15</property>
+                                                      <object class="GtkHBox" id="hbox7">
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
-                                                        <property name="homogeneous">True</property>
                                                         <child>
-                                                          <object class="HAL_LED" id="spindle_at_speed_led">
-                                                            <property name="width_request">25</property>
-                                                            <property name="height_request">25</property>
+                                                          <object class="GtkHBox" id="hbox8">
                                                             <property name="visible">True</property>
                                                             <property name="can_focus">False</property>
-                                                            <property name="led_blink_rate">0</property>
-                                                            <property name="pick_color_on">#0000ffff0000</property>
+                                                            <child>
+                                                            <object class="GtkImage" id="image_libra_green">
+                                                            <property name="can_focus">False</property>
+                                                            <property name="pixbuf">images/libra_green.png</property>
+                                                            </object>
+                                                            <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">0</property>
+                                                            </packing>
+                                                            </child>
+                                                            <child>
+                                                            <object class="GtkImage" id="image_libra_red">
+                                                            <property name="can_focus">False</property>
+                                                            <property name="pixbuf">images/libra_red.png</property>
+                                                            </object>
+                                                            <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">1</property>
+                                                            </packing>
+                                                            </child>
+                                                            <child>
+                                                            <object class="GtkImage" id="image_libra_grey">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="pixbuf">images/libra_grey.png</property>
+                                                            </object>
+                                                            <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">2</property>
+                                                            </packing>
+                                                            </child>
                                                           </object>
                                                           <packing>
-                                                            <property name="expand">False</property>
+                                                            <property name="expand">True</property>
                                                             <property name="fill">True</property>
-                                                            <property name="padding">2</property>
                                                             <property name="position">0</property>
                                                           </packing>
                                                         </child>
                                                         <child>
-                                                          <object class="GtkLabel" id="lbl_spindle_override1">
+                                                          <placeholder/>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_feed_override">
                                                             <property name="visible">True</property>
                                                             <property name="can_focus">False</property>
                                                             <property name="xalign">1</property>
@@ -2357,95 +2353,8 @@
                                                           <packing>
                                                             <property name="expand">True</property>
                                                             <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkHBox" id="hbox21">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_gear1">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="xalign">0.69999998807907104</property>
-                                                            <property name="label" translatable="yes">I</property>
-                                                            <attributes>
-                                                            <attribute name="scale" value="1"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_gear2">
-                                                            <property name="can_focus">False</property>
-                                                            <property name="xalign">0.69999998807907104</property>
-                                                            <property name="label" translatable="yes">II</property>
-                                                            <attributes>
-                                                            <attribute name="scale" value="1"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_gear3">
-                                                            <property name="can_focus">False</property>
-                                                            <property name="xalign">0.69999998807907104</property>
-                                                            <property name="label" translatable="yes">III</property>
-                                                            <attributes>
-                                                            <attribute name="scale" value="1"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
+                                                            <property name="pack_type">end</property>
                                                             <property name="position">2</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_gear4">
-                                                            <property name="can_focus">False</property>
-                                                            <property name="xalign">0.69999998807907104</property>
-                                                            <property name="label" translatable="yes">IV</property>
-                                                            <attributes>
-                                                            <attribute name="scale" value="1"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">3</property>
-                                                            </packing>
-                                                            </child>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">2</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkLabel" id="lbl_spindle_act">
-                                                            <property name="width_request">60</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="label">S 0</property>
-                                                            <attributes>
-                                                            <attribute name="weight" value="bold"/>
-                                                            <attribute name="scale" value="1.5"/>
-                                                            </attributes>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">3</property>
                                                           </packing>
                                                         </child>
                                                       </object>
@@ -2456,7 +2365,7 @@
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <object class="GtkHSeparator" id="hseparator10">
+                                                      <object class="GtkHSeparator" id="hseparator5">
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
                                                       </object>
@@ -2467,20 +2376,63 @@
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <object class="HAL_HBar" id="spindle_load_bar">
+                                                      <object class="GtkHBox" id="hbox12">
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
-                                                        <property name="bg_color">#bebebebebebe</property>
-                                                        <property name="max">120</property>
-                                                        <property name="show_limits">False</property>
-                                                        <property name="target_color">#0000ffff0000</property>
-                                                        <property name="target_value">-0.039999999105930328</property>
-                                                        <property name="text_template">%i</property>
-                                                        <property name="z0_border">0.80000001192092896</property>
-                                                        <property name="z0_color">#0000ffff0000</property>
-                                                        <property name="z1_border">0.94999998807907104</property>
-                                                        <property name="z1_color">#ffffa5a50000</property>
-                                                        <property name="z2_color">#ffff00000000</property>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_current_vel1">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="label">Velo: </property>
+                                                            <property name="justify">right</property>
+                                                            <attributes>
+                                                            <attribute name="style" value="normal"/>
+                                                            <attribute name="weight" value="bold"/>
+                                                            <attribute name="scale" value="1"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">0</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_current_vel">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">0</property>
+                                                            <property name="label">1000</property>
+                                                            <property name="justify">right</property>
+                                                            <attributes>
+                                                            <attribute name="style" value="normal"/>
+                                                            <attribute name="weight" value="bold"/>
+                                                            <attribute name="scale" value="1.1000000000000001"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">False</property>
+                                                            <property name="fill">False</property>
+                                                            <property name="position">1</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_feed_mm">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xpad">10</property>
+                                                            <property name="label" translatable="yes">&lt;b&gt;&lt;sub&gt;&lt;u&gt;mm&lt;/u&gt;&lt;/sub&gt;
+    &lt;sup&gt;min&lt;/sup&gt;&lt;/b&gt;</property>
+                                                            <property name="use_markup">True</property>
+                                                            <property name="justify">center</property>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">False</property>
+                                                            <property name="fill">False</property>
+                                                            <property name="position">2</property>
+                                                          </packing>
+                                                        </child>
                                                       </object>
                                                       <packing>
                                                         <property name="expand">True</property>
@@ -2488,192 +2440,32 @@
                                                         <property name="position">4</property>
                                                       </packing>
                                                     </child>
-                                                    <child>
-                                                      <object class="GtkLabel" id="lbl_space_spin_load">
-                                                        <property name="visible">True</property>
-                                                        <property name="can_focus">False</property>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">True</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="position">5</property>
-                                                      </packing>
-                                                    </child>
-                                                    <child>
-                                                      <object class="GtkVBox" id="vbox22">
-                                                        <property name="visible">True</property>
-                                                        <property name="can_focus">False</property>
-                                                        <child>
-                                                          <object class="GtkHBox" id="hbox11">
-                                                            <property name="height_request">17</property>
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_vc">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="yalign">0.50999999046325684</property>
-                                                            <property name="label">Vc:</property>
-                                                            <attributes>
-                                                            <attribute name="weight" value="bold"/>
-                                                            <attribute name="scale" value="1"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_vc_value">
-                                                            <property name="width_request">80</property>
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="xalign">1</property>
-                                                            <property name="label">150</property>
-                                                            <property name="justify">right</property>
-                                                            <attributes>
-                                                            <attribute name="weight" value="bold"/>
-                                                            <attribute name="scale" value="1.2"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_vc1">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="yalign">0.64999997615814209</property>
-                                                            <property name="label">&lt;b&gt;&lt;sub&gt;&lt;u&gt; m&lt;/u&gt;&lt;/sub&gt;
-&lt;sup&gt;min&lt;/sup&gt;&lt;/b&gt;</property>
-                                                            <property name="use_markup">True</property>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">2</property>
-                                                            </packing>
-                                                            </child>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkHBox" id="hbox_fc">
-                                                            <property name="height_request">15</property>
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_vc2">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="yalign">0.50999999046325684</property>
-                                                            <property name="label">Fc:</property>
-                                                            <attributes>
-                                                            <attribute name="weight" value="bold"/>
-                                                            <attribute name="scale" value="1"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_fc_value">
-                                                            <property name="width_request">80</property>
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="xalign">1</property>
-                                                            <property name="label">0.1</property>
-                                                            <property name="justify">right</property>
-                                                            <attributes>
-                                                            <attribute name="weight" value="bold"/>
-                                                            <attribute name="scale" value="1.2"/>
-                                                            </attributes>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                            </packing>
-                                                            </child>
-                                                            <child>
-                                                            <object class="GtkLabel" id="lbl_vc3">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="yalign">0.64999997615814209</property>
-                                                            <property name="label">&lt;b&gt;&lt;sub&gt;&lt;u&gt;mm&lt;/u&gt;&lt;/sub&gt;
-&lt;sup&gt;rot&lt;/sup&gt;&lt;/b&gt;</property>
-                                                            <property name="use_markup">True</property>
-                                                            </object>
-                                                            <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">2</property>
-                                                            </packing>
-                                                            </child>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                          </packing>
-                                                        </child>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">True</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="position">6</property>
-                                                      </packing>
-                                                    </child>
                                                   </object>
                                                 </child>
                                               </object>
                                             </child>
                                             <child type="label">
-                                              <object class="GtkLabel" id="label17">
+                                              <object class="GtkLabel" id="lbl_feed_units">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
-                                                <property name="label" translatable="yes">&lt;b&gt;Spindle [rpm]&lt;/b&gt;</property>
-                                                <property name="use_markup">True</property>
+                                                <property name="label" translatable="yes">Feed [mm/min]</property>
+                                                <attributes>
+                                                  <attribute name="weight" value="bold"/>
+                                                </attributes>
                                               </object>
                                             </child>
                                           </object>
                                           <packing>
-                                            <property name="expand">False</property>
+                                            <property name="expand">True</property>
                                             <property name="fill">True</property>
-                                            <property name="pack_type">end</property>
                                             <property name="position">0</property>
                                           </packing>
                                         </child>
                                       </object>
                                       <packing>
-                                        <property name="expand">True</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkHBox" id="box_custom_4">
-                                        <property name="can_focus">False</property>
-                                        <child>
-                                          <placeholder/>
-                                        </child>
-                                      </object>
-                                      <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="position">3</property>
+                                        <property name="position">8</property>
                                       </packing>
                                     </child>
                                   </object>
@@ -2683,6 +2475,9 @@
                                     <property name="pack_type">end</property>
                                     <property name="position">1</property>
                                   </packing>
+                                </child>
+                                <child>
+                                  <placeholder/>
                                 </child>
                                 <child>
                                   <object class="GtkHBox" id="box_custom_1">
@@ -2936,20 +2731,17 @@
                                   <placeholder/>
                                 </child>
                                 <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <object class="GtkVBox" id="box_vel_info">
-                                    <property name="width_request">145</property>
+                                  <object class="GtkHBox" id="box_spindle">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <child>
-                                      <object class="GtkFrame" id="frm_max_vel">
+                                      <object class="GtkFrame" id="frm_spindle">
+                                        <property name="width_request">170</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="label_xalign">0.5</property>
                                         <child>
-                                          <object class="GtkAlignment" id="alignment6">
+                                          <object class="GtkAlignment" id="alignment4">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="top_padding">5</property>
@@ -2957,21 +2749,34 @@
                                             <property name="left_padding">5</property>
                                             <property name="right_padding">5</property>
                                             <child>
-                                              <object class="GtkVBox" id="vbox10">
+                                              <object class="GtkVBox" id="vbox6">
                                                 <property name="visible">True</property>
                                                 <property name="can_focus">False</property>
                                                 <child>
-                                                  <object class="GtkHBox" id="hbox9">
+                                                  <object class="GtkHBox" id="hbox13">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
+                                                    <property name="homogeneous">True</property>
                                                     <child>
-                                                      <placeholder/>
-                                                    </child>
-                                                    <child>
-                                                      <object class="GtkLabel" id="lbl_feed_act">
+                                                      <object class="GtkLabel" id="lbl_sp_space1">
+                                                        <property name="width_request">40</property>
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
-                                                        <property name="label">F 275</property>
+                                                        <attributes>
+                                                          <attribute name="background" value="#f4c500000000"/>
+                                                        </attributes>
+                                                      </object>
+                                                      <packing>
+                                                        <property name="expand">False</property>
+                                                        <property name="fill">False</property>
+                                                        <property name="position">0</property>
+                                                      </packing>
+                                                    </child>
+                                                    <child>
+                                                      <object class="GtkLabel" id="active_speed_label">
+                                                        <property name="visible">True</property>
+                                                        <property name="can_focus">False</property>
+                                                        <property name="label">S9</property>
                                                         <attributes>
                                                           <attribute name="weight" value="bold"/>
                                                           <attribute name="scale" value="1.5"/>
@@ -2979,13 +2784,50 @@
                                                       </object>
                                                       <packing>
                                                         <property name="expand">True</property>
-                                                        <property name="fill">True</property>
-                                                        <property name="pack_type">end</property>
+                                                        <property name="fill">False</property>
                                                         <property name="position">1</property>
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <placeholder/>
+                                                      <object class="GtkHBox" id="hbox22">
+                                                        <property name="visible">True</property>
+                                                        <property name="can_focus">False</property>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_sp_hold">
+                                                            <property name="width_request">40</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="label" translatable="yes">STOP</property>
+                                                            <attributes>
+                                                            <attribute name="background" value="#f4c500000000"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">False</property>
+                                                            <property name="fill">False</property>
+                                                            <property name="position">0</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_sp_space">
+                                                            <property name="width_request">40</property>
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <attributes>
+                                                            <attribute name="background" value="#f4c500000000"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">False</property>
+                                                            <property name="fill">False</property>
+                                                            <property name="position">1</property>
+                                                          </packing>
+                                                        </child>
+                                                      </object>
+                                                      <packing>
+                                                        <property name="expand">True</property>
+                                                        <property name="fill">True</property>
+                                                        <property name="position">2</property>
+                                                      </packing>
                                                     </child>
                                                   </object>
                                                   <packing>
@@ -2995,7 +2837,7 @@
                                                   </packing>
                                                 </child>
                                                 <child>
-                                                  <object class="GtkHSeparator" id="hseparator6">
+                                                  <object class="GtkHSeparator" id="hseparator9">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                   </object>
@@ -3006,59 +2848,29 @@
                                                   </packing>
                                                 </child>
                                                 <child>
-                                                  <object class="GtkHBox" id="hbox7">
+                                                  <object class="GtkHBox" id="hbox14">
+                                                    <property name="height_request">15</property>
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
+                                                    <property name="homogeneous">True</property>
                                                     <child>
-                                                      <object class="GtkHBox" id="hbox8">
+                                                      <object class="HAL_LED" id="spindle_at_speed_led">
+                                                        <property name="width_request">25</property>
+                                                        <property name="height_request">25</property>
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
-                                                        <child>
-                                                          <object class="GtkImage" id="image_libra_green">
-                                                            <property name="can_focus">False</property>
-                                                            <property name="pixbuf">images/libra_green.png</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">0</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkImage" id="image_libra_red">
-                                                            <property name="can_focus">False</property>
-                                                            <property name="pixbuf">images/libra_red.png</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">1</property>
-                                                          </packing>
-                                                        </child>
-                                                        <child>
-                                                          <object class="GtkImage" id="image_libra_grey">
-                                                            <property name="visible">True</property>
-                                                            <property name="can_focus">False</property>
-                                                            <property name="pixbuf">images/libra_grey.png</property>
-                                                          </object>
-                                                          <packing>
-                                                            <property name="expand">True</property>
-                                                            <property name="fill">True</property>
-                                                            <property name="position">2</property>
-                                                          </packing>
-                                                        </child>
+                                                        <property name="led_blink_rate">0</property>
+                                                        <property name="pick_color_on">#0000ffff0000</property>
                                                       </object>
                                                       <packing>
-                                                        <property name="expand">True</property>
+                                                        <property name="expand">False</property>
                                                         <property name="fill">True</property>
+                                                        <property name="padding">2</property>
                                                         <property name="position">0</property>
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <placeholder/>
-                                                    </child>
-                                                    <child>
-                                                      <object class="GtkLabel" id="lbl_feed_override">
+                                                      <object class="GtkLabel" id="lbl_spindle_override1">
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
                                                         <property name="xalign">1</property>
@@ -3075,8 +2887,95 @@
                                                       <packing>
                                                         <property name="expand">True</property>
                                                         <property name="fill">True</property>
-                                                        <property name="pack_type">end</property>
+                                                        <property name="position">1</property>
+                                                      </packing>
+                                                    </child>
+                                                    <child>
+                                                      <object class="GtkHBox" id="hbox21">
+                                                        <property name="visible">True</property>
+                                                        <property name="can_focus">False</property>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_gear1">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">0.69999998807907104</property>
+                                                            <property name="label" translatable="yes">I</property>
+                                                            <attributes>
+                                                            <attribute name="scale" value="1"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">0</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_gear2">
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">0.69999998807907104</property>
+                                                            <property name="label" translatable="yes">II</property>
+                                                            <attributes>
+                                                            <attribute name="scale" value="1"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">1</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_gear3">
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">0.69999998807907104</property>
+                                                            <property name="label" translatable="yes">III</property>
+                                                            <attributes>
+                                                            <attribute name="scale" value="1"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">2</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_gear4">
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">0.69999998807907104</property>
+                                                            <property name="label" translatable="yes">IV</property>
+                                                            <attributes>
+                                                            <attribute name="scale" value="1"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">3</property>
+                                                          </packing>
+                                                        </child>
+                                                      </object>
+                                                      <packing>
+                                                        <property name="expand">True</property>
+                                                        <property name="fill">True</property>
                                                         <property name="position">2</property>
+                                                      </packing>
+                                                    </child>
+                                                    <child>
+                                                      <object class="GtkLabel" id="lbl_spindle_act">
+                                                        <property name="width_request">60</property>
+                                                        <property name="can_focus">False</property>
+                                                        <property name="label">S 0</property>
+                                                        <attributes>
+                                                          <attribute name="weight" value="bold"/>
+                                                          <attribute name="scale" value="1.5"/>
+                                                        </attributes>
+                                                      </object>
+                                                      <packing>
+                                                        <property name="expand">True</property>
+                                                        <property name="fill">True</property>
+                                                        <property name="position">3</property>
                                                       </packing>
                                                     </child>
                                                   </object>
@@ -3087,7 +2986,7 @@
                                                   </packing>
                                                 </child>
                                                 <child>
-                                                  <object class="GtkHSeparator" id="hseparator5">
+                                                  <object class="GtkHSeparator" id="hseparator10">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                   </object>
@@ -3098,21 +2997,98 @@
                                                   </packing>
                                                 </child>
                                                 <child>
-                                                  <object class="GtkHBox" id="hbox12">
+                                                  <object class="HAL_HBar" id="spindle_load_bar">
+                                                    <property name="visible">True</property>
+                                                    <property name="can_focus">False</property>
+                                                    <property name="bg_color">#bebebebebebe</property>
+                                                    <property name="max">120</property>
+                                                    <property name="show_limits">False</property>
+                                                    <property name="target_color">#0000ffff0000</property>
+                                                    <property name="target_value">-0.039999999105930328</property>
+                                                    <property name="text_template">%i</property>
+                                                    <property name="z0_border">0.80000001192092896</property>
+                                                    <property name="z0_color">#0000ffff0000</property>
+                                                    <property name="z1_border">0.94999998807907104</property>
+                                                    <property name="z1_color">#ffffa5a50000</property>
+                                                    <property name="z2_color">#ffff00000000</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">True</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">4</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkLabel" id="lbl_space_spin_load">
+                                                    <property name="visible">True</property>
+                                                    <property name="can_focus">False</property>
+                                                  </object>
+                                                  <packing>
+                                                    <property name="expand">True</property>
+                                                    <property name="fill">True</property>
+                                                    <property name="position">5</property>
+                                                  </packing>
+                                                </child>
+                                                <child>
+                                                  <object class="GtkVBox" id="vbox22">
                                                     <property name="visible">True</property>
                                                     <property name="can_focus">False</property>
                                                     <child>
-                                                      <object class="GtkLabel" id="lbl_current_vel1">
+                                                      <object class="GtkHBox" id="hbox11">
+                                                        <property name="height_request">17</property>
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
-                                                        <property name="xalign">0</property>
-                                                        <property name="label">Velo: </property>
-                                                        <property name="justify">right</property>
-                                                        <attributes>
-                                                          <attribute name="style" value="normal"/>
-                                                          <attribute name="weight" value="bold"/>
-                                                          <attribute name="scale" value="1"/>
-                                                        </attributes>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_vc">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="yalign">0.50999999046325684</property>
+                                                            <property name="label">Vc:</property>
+                                                            <attributes>
+                                                            <attribute name="weight" value="bold"/>
+                                                            <attribute name="scale" value="1"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">0</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_vc_value">
+                                                            <property name="width_request">80</property>
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">1</property>
+                                                            <property name="label">150</property>
+                                                            <property name="justify">right</property>
+                                                            <attributes>
+                                                            <attribute name="weight" value="bold"/>
+                                                            <attribute name="scale" value="1.2"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">1</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_vc1">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="yalign">0.64999997615814209</property>
+                                                            <property name="label">&lt;b&gt;&lt;sub&gt;&lt;u&gt; m&lt;/u&gt;&lt;/sub&gt;
+&lt;sup&gt;min&lt;/sup&gt;&lt;/b&gt;</property>
+                                                            <property name="use_markup">True</property>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">2</property>
+                                                          </packing>
+                                                        </child>
                                                       </object>
                                                       <packing>
                                                         <property name="expand">True</property>
@@ -3121,45 +3097,73 @@
                                                       </packing>
                                                     </child>
                                                     <child>
-                                                      <object class="GtkLabel" id="lbl_current_vel">
+                                                      <object class="GtkHBox" id="hbox_fc">
+                                                        <property name="height_request">15</property>
                                                         <property name="visible">True</property>
                                                         <property name="can_focus">False</property>
-                                                        <property name="xalign">0</property>
-                                                        <property name="label">1000</property>
-                                                        <property name="justify">right</property>
-                                                        <attributes>
-                                                          <attribute name="style" value="normal"/>
-                                                          <attribute name="weight" value="bold"/>
-                                                          <attribute name="scale" value="1.1000000000000001"/>
-                                                        </attributes>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_vc2">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="yalign">0.50999999046325684</property>
+                                                            <property name="label">Fc:</property>
+                                                            <attributes>
+                                                            <attribute name="weight" value="bold"/>
+                                                            <attribute name="scale" value="1"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">0</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_fc_value">
+                                                            <property name="width_request">80</property>
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="xalign">1</property>
+                                                            <property name="label">0.1</property>
+                                                            <property name="justify">right</property>
+                                                            <attributes>
+                                                            <attribute name="weight" value="bold"/>
+                                                            <attribute name="scale" value="1.2"/>
+                                                            </attributes>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">1</property>
+                                                          </packing>
+                                                        </child>
+                                                        <child>
+                                                          <object class="GtkLabel" id="lbl_vc3">
+                                                            <property name="visible">True</property>
+                                                            <property name="can_focus">False</property>
+                                                            <property name="yalign">0.64999997615814209</property>
+                                                            <property name="label">&lt;b&gt;&lt;sub&gt;&lt;u&gt;mm&lt;/u&gt;&lt;/sub&gt;
+&lt;sup&gt;rot&lt;/sup&gt;&lt;/b&gt;</property>
+                                                            <property name="use_markup">True</property>
+                                                          </object>
+                                                          <packing>
+                                                            <property name="expand">True</property>
+                                                            <property name="fill">True</property>
+                                                            <property name="position">2</property>
+                                                          </packing>
+                                                        </child>
                                                       </object>
                                                       <packing>
-                                                        <property name="expand">False</property>
-                                                        <property name="fill">False</property>
+                                                        <property name="expand">True</property>
+                                                        <property name="fill">True</property>
                                                         <property name="position">1</property>
-                                                      </packing>
-                                                    </child>
-                                                    <child>
-                                                      <object class="GtkLabel" id="lbl_feed_mm">
-                                                        <property name="visible">True</property>
-                                                        <property name="can_focus">False</property>
-                                                        <property name="xpad">10</property>
-                                                        <property name="label" translatable="yes">&lt;b&gt;&lt;sub&gt;&lt;u&gt;mm&lt;/u&gt;&lt;/sub&gt;
-&lt;sup&gt;min&lt;/sup&gt;&lt;/b&gt;</property>
-                                                        <property name="use_markup">True</property>
-                                                        <property name="justify">center</property>
-                                                      </object>
-                                                      <packing>
-                                                        <property name="expand">False</property>
-                                                        <property name="fill">False</property>
-                                                        <property name="position">2</property>
                                                       </packing>
                                                     </child>
                                                   </object>
                                                   <packing>
                                                     <property name="expand">True</property>
                                                     <property name="fill">True</property>
-                                                    <property name="position">4</property>
+                                                    <property name="position">6</property>
                                                   </packing>
                                                 </child>
                                               </object>
@@ -3167,25 +3171,24 @@
                                           </object>
                                         </child>
                                         <child type="label">
-                                          <object class="GtkLabel" id="lbl_feed_units">
+                                          <object class="GtkLabel" id="label17">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Feed [mm/min]</property>
-                                            <attributes>
-                                              <attribute name="weight" value="bold"/>
-                                            </attributes>
+                                            <property name="label" translatable="yes">&lt;b&gt;Spindle [rpm]&lt;/b&gt;</property>
+                                            <property name="use_markup">True</property>
                                           </object>
                                         </child>
                                       </object>
                                       <packing>
-                                        <property name="expand">True</property>
+                                        <property name="expand">False</property>
                                         <property name="fill">True</property>
+                                        <property name="pack_type">end</property>
                                         <property name="position">0</property>
                                       </packing>
                                     </child>
                                   </object>
                                   <packing>
-                                    <property name="expand">False</property>
+                                    <property name="expand">True</property>
                                     <property name="fill">True</property>
                                     <property name="position">8</property>
                                   </packing>
@@ -3849,6 +3852,9 @@
                                 <property name="left_attach">8</property>
                                 <property name="right_attach">9</property>
                               </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
                             </child>
                             <child>
                               <placeholder/>

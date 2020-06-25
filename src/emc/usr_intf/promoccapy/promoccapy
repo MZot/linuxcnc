@@ -2385,7 +2385,9 @@ class gmoccapy( object ):
               iter = self.mdi_buf.get_iter_at_mark(self.mdi_buf.get_insert())
               self.widgets.hal_mdihistory.scroll_to_iter(iter, 0, True, 0, 0.5)
               return
-        if keyname == ("Right"):  #v desno gre samo do konca vrstice
+         if keyname == ("Left"):  #
+              return
+         if keyname == ("Right"):  #v desno gre samo do konca vrstice
               if self._is_last_in_line(self.mdi_buf):
                   return True
               return
