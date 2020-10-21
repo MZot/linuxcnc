@@ -4980,6 +4980,7 @@ class gmoccapy( object ):
         self.widgets.gcode_view.highlight_line(line, 'selected')
 
     def on_btn_load_clicked( self, widget, data = None ):
+        self.from_line_num = 0
         self.widgets.tbtn_fullsize_preview.set_active(False)
         self.widgets.tbtn_fullsize_preview1.set_active(False)
         self.widgets.tbtn_fullsize_preview2.set_active(False)
@@ -5560,9 +5561,10 @@ class gmoccapy( object ):
 
 
     modal_executed = False
+    from_line_num = 0
     def on_btn_from_line_clicked( self, widget, data = None ):
        if widget.get_active():
-        value = dialogs.entry_dialog( self, data = None, header = _( "Enter line number" ),
+        value = dialogs.entry_dialog( self, data = self.from_line_num, header = _( "Enter line number" ),
                                      label = _( "Restart line" ))
         if value == "ERROR":
             message = _( "Conversion error because of wrong entry for F\n" )
@@ -5576,12 +5578,12 @@ class gmoccapy( object ):
             return
         else:
            try:
+            self.from_line_num = value   
             self.widgets.gcode_view.set_line_number(value)
             self.start_line = int(value)
             self.modal_executed = False
             run_from_line_modal_codes=self.widgets.gremlin.get_modal(value,
-                                                                     self.widgets.active_gcodes_label.get_label()
-                                                                     + "M8" if "M8" in self.widgets.active_mcodes_label.get_label() else "M9",
+                                                                     self.widgets.active_gcodes_label.get_label() + ("M8" if "M8" in self.widgets.active_mcodes_label.get_label() else "M9"),
                                                                      self.halcomp["program.length"] )
             modalfile = open(os.path.join(CONFIGPATH,
                                           self.get_ini_info.get_subroutine_paths().split(':')[0],

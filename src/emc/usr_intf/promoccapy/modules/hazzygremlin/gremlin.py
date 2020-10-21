@@ -337,6 +337,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
     def get_modal(self, lineno, gcodes, linecount):
         s = self.stat
         s.poll()
+        gcodes = gcodes.replace("G96", "") #mora bit, druga;e joka da ninma S pri G96 in se yacikla
         
         filename = s.file
         if not filename and not s.file:
@@ -360,10 +361,23 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         canon.run_from_line_no=lineno + 1
         self.getting_modal = True
         while canon.run_from_line_gcodes == -1 and canon.run_from_line_no < linecount:
-          super(Gremlin, self).load_preview(filename, canon, unitcode, gcodes)
+          try:
+              super(Gremlin, self).load_preview(filename, canon, unitcode, gcodes)
+          except:
+              pass
           canon.run_from_line_no = canon.run_from_line_no + 1  #2019 02 10 Dodan + 1
         self.getting_modal = False
 
+        if self.lathe_option:
+            g96_d = "100"
+            lines = open(self._current_file).readlines()
+            for idx,line in enumerate(lines):
+                if idx < canon.run_from_line_no:
+                    if "G96" in line:
+                        g96_d = re.findall('[dD](\d+)', line)[0]  #isce d1234... ali D1234... vrne prvi najden  
+                else:
+                    break
+                        
         inch = 25.4 if canon.run_from_line_gcodes[5]==210 else 1.0
         diam = 2.0 if canon.run_from_line_gcodes[15] == 70 else 1.0
         startpos = "G53 G0 "
@@ -380,7 +394,13 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         lines=[]
         if canon.run_from_line_tool > -1:
             lines.append( "T%sM6" %canon.run_from_line_tool )
-        lines.append("G%s M%s S%.0f" %(canon.run_from_line_gcodes[13]/10, 
+        if canon.run_from_line_gcodes[13]==960:
+         lines.append("G%s M%s S%.0f D%s" %(canon.run_from_line_gcodes[13]/10, 
+                                      canon.run_from_line_mcodes[2], 
+                                      canon.run_from_line_speed,
+                                      g96_d))            
+        else:    
+         lines.append("G%s M%s S%.0f" %(canon.run_from_line_gcodes[13]/10, 
                                       canon.run_from_line_mcodes[2], 
                                       canon.run_from_line_speed))
         lines.append("G%s F%s" %(canon.run_from_line_gcodes[7]/10,
