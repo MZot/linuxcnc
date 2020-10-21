@@ -24,6 +24,9 @@ make clean
 make -j4
 sudo make setuid
 
+deps
+sudo apt-get install debhelper libudev-dev dvipng texlive-extra-utils texlive-latex-recommended texlive-fonts-recommended imagemagick texlive-lang-polish texlive-font-utils dh-python asciidoc-dblatex tcl8.6-dev tk8.6-dev libxaw7-dev libncurses-dev libreadline-gplv2-dev asciidoc source-highlight dblatex xsltproc groff docbook-xsl python-dev python-tk python-lxml libglu1-mesa-dev libgl1-mesa-dev libgtk2.0-dev gettext autoconf libboost-python-dev texlive-lang-cyrillic texlive-lang-french texlive-lang-spanish texlive-lang-german libmodbus-dev libusb-1.0-0-dev psmisc graphviz inkscape intltool yapps2 python-yapps
+
 GMOCCAPY DEPS
 sudo apt-get install python-gtk2 python-glade2 libgtksourceview2.0-0 python-xlib python-gtkglext1
 sourceview iz repositorija od stretch  https://packages.debian.org/stretch/python-gtksourceview2
