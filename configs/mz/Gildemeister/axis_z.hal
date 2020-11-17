@@ -1,7 +1,7 @@
 #*******************
 #  AXIS Z
 #*******************
-loadrt pid names=pid.z
+
 addf pid.z.do-pid-calcs       servo-thread
 
 setp   pid.z.Pgain     [AXIS_2]P
@@ -18,7 +18,7 @@ setp   pid.z.error-previous-target true
 net z-index-enable  <=> pid.z.index-enable
 net z-enable        =>  pid.z.enable
 net z-pos-cmd       =>  pid.z.command
-net z-vel-cmd       =>  pid.z.command-deriv
+
 net z-pos-fb        =>  pid.z.feedback
 net z-output        =>  pid.z.output
 
@@ -58,7 +58,7 @@ net z-pos-limit     =>  axis.2.home-sw-in    #limite so tudi reference, HOME_IGN
 
 # ---tacho signals----
 
-loadrt scale names=tach.z
+
 addf tach.z servo-thread
 net z-vel-fb tach.z.in
 net z-tach-fb tach.z.out => hm2_5i25.0.7i77.0.1.analogout3

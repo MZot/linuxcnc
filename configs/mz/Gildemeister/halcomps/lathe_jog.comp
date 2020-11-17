@@ -37,9 +37,9 @@ pin out bit set_manual;
 
 
 variable int spindle_count_old;
-variable uint spindle_count_diff;
+variable unsigned spindle_count_diff;
 variable int hwheel_count_old;
-variable uint hwheel_count_diff;
+variable unsigned hwheel_count_diff;
 
 
 function _;
@@ -49,7 +49,7 @@ license "GPL";
 FUNCTION(_){
         //Popravljena verzija jog v g94 mode z emulacijo handwheela
  
-	spindle_count_diff = abs(spindle_count - spindle_count_old);
+	spindle_count_diff = fabs(spindle_count - spindle_count_old);
 	spindle_count_old = spindle_count;
 	hwheel_count_diff = hwheel_count - hwheel_count_old;
 	hwheel_count_old = hwheel_count;

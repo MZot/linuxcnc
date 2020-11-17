@@ -45,6 +45,10 @@ net      Nist-Nsoll <= hm2_5i25.0.7i77.0.0.input-26
 #************************************
 #izhodi
 #************************************
+
+
+
+
 net        estop-out => hm2_5i25.0.7i77.0.0.output-00
 net          m-is-on => hm2_5i25.0.7i77.0.0.output-01
 net        zavora-sp => hm2_5i25.0.7i77.0.0.output-02

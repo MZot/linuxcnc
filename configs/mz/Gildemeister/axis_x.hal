@@ -2,7 +2,7 @@
 #*******************
 #  AXIS X
 #*******************
-loadrt pid names=pid.x
+loadrt pid names=pid.x,pid.z
 addf pid.x.do-pid-calcs       servo-thread
 
 setp   pid.x.Pgain     [AXIS_0]P
@@ -19,7 +19,7 @@ setp   pid.x.error-previous-target true
 net x-index-enable  <=> pid.x.index-enable
 net x-enable        =>  pid.x.enable
 net x-pos-cmd       =>  pid.x.command
-net x-vel-cmd       =>  pid.x.command-deriv
+
 net x-pos-fb        =>  pid.x.feedback
 net x-output        =>  pid.x.output
 
@@ -32,8 +32,18 @@ setp   hm2_5i25.0.7i77.0.1.analogout0-maxlim    [AXIS_0]OUTPUT_MAX_LIMIT
 net x-output                             => hm2_5i25.0.7i77.0.1.analogout0
 net x-pos-cmd    axis.0.motor-pos-cmd
 net x-enable     axis.0.amp-enable-out
+
+loadrt timedelay names=tt
+addf tt      servo-thread
+
+net x-enable tt.in
+net x-enablett tt.out
+setp tt.on-delay 0
+setp tt.off-delay 0.5
+
+
 # enable _all_ sserial pwmgens
-net x-enable   hm2_5i25.0.7i77.0.1.analogena
+net x-enablett   hm2_5i25.0.7i77.0.1.analogena
 
 # ---Encoder feedback signals/setup---
 
@@ -59,7 +69,7 @@ net x-pos-limit     =>  axis.0.home-sw-in    #limite so tudi reference, HOME_IGN
 
 # ---tacho signali----
 
-loadrt scale names=tach.x
+loadrt scale names=tach.x,tach.z
 addf tach.x servo-thread
 net x-vel-fb tach.x.in
 net x-tach-fb tach.x.out => hm2_5i25.0.7i77.0.1.analogout1

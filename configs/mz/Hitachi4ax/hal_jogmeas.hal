@@ -1,5 +1,5 @@
 
-loadusr -W whb04b
+loadusr -W /home/cnc/LinuxCNC/linuxcnc/configs/mz/Hitachi4ax/halcomps/whb04b
 loadusr -W jogmeas
 
 
