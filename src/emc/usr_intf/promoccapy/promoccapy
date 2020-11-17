@@ -440,7 +440,7 @@ class gmoccapy( object ):
         self.h_tabs.append( tab_tool )
 
         tab_file = [( 0, "btn_edi" ),( 1, "button_filechooser_home" ), ( 2, "btn_copy" ), ( 3, "btn_paste" ),( 4, "btn_new_xml_file1" ),
-                    ( 5, "btn_new_ngc_file" ), ( 7, "btn_select" ), ( 9, "btn_back_file_load" )
+                    ( 5, "btn_new_ngc_file" ), ( 6, "btn_umount_usb" ), ( 7, "btn_select" ), ( 9, "btn_back_file_load" )
         ]
         self.h_tabs.append( tab_file )
 
@@ -3858,16 +3858,16 @@ class gmoccapy( object ):
     def meas_p_clicked(self, widget, p):
         if self.stat.tool_in_spindle == 9999:
           if self.stat.probe_tripped:
-            self.meas[self.meas_sel][p][0]=self.stat.probed_position[0]
-            self.meas[self.meas_sel][p][1]=self.stat.probed_position[1]
-            self.meas[self.meas_sel][p][2]=self.stat.probed_position[2]
+            self.meas[self.meas_sel][p][0]=round(self.stat.probed_position[0], 3)
+            self.meas[self.meas_sel][p][1]=round(self.stat.probed_position[1], 3)
+            self.meas[self.meas_sel][p][2]=round(self.stat.probed_position[2], 3)
           else:
             message = _( "No probed position in memory!" )
             dialogs.warning_dialog(self, _("Probe workpiece first!"), message) 
         else:
-            self.meas[self.meas_sel][p][0]=self.stat.actual_position[0]
-            self.meas[self.meas_sel][p][1]=self.stat.actual_position[1]
-            self.meas[self.meas_sel][p][2]=self.stat.actual_position[2]
+            self.meas[self.meas_sel][p][0]=round(self.stat.actual_position[0], 3)
+            self.meas[self.meas_sel][p][1]=round(self.stat.actual_position[1], 3)
+            self.meas[self.meas_sel][p][2]=round(self.stat.actual_position[2], 3)
         if p == 'p1':
             lbl=self.widgets.lbl_1p_val
         if p == 'p2':
@@ -3907,23 +3907,23 @@ class gmoccapy( object ):
               self.widgets.lbl_res_y.set_text("")
               self.meas_g10 = 'G10 L2 P0 Y%f' %self.meas[self.meas_sel]['res'][0]
            if self.meas_sel == 'xr':
-              deltaY = (self.meas[self.meas_sel]['p2'][1] - self.meas[self.meas_sel]['p1'][1]);
-              deltaX = (self.meas[self.meas_sel]['p2'][0] - self.meas[self.meas_sel]['p1'][0]);
+              deltaY = (round(self.meas[self.meas_sel]['p2'][1], 2) - round(self.meas[self.meas_sel]['p1'][1], 2));
+              deltaX = (round(self.meas[self.meas_sel]['p2'][0], 2) - round(self.meas[self.meas_sel]['p1'][0], 2));
               #print deltaX
               #print deltaY
-              self.meas[self.meas_sel]['res'][0] = atan2(abs(deltaX), abs(deltaY)) * 180 / math.pi
+              self.meas[self.meas_sel]['res'][0] = round(atan2(abs(deltaX), abs(deltaY)) * 180 / math.pi, 2)
               if(deltaX < 0 and deltaY < 0) or (deltaX > 0 and deltaY > 0):
                   self.meas[self.meas_sel]['res'][0] *= -1
-              self.widgets.lbl_res_x.set_text("ROT %.3f°" %self.meas[self.meas_sel]['res'][0])
+              self.widgets.lbl_res_x.set_text("ROT %.2f°" %self.meas[self.meas_sel]['res'][0])
               self.widgets.lbl_res_y.set_text("")
               self.meas_g10 = 'G10 L2 P0 R%f' %self.meas[self.meas_sel]['res'][0]
            if self.meas_sel == 'yr':
-              deltaY = (self.meas[self.meas_sel]['p2'][1] - self.meas[self.meas_sel]['p1'][1]);
-              deltaX = (self.meas[self.meas_sel]['p2'][0] - self.meas[self.meas_sel]['p1'][0]);
-              self.meas[self.meas_sel]['res'][0] = atan2(abs(deltaY), abs(deltaX)) * 180 / math.pi
+              deltaY = (round(self.meas[self.meas_sel]['p2'][1], 2) - round(self.meas[self.meas_sel]['p1'][1], 2));
+              deltaX = (round(self.meas[self.meas_sel]['p2'][0], 2) - round(self.meas[self.meas_sel]['p1'][0], 2));
+              self.meas[self.meas_sel]['res'][0] = round(atan2(abs(deltaY), abs(deltaX)) * 180 / math.pi, 2)
               if(deltaX < 0 and deltaY > 0) or (deltaX > 0 and deltaY < 0):
                   self.meas[self.meas_sel]['res'][0] *= -1
-              self.widgets.lbl_res_x.set_text("ROT %.3f°" %self.meas[self.meas_sel]['res'][0])
+              self.widgets.lbl_res_x.set_text("ROT %.2f°" %self.meas[self.meas_sel]['res'][0])
               self.widgets.lbl_res_y.set_text("")
               self.meas_g10 = 'G10 L2 P0 R%f' %self.meas[self.meas_sel]['res'][0]
            if self.meas_sel == 'ci':
@@ -5098,6 +5098,16 @@ class gmoccapy( object ):
     def on_btn_new_xml_file_clicked( self, widget, data = None ):
         if widget.get_active():
           self.widgets.filechooser_widget.new_file('.xml')
+        widget.set_active(False)
+        
+    def on_btn_umount_usb_clicked( self, widget ):
+        if widget.get_active():
+            glib.timeout_add(100, self.umount_clicked, widget)
+            
+    def umount_clicked(self, widget):
+        p=subprocess.Popen(r'sync;sync;sync;umount /media/*;umount /media/*/*', shell=True, executable='/bin/bash' )
+        p.wait()
+        self.on_button_filechooser_home_clicked( None, None ) 
         widget.set_active(False)
 
     def on_btn_new_dir_clicked( self, widget, data = None ):

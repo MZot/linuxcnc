@@ -381,7 +381,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         inch = 25.4 if canon.run_from_line_gcodes[5]==210 else 1.0
         diam = 2.0 if canon.run_from_line_gcodes[15] == 70 else 1.0
         startpos = "G53 G0 "
-        startpos += "X[%.4f + %s] " %((canon.pos[0]*inch*diam) if "X" in self.get_geometry() else "", "#5401" if canon.run_from_line_gcodes[9]==430 else "0")
+        startpos += "X[%.4f + %s * %.1f] " %((canon.pos[0]*inch*diam) if "X" in self.get_geometry() else "", "#5401" if canon.run_from_line_gcodes[9]==430 else "0", diam)
         if not self.lathe_option:
            startpos += "Y[%.4f + %s] " %((canon.pos[1]*inch)      if "Y" in self.get_geometry() else "", "#5402" if canon.run_from_line_gcodes[9]==430 else "0")
         startpos += "A%.4f " %(canon.pos[3]*inch) if "A" in self.get_geometry() else ""

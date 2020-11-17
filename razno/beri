@@ -33,17 +33,22 @@ sourceview iz repositorija od stretch  https://packages.debian.org/stretch/pytho
 
 
 
+
 GLADE
+.deb za glade in libgladeui-1-11
+http://linuxcnc.org/dists/wheezy/base/binary-amd64/
+startas iz RIP s komando glade-gtk2
+
+ali instalacija iz source:
 cd glade3-3.8.6
 ./configure
 make
 sudo make install
-
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 glade-3
-
 sudo cp ~/linuxcnc-dev/lib/python/gladevcp/*.xml /usr/local/share/glade3/catalogs
 sudo cp ~/linuxcnc-dev/lib/python/gladevcp/*.png /usr/local/share/glade3/pixmaps
-
+https://forum.linuxcnc.org/48-gladevcp/33309-glade-3-20-will-not-work-with-linuxcnc-please-follow-this-for-3-8-6?start=0
 
 
 

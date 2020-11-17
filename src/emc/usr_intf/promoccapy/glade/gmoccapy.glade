@@ -12878,11 +12878,13 @@ LinuxCNC</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="lbl_hide_tto_x11">
-                        <property name="width_request">85</property>
-                        <property name="height_request">56</property>
+                      <object class="GtkToggleButton" id="btn_umount_usb">
+                        <property name="label">Unmount USB</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_action_appearance">False</property>
+                        <signal name="clicked" handler="on_btn_umount_usb_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>

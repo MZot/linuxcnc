@@ -1,6 +1,6 @@
 
 
-loadusr -W jogmeas
+loadusr -W ./components/jogmeas
 
 
 net mp jogmeas.macro1 whb04b.macro1

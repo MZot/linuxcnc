@@ -8,6 +8,6 @@ G7 G18 G21 G40 G49 G54 G80 G90 G95 F0.1 M9 M5 G64 P0.01
 G43
 G97 S300
 G#<offset>
-G[#<mode> / 10]
+G0 ;G[#<mode> / 10]
 o<on_abort> endsub
 M2
